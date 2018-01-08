@@ -1,0 +1,46 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.g2forge.gearbox</groupId>
+	<artifactId>gb-project</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
+
+	<parent>
+		<groupId>com.g2forge.alexandria</groupId>
+		<artifactId>ax-project</artifactId>
+		<version>0.0.3-SNAPSHOT</version>
+	</parent>
+
+	<properties>
+		<gearbox.version>0.0.1-SNAPSHOT</gearbox.version>
+
+		<gearbox.organization>g2forge</gearbox.organization>
+		<gearbox.name>Gearbox</gearbox.name>
+		<gearbox.repository>gearbox</gearbox.repository>
+	</properties>
+
+	<name>${gearbox.name} Project</name>
+	<description>Parent project for ${gearbox.name}.</description>
+	<url>https://github.com/${gearbox.organization}/${gearbox.repository}/tree/${project.version}/${project.artifactId}</url>
+	<developers>
+		<developer>
+			<name>Greg Gibeling</name>
+			<email>gdgib@outlook.com</email>
+			<organization>G2Forge</organization>
+			<organizationUrl>http://www.g2forge.com</organizationUrl>
+		</developer>
+	</developers>
+	<licenses>
+		<license>
+			<name>The Apache License, Version 2.0</name>
+			<url>https://github.com/${gearbox.organization}/${gearbox.repository}/blob/${project.version}/LICENSE</url>
+		</license>
+	</licenses>
+	<scm>
+		<connection>scm:git:git://github.com/${gearbox.organization}/${gearbox.repository}.git</connection>
+		<developerConnection>scm:git:ssh://github.com:${gearbox.organization}/${gearbox.repository}.git</developerConnection>
+		<url>http://github.com/${gearbox.organization}/${gearbox.repository}/tree/${project.version}</url>
+	</scm>
+</project>
