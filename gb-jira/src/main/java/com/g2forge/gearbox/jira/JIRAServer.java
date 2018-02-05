@@ -18,6 +18,7 @@ import com.atlassian.jira.rest.client.internal.async.DisposableHttpClient;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.UrlMode;
 import com.atlassian.sal.api.executor.ThreadLocalContextManager;
+import com.g2forge.alexandria.java.fluent.optional.NullableOptional;
 import com.g2forge.alexandria.wizard.PropertyStringInput;
 import com.g2forge.alexandria.wizard.UserPasswordInput;
 import com.g2forge.alexandria.wizard.UserStringInput;
@@ -116,22 +117,32 @@ public class JIRAServer {
 
 	public static JIRAServer load() {
 		final JIRAServerBuilder builder = JIRAServer.builder();
+		builder.protocol(new PropertyStringInput("jira.protocol").fallback(NullableOptional.of("https")).get());
 		builder.host(new PropertyStringInput("jira.host").fallback(new UserStringInput("Host", true)).get());
+		builder.port(Integer.valueOf(new PropertyStringInput("jira.port").fallback(NullableOptional.of("443")).get()));
 		builder.username(new PropertyStringInput("jira.username").fallback(new UserStringInput("Username", true)).get());
 		builder.password(new PropertyStringInput("jira.password").fallback(new UserPasswordInput(String.format("Password for %1$s", builder.username))).get());
 		return builder.build();
 	}
 
+	protected final String protocol;
+
 	protected final String host;
+
+	protected final int port;
 
 	protected final String username;
 
 	protected final String password;
 
 	public JiraRestClient connect(boolean acceptSelfSignedCertificates) throws URISyntaxException {
-		final URI uri = new URI(String.format("https://%1$s", host));
+		final String protocol = getProtocol();
+		final int port = getPort();
+		final URI uri = new URI(String.format("%1$s://%2$s", (protocol == null) ? "https" : protocol, getHost()) + ((port == 0) ? "" : ":" + port));
+
 		final HttpClientOptions options = new HttpClientOptions();
 		options.setTrustSelfSignedCertificates(acceptSelfSignedCertificates);
-		return new AsynchronousJiraRestClientFactory().create(uri, createClient(uri, (username == null) ? null : new BasicHttpAuthenticationHandler(username, password), options));
+		final String username = getUsername();
+		return new AsynchronousJiraRestClientFactory().create(uri, createClient(uri, (username == null) ? null : new BasicHttpAuthenticationHandler(username, getPassword()), options));
 	}
 }
