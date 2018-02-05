@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.atlassian.jira.rest.client.api.IssueRestClient;
 import com.atlassian.jira.rest.client.api.JiraRestClient;
@@ -72,11 +73,12 @@ public class CreateIssues {
 	protected Changes convertToREST(CreateConfig config, List<CreateIssue> issues) {
 		final ChangesBuilder retVal = Changes.builder();
 		for (CreateIssue issue : issues) {
-			final CreateIssue configured = issue.fallback(config);
-			retVal.issue(configured);
-
-			for (String related : configured.getRelated()) {
-				retVal.link(new LinkIssuesInput(configured.getSummary(), related, "Relates", null));
+			final CreateIssue fallback = issue.fallback(config);
+			retVal.issue(fallback);
+			for (String relationship : fallback.getRelationships().keySet()) {
+				for (String target : fallback.getRelationships().get(relationship)) {
+					retVal.link(new LinkIssuesInput(fallback.getSummary(), target, relationship, null));
+				}
 			}
 		}
 		return retVal.build();
@@ -89,6 +91,9 @@ public class CreateIssues {
 		CreateIssues.set(config::project, getClass(), "Project");
 		CreateIssues.set(config::type, getClass(), "Type");
 		CreateIssues.set(config::epic, getClass(), "Epic");
+		CreateIssues.set(s -> {
+			if (!s.isEmpty()) config.labels(Stream.of(s.split(",+")).map(String::trim).collect(Collectors.toSet()));
+		}, getClass(), "Labels");
 		final Changes changes = convertToREST(config.build(), file);
 
 		{ // Verify all the links we can
@@ -114,9 +119,12 @@ public class CreateIssues {
 			for (CreateIssue issue : changes.getIssues()) {
 				final IssueInputBuilder builder = new IssueInputBuilder(issue.getProject(), 0l);
 				builder.setFieldInput(new FieldInput(IssueFieldId.ISSUE_TYPE_FIELD, ComplexIssueInputFieldValue.with("name", issue.getType())));
-				builder.setFieldInput(new FieldInput("customfield_10600", issue.getEpic()));
+				if (issue.getEpic() != null) builder.setFieldInput(new FieldInput("customfield_10600", issue.getEpic()));
+				if (issue.getSecurityLevel() != null) builder.setFieldInput(new FieldInput("security", ComplexIssueInputFieldValue.with("name", issue.getSecurityLevel())));
 				builder.setSummary(issue.getSummary());
 				builder.setDescription(issue.getDescription());
+				if ((issue.getLabels() != null) && !issue.getLabels().isEmpty()) builder.setFieldInput(new FieldInput(IssueFieldId.LABELS_FIELD, issue.getLabels()));
+
 				issues.put(issue.getSummary(), issueClient.createIssue(builder.build()).get().getKey());
 			}
 
