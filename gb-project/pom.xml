@@ -14,6 +14,7 @@
 	</parent>
 
 	<properties>
+		<alexandria.version>0.0.6-SNAPSHOT</alexandria.version>
 		<gearbox.version>0.0.1-SNAPSHOT</gearbox.version>
 
 		<gearbox.organization>g2forge</gearbox.organization>

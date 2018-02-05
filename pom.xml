@@ -15,5 +15,6 @@
 	<modules>
 		<module>gb-project</module>
 		<module>gb-functional</module>
+		<module>gb-jira</module>
 	</modules>
 </project>
