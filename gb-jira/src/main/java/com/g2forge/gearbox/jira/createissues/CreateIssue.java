@@ -46,7 +46,7 @@ public class CreateIssue implements ICreateConfig {
 		retVal.securityLevel(getSecurityLevel());
 		retVal.summary(getSummary());
 		retVal.description(getDescription());
-		retVal.relationships(getRelationships());
+		if (getRelationships() != null) retVal.relationships(getRelationships());
 
 		return retVal.build();
 	}

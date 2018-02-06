@@ -119,7 +119,7 @@ public class JIRAServer {
 		final JIRAServerBuilder builder = JIRAServer.builder();
 		builder.protocol(new PropertyStringInput("jira.protocol").fallback(NullableOptional.of("https")).get());
 		builder.host(new PropertyStringInput("jira.host").fallback(new UserStringInput("Host", true)).get());
-		builder.port(Integer.valueOf(new PropertyStringInput("jira.port").fallback(NullableOptional.of("443")).get()));
+		builder.port(Integer.valueOf(new PropertyStringInput("jira.port").fallback(NullableOptional.of("0")).get()));
 		builder.username(new PropertyStringInput("jira.username").fallback(new UserStringInput("Username", true)).get());
 		builder.password(new PropertyStringInput("jira.password").fallback(new UserPasswordInput(String.format("Password for %1$s", builder.username))).get());
 		return builder.build();
