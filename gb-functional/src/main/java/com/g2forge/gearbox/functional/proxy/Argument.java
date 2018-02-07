@@ -4,7 +4,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 
-import com.g2forge.gearbox.functional.argument.IArgument;
+import com.g2forge.gearbox.functional.control.IArgument;
 
 import lombok.AllArgsConstructor;
 

@@ -12,12 +12,12 @@ import com.g2forge.alexandria.java.function.IConsumer2;
 import com.g2forge.alexandria.java.function.IFunction1;
 import com.g2forge.alexandria.java.io.RuntimeIOException;
 import com.g2forge.alexandria.java.typeswitch.TypeSwitch2;
-import com.g2forge.gearbox.functional.argument.Explicit;
-import com.g2forge.gearbox.functional.argument.Flag;
-import com.g2forge.gearbox.functional.argument.IArgument;
-import com.g2forge.gearbox.functional.argument.IArgumentContext;
-import com.g2forge.gearbox.functional.argument.IExplicitArgumentHandler;
-import com.g2forge.gearbox.functional.argument.Working;
+import com.g2forge.gearbox.functional.control.Explicit;
+import com.g2forge.gearbox.functional.control.Flag;
+import com.g2forge.gearbox.functional.control.IArgument;
+import com.g2forge.gearbox.functional.control.IArgumentContext;
+import com.g2forge.gearbox.functional.control.IExplicitArgumentHandler;
+import com.g2forge.gearbox.functional.control.Working;
 import com.g2forge.gearbox.functional.runner.Command;
 import com.g2forge.gearbox.functional.runner.IProcess;
 import com.g2forge.gearbox.functional.runner.IRunner;
@@ -63,6 +63,20 @@ class ProxyInvocationHandler implements InvocationHandler {
 	}).build();
 
 	protected static IFunction1<? super IProcess, ? extends Object> getResultExtractor(Method method) {
+		if (method.getReturnType().isAssignableFrom(Boolean.class) || method.getReturnType().isAssignableFrom(Boolean.TYPE)) return process -> {
+			try {
+				return process.getExitCode() == 0;
+			} finally {
+				process.close();
+			}
+		};
+		if (method.getReturnType().isAssignableFrom(Integer.class) || method.getReturnType().isAssignableFrom(Integer.TYPE)) return process -> {
+			try {
+				return process.getExitCode();
+			} finally {
+				process.close();
+			}
+		};
 		if (method.getReturnType().isAssignableFrom(String.class)) return process -> {
 			try {
 				final StringBuilder retVal = new StringBuilder();
@@ -81,7 +95,7 @@ class ProxyInvocationHandler implements InvocationHandler {
 			}
 		};
 		if (method.getReturnType().isAssignableFrom(IProcess.class)) return IFunction1.identity();
-		throw new IllegalArgumentException();
+		throw new IllegalArgumentException(String.format("Return type \"%1$s\" is not supported!", method.getGenericReturnType()));
 	}
 
 	@Getter(AccessLevel.PROTECTED)
@@ -90,7 +104,14 @@ class ProxyInvocationHandler implements InvocationHandler {
 	@Override
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 		final IFunction1<? super IProcess, ? extends Object> result = getResultExtractor(method);
-		final Command.CommandBuilder commandBuilder = Command.builder().argument(method.getName());
+		final Command.CommandBuilder commandBuilder = Command.builder();
+
+		// Compute the command name
+		final com.g2forge.gearbox.functional.control.Command command = method.getAnnotation(com.g2forge.gearbox.functional.control.Command.class);
+		if (command != null) commandBuilder.argument(command.value());
+		else commandBuilder.argument(method.getName());
+
+		// Sort out all the arguments
 		final Parameter[] parameters = method.getParameters();
 		for (int i = 0; i < method.getParameterCount(); i++) {
 			final Argument argument = new Argument(args[i], parameters[i]);

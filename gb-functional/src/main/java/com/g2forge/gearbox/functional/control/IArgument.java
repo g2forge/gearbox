@@ -1,4 +1,4 @@
-package com.g2forge.gearbox.functional.argument;
+package com.g2forge.gearbox.functional.control;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;

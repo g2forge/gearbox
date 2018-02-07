@@ -6,4 +6,6 @@ import com.g2forge.alexandria.java.close.ICloseable;
 
 public interface IProcess extends ICloseable {
 	public InputStream getStandardOut();
+
+	public int getExitCode();
 }

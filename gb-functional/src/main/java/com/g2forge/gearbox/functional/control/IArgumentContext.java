@@ -1,4 +1,4 @@
-package com.g2forge.gearbox.functional.argument;
+package com.g2forge.gearbox.functional.control;
 
 import com.g2forge.gearbox.functional.runner.Command;
 
