@@ -32,26 +32,10 @@ import com.g2forge.alexandria.wizard.PropertyStringInput;
 import com.g2forge.alexandria.wizard.UserStringInput;
 import com.g2forge.gearbox.jira.HLogback;
 import com.g2forge.gearbox.jira.JIRAServer;
-import com.g2forge.gearbox.jira.createissues.CreateIssues.Changes.ChangesBuilder;
 
 import ch.qos.logback.classic.Level;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.Singular;
 
 public class CreateIssues {
-	@Data
-	@Builder
-	@AllArgsConstructor
-	protected static class Changes {
-		@Singular
-		protected final List<CreateIssue> issues;
-
-		@Singular
-		protected final List<LinkIssuesInput> links;
-	}
-
 	protected static final Pattern PATTERN_KEY = Pattern.compile("([A-Z0-9]{2,4}-[0-9]+)(\\s.*)?");
 
 	protected static boolean isKey(String keySummary) {
@@ -71,7 +55,7 @@ public class CreateIssues {
 	}
 
 	protected Changes convertToREST(CreateConfig config, List<CreateIssue> issues) {
-		final ChangesBuilder retVal = Changes.builder();
+		final Changes.ChangesBuilder retVal = Changes.builder();
 		for (CreateIssue issue : issues) {
 			final CreateIssue fallback = issue.fallback(config);
 			retVal.issue(fallback);
