@@ -10,9 +10,7 @@ import org.junit.Test;
 
 import com.g2forge.alexandria.java.core.helpers.HArray;
 import com.g2forge.alexandria.java.core.helpers.HString;
-import com.g2forge.gearbox.functional.proxy.IProxifier;
 import com.g2forge.gearbox.functional.proxy.Proxifier;
-import com.g2forge.gearbox.functional.runner.IRunner;
 import com.g2forge.gearbox.functional.runner.ProcessBuilderRunner;
 
 public class TestProxifier {
