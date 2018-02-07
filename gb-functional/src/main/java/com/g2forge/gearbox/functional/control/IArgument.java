@@ -1,10 +1,10 @@
-package com.g2forge.gearbox.functional.proxy;
+package com.g2forge.gearbox.functional.control;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.stream.Stream;
 
-interface IArgument<T> {
+public interface IArgument<T> {
 	public T get();
 
 	public default <A extends Annotation> A getAnnotation(Class<A> type) {
