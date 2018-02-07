@@ -15,7 +15,7 @@ import com.g2forge.gearbox.functional.proxy.Proxifier;
 import com.g2forge.gearbox.functional.runner.IRunner;
 import com.g2forge.gearbox.functional.runner.ProcessBuilderRunner;
 
-public class TestProxyGenerator {
+public class TestProxifier {
 	protected final IRunner runner = new ProcessBuilderRunner();
 
 	protected final IProxifier proxifier = new Proxifier();

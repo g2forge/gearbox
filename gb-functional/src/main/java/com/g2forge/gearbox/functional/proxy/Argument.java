@@ -4,6 +4,8 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 
+import com.g2forge.gearbox.functional.argument.IArgument;
+
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor class Argument implements IArgument<Object> {

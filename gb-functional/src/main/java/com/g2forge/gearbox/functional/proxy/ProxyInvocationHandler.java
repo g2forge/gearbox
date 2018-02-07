@@ -12,8 +12,12 @@ import com.g2forge.alexandria.java.function.IConsumer2;
 import com.g2forge.alexandria.java.function.IFunction1;
 import com.g2forge.alexandria.java.io.RuntimeIOException;
 import com.g2forge.alexandria.java.typeswitch.TypeSwitch2;
-import com.g2forge.gearbox.functional.Flag;
-import com.g2forge.gearbox.functional.Working;
+import com.g2forge.gearbox.functional.argument.Explicit;
+import com.g2forge.gearbox.functional.argument.Flag;
+import com.g2forge.gearbox.functional.argument.IArgument;
+import com.g2forge.gearbox.functional.argument.IArgumentContext;
+import com.g2forge.gearbox.functional.argument.IExplicitArgumentHandler;
+import com.g2forge.gearbox.functional.argument.Working;
 import com.g2forge.gearbox.functional.runner.Command;
 import com.g2forge.gearbox.functional.runner.IProcess;
 import com.g2forge.gearbox.functional.runner.IRunner;
@@ -29,7 +33,7 @@ class ProxyInvocationHandler implements InvocationHandler {
 	@Data
 	@Builder
 	@AllArgsConstructor
-	protected static class ArgumentContext {
+	protected static class ArgumentContext implements IArgumentContext {
 		protected final Command.CommandBuilder command;
 
 		protected final IArgument<Object> argument;
@@ -90,7 +94,13 @@ class ProxyInvocationHandler implements InvocationHandler {
 		final Parameter[] parameters = method.getParameters();
 		for (int i = 0; i < method.getParameterCount(); i++) {
 			final Argument argument = new Argument(args[i], parameters[i]);
-			argumentBuilder.accept(new ArgumentContext(commandBuilder, argument), argument.get());
+			final ArgumentContext context = new ArgumentContext(commandBuilder, argument);
+
+			final Explicit explicit = argument.getAnnotation(Explicit.class);
+			if (explicit != null) {
+				final IExplicitArgumentHandler handler = explicit.handler().newInstance();
+				handler.accept(context, argument.get());
+			} else argumentBuilder.accept(context, argument.get());
 		}
 		return result.apply(getRunner().run(commandBuilder.build()));
 	}
