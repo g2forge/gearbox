@@ -2,6 +2,8 @@ package com.g2forge.gearbox.functional.runner;
 
 import java.io.InputStream;
 
-public interface IProcess {
+import com.g2forge.alexandria.java.close.ICloseable;
+
+public interface IProcess extends ICloseable {
 	public InputStream getStandardOut();
 }
