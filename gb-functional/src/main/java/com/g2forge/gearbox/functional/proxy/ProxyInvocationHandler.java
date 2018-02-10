@@ -16,6 +16,7 @@ import com.g2forge.gearbox.functional.control.Explicit;
 import com.g2forge.gearbox.functional.control.Flag;
 import com.g2forge.gearbox.functional.control.IArgument;
 import com.g2forge.gearbox.functional.control.IArgumentContext;
+import com.g2forge.gearbox.functional.control.ICommandBuilder;
 import com.g2forge.gearbox.functional.control.IExplicitArgumentHandler;
 import com.g2forge.gearbox.functional.control.Working;
 import com.g2forge.gearbox.functional.runner.Command;
@@ -34,9 +35,27 @@ class ProxyInvocationHandler implements InvocationHandler {
 	@Builder
 	@AllArgsConstructor
 	protected static class ArgumentContext implements IArgumentContext {
-		protected final Command.CommandBuilder command;
+		protected final ICommandBuilder command;
 
 		protected final IArgument<Object> argument;
+	}
+
+	@AllArgsConstructor
+	@Getter
+	protected static class CommandBuilder implements ICommandBuilder {
+		protected final Command.CommandBuilder commandBuilder;
+
+		@Override
+		public ICommandBuilder argument(String argument) {
+			getCommandBuilder().argument(argument);
+			return this;
+		}
+
+		@Override
+		public ICommandBuilder working(Path working) {
+			getCommandBuilder().working(working);
+			return this;
+		}
 	}
 
 	protected static final IConsumer2<ArgumentContext, Object> argumentBuilder = new TypeSwitch2.ConsumerBuilder<ArgumentContext, Object>().with(builder -> {
@@ -56,7 +75,7 @@ class ProxyInvocationHandler implements InvocationHandler {
 			if (flag != null) {
 				if (v) c.getCommand().argument(flag.value());
 				return;
-			}
+			} else c.getCommand().argument(Boolean.toString(v));
 		};
 		builder.add(ArgumentContext.class, Boolean.class, bool);
 		builder.add(ArgumentContext.class, Boolean.TYPE, bool);
@@ -115,7 +134,7 @@ class ProxyInvocationHandler implements InvocationHandler {
 		final Parameter[] parameters = method.getParameters();
 		for (int i = 0; i < method.getParameterCount(); i++) {
 			final Argument argument = new Argument(args[i], parameters[i]);
-			final ArgumentContext context = new ArgumentContext(commandBuilder, argument);
+			final ArgumentContext context = new ArgumentContext(new CommandBuilder(commandBuilder), argument);
 
 			final Explicit explicit = argument.getAnnotation(Explicit.class);
 			if (explicit != null) {
