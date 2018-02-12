@@ -6,11 +6,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Indicates a constant argument, to be added to the command line after the argument this annotation appears on, or before all arguments if this is on the
- * method.
+ * Indicates a constant argument, to be added to the command line after the argument this annotation appears on.
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.PARAMETER, ElementType.METHOD })
+@Target(ElementType.PARAMETER)
 public @interface Constant {
 	public String[] value();
 }

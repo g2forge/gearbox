@@ -24,7 +24,7 @@ public class TestProxifier {
 
 	protected final Proxifier proxifier = new Proxifier();
 
-	protected final IRunner runner = new ProcessBuilderRunner();
+	protected final IRunner runner = new ProcessBuilderRunner(null);
 
 	protected final IUtils utils = proxifier.generate(runner, IUtils.class);
 

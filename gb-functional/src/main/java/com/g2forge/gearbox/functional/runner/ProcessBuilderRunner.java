@@ -28,7 +28,9 @@ public class ProcessBuilderRunner implements IRunner {
 		final ProcessBuilder builder = new ProcessBuilder();
 		if (command.getWorking() != null) builder.directory(command.getWorking().toFile());
 
-		builder.command(new ArrayList<>(getCommandFunction().apply(command.getArguments())));
+		final IFunction1<? super List<? extends String>, ? extends List<? extends String>> commandFunction = getCommandFunction();
+		if (commandFunction != null) builder.command(new ArrayList<>(commandFunction.apply(command.getArguments())));
+		else builder.command(command.getArguments());
 
 		final Process process;
 		try {
