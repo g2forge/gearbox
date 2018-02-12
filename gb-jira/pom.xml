@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>gb-jira</artifactId>
@@ -27,6 +28,11 @@
 			<artifactId>ax-wizard</artifactId>
 			<version>${alexandria.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>com.g2forge.alexandria</groupId>
+			<artifactId>ax-log</artifactId>
+			<version>${alexandria.version}</version>
+		</dependency>
 
 		<!-- Don't even ask about the black magic necessary to find these dependencies -->
 		<dependency>
@@ -43,12 +49,6 @@
 			<groupId>com.atlassian.httpclient</groupId>
 			<artifactId>atlassian-httpclient-plugin</artifactId>
 			<version>${atlassianhttpclient.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-			<version>${logback.version}</version>
 		</dependency>
 
 		<dependency>
