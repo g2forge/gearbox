@@ -5,9 +5,10 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.g2forge.alexandria.java.core.helpers.HCollection;
+import com.g2forge.alexandria.java.function.IFunction1;
 import com.g2forge.alexandria.java.io.HIO;
 import com.g2forge.alexandria.java.io.RuntimeIOException;
+import com.g2forge.alexandria.java.platform.Platform;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -16,19 +17,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ProcessBuilderRunner implements IRunner {
 	@Getter(AccessLevel.PROTECTED)
-	protected final List<String> prefix;
+	protected final IFunction1<? super List<? extends String>, ? extends List<? extends String>> commandFunction;
 
-	public ProcessBuilderRunner(String... prefix) {
-		this(HCollection.asList(prefix));
-	}
-
-	protected List<String> getArguments(Command command) {
-		final List<String> prefix = getPrefix();
-		if ((prefix == null) || prefix.isEmpty()) return command.getArguments();
-		final List<String> retVal = new ArrayList<>();
-		retVal.addAll(prefix);
-		retVal.addAll(command.getArguments());
-		return retVal;
+	public ProcessBuilderRunner() {
+		this(Platform.getPlatform().getShell().getCommandNesting());
 	}
 
 	@Override
@@ -36,7 +28,7 @@ public class ProcessBuilderRunner implements IRunner {
 		final ProcessBuilder builder = new ProcessBuilder();
 		if (command.getWorking() != null) builder.directory(command.getWorking().toFile());
 
-		builder.command(getArguments(command));
+		builder.command(new ArrayList<>(getCommandFunction().apply(command.getArguments())));
 
 		final Process process;
 		try {
