@@ -15,6 +15,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.slf4j.event.Level;
+
 import com.atlassian.jira.rest.client.api.IssueRestClient;
 import com.atlassian.jira.rest.client.api.JiraRestClient;
 import com.atlassian.jira.rest.client.api.domain.IssueFieldId;
@@ -28,12 +30,10 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.g2forge.alexandria.java.function.IConsumer1;
+import com.g2forge.alexandria.log.HLog;
 import com.g2forge.alexandria.wizard.PropertyStringInput;
 import com.g2forge.alexandria.wizard.UserStringInput;
-import com.g2forge.gearbox.jira.HLogback;
 import com.g2forge.gearbox.jira.JIRAServer;
-
-import ch.qos.logback.classic.Level;
 
 public class CreateIssues {
 	protected static final Pattern PATTERN_KEY = Pattern.compile("([A-Z0-9]{2,4}-[0-9]+)(\\s.*)?");
@@ -95,7 +95,7 @@ public class CreateIssues {
 	}
 
 	protected List<String> implement(Changes changes) throws IOException, URISyntaxException, InterruptedException, ExecutionException {
-		HLogback.setLogLevel(Level.INFO);
+		HLog.getLogControl().setLogLevel(Level.INFO);
 		try (final JiraRestClient client = JIRAServer.load().connect(true)) {
 			final IssueRestClient issueClient = client.getIssueClient();
 
