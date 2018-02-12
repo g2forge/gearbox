@@ -2,21 +2,23 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>gearbox</artifactId>
-	<packaging>pom</packaging>
+	<artifactId>gb-git</artifactId>
 
 	<parent>
 		<groupId>com.g2forge.gearbox</groupId>
 		<artifactId>gb-project</artifactId>
 		<version>0.0.2-SNAPSHOT</version>
-		<relativePath>gb-project/pom.xml</relativePath>
+		<relativePath>../gb-project/pom.xml</relativePath>
 	</parent>
 
-	<modules>
-		<module>gb-project</module>
-		<module>gb-functional</module>
-		<module>gb-jira</module>
-		<module>gb-git</module>
-		<module>gb-git-test</module>
-	</modules>
+	<name>Gearbox Git</name>
+	<description>A thin wrapper of helpers methods around JGit.</description>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.eclipse.jgit</groupId>
+			<artifactId>org.eclipse.jgit</artifactId>
+			<version>${jgit.version}</version>
+		</dependency>
+	</dependencies>
 </project>
