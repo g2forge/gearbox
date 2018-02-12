@@ -15,11 +15,13 @@ import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.java.function.IConsumer2;
 import com.g2forge.alexandria.java.function.IFunction1;
 import com.g2forge.alexandria.java.io.RuntimeIOException;
 import com.g2forge.alexandria.java.typed.ATypeRef;
 import com.g2forge.alexandria.java.typeswitch.TypeSwitch2;
+import com.g2forge.gearbox.functional.control.Constant;
 import com.g2forge.gearbox.functional.control.Explicit;
 import com.g2forge.gearbox.functional.control.Flag;
 import com.g2forge.gearbox.functional.control.IArgument;
@@ -172,6 +174,10 @@ class ProxyInvocationHandler implements InvocationHandler {
 	@Getter(AccessLevel.PROTECTED)
 	protected final IRunner runner;
 
+	protected void constant(final Command.CommandBuilder commandBuilder, final Constant constant) {
+		if (constant != null) commandBuilder.arguments(HCollection.asList(constant.value()));
+	}
+
 	@Override
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 		final IFunction1<? super IProcess, ? extends Object> result = getResultExtractor(method);
@@ -181,6 +187,9 @@ class ProxyInvocationHandler implements InvocationHandler {
 		final com.g2forge.gearbox.functional.control.Command command = method.getAnnotation(com.g2forge.gearbox.functional.control.Command.class);
 		if (command != null) commandBuilder.argument(command.value());
 		else commandBuilder.argument(method.getName());
+
+		// Prefix constants
+		constant(commandBuilder, method.getAnnotation(Constant.class));
 
 		// Sort out all the arguments
 		final Parameter[] parameters = method.getParameters();
@@ -193,6 +202,8 @@ class ProxyInvocationHandler implements InvocationHandler {
 				final IExplicitArgumentHandler handler = explicit.handler().newInstance();
 				handler.accept(context, argument.get());
 			} else argumentBuilder.accept(context, argument.get());
+
+			constant(commandBuilder, argument.getAnnotation(Constant.class));
 		}
 		return result.apply(getRunner().run(commandBuilder.build()));
 	}
