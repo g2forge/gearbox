@@ -3,7 +3,7 @@ package com.g2forge.gearbox.functional.runner;
 import java.nio.file.Path;
 import java.util.List;
 
-import com.g2forge.alexandria.java.core.helpers.HCollection;
+import com.g2forge.gearbox.functional.runner.redirect.Redirects;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,7 +19,5 @@ public class Command {
 	@Singular
 	protected final List<String> arguments;
 
-	public Command(Path working, String... arguments) {
-		this(working, HCollection.asList(arguments));
-	}
+	protected final Redirects redirects;
 }

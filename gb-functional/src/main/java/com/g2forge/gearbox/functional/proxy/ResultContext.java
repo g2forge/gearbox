@@ -20,6 +20,8 @@ import com.g2forge.alexandria.java.typed.ITypeRef;
 import com.g2forge.gearbox.functional.control.IExplicitResultHandler;
 import com.g2forge.gearbox.functional.control.IResultContext;
 import com.g2forge.gearbox.functional.runner.IProcess;
+import com.g2forge.gearbox.functional.runner.redirect.InheritRedirect;
+import com.g2forge.gearbox.functional.runner.redirect.Redirects;
 
 import lombok.Data;
 import lombok.Getter;
@@ -62,10 +64,26 @@ class ResultContext implements IResultContext {
 				process.close();
 			}
 		};
+		if (type.getErasedType().isAssignableFrom(Void.class) || type.getErasedType().isAssignableFrom(Void.TYPE)) return new IExplicitResultHandler() {
+			@Override
+			public Object apply(IProcess process, IResultContext context) {
+				try {
+					process.assertSuccess();
+					return null;
+				} finally {
+					process.close();
+				}
+			}
+
+			@Override
+			public Redirects getRedirects() {
+				return Redirects.builder().standardInput(InheritRedirect.create()).standardOutput(InheritRedirect.create()).standardError(InheritRedirect.create()).build();
+			}
+		};
 		if (type.getErasedType().isAssignableFrom(String.class)) return (process, context) -> {
 			try {
 				final StringBuilder retVal = new StringBuilder();
-				try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getStandardOut()))) {
+				try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getStandardOutput()))) {
 					String line;
 					while ((line = reader.readLine()) != null) {
 						retVal.append(line).append("\n");
@@ -81,7 +99,7 @@ class ResultContext implements IResultContext {
 			}
 		};
 		if (new ATypeRef<Stream<String>>() {}.getType().equals(type.getType())) return (process, context) -> {
-			final BufferedReader reader = new BufferedReader(new InputStreamReader(process.getStandardOut()));
+			final BufferedReader reader = new BufferedReader(new InputStreamReader(process.getStandardOutput()));
 			final Iterator<String> iterator = new Iterator<String>() {
 				protected boolean done = false;
 

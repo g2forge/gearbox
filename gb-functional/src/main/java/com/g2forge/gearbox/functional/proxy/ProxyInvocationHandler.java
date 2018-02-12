@@ -79,6 +79,7 @@ class ProxyInvocationHandler implements InvocationHandler {
 		final IExplicitResultHandler resultHandler;
 		if ((command != null) && (command.handler() != IExplicitResultHandler.class)) resultHandler = command.handler().newInstance();
 		else resultHandler = resultContext.getStandard(resultContext.getType());
+		commandBuilder.redirects(resultHandler.getRedirects());
 
 		// Sort out all the arguments
 		final Parameter[] parameters = method.getParameters();
