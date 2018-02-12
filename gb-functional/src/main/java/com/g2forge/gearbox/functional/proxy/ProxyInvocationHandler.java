@@ -3,14 +3,22 @@ package com.g2forge.gearbox.functional.proxy;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UncheckedIOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.nio.file.Path;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import com.g2forge.alexandria.java.function.IConsumer2;
 import com.g2forge.alexandria.java.function.IFunction1;
 import com.g2forge.alexandria.java.io.RuntimeIOException;
+import com.g2forge.alexandria.java.typed.ATypeRef;
 import com.g2forge.alexandria.java.typeswitch.TypeSwitch2;
 import com.g2forge.gearbox.functional.control.Explicit;
 import com.g2forge.gearbox.functional.control.Flag;
@@ -108,10 +116,54 @@ class ProxyInvocationHandler implements InvocationHandler {
 					throw new RuntimeIOException(exception);
 				}
 
+				process.assertSuccess();
 				return retVal.toString();
 			} finally {
 				process.close();
 			}
+		};
+		if (new ATypeRef<Stream<String>>() {}.getType().equals(method.getGenericReturnType())) return process -> {
+			final BufferedReader reader = new BufferedReader(new InputStreamReader(process.getStandardOut()));
+			final Iterator<String> iterator = new Iterator<String>() {
+				protected boolean done = false;
+
+				protected String line = null;
+
+				protected void close() {
+					done = true;
+					process.assertSuccess();
+					try {
+						reader.close();
+					} catch (IOException e) {
+						throw new RuntimeIOException(e);
+					} finally {
+						process.close();
+					}
+				}
+
+				@Override
+				public boolean hasNext() {
+					if (done) return false;
+					if (line == null) {
+						try {
+							line = reader.readLine();
+							if (line == null) close();
+						} catch (IOException e) {
+							throw new UncheckedIOException(e);
+						}
+					}
+					return (line != null);
+				}
+
+				@Override
+				public String next() {
+					if (!hasNext()) throw new NoSuchElementException();
+					final String retVal = line;
+					line = null;
+					return retVal;
+				}
+			};
+			return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED | Spliterator.NONNULL), false);
 		};
 		if (method.getReturnType().isAssignableFrom(IProcess.class)) return IFunction1.identity();
 		throw new IllegalArgumentException(String.format("Return type \"%1$s\" is not supported!", method.getGenericReturnType()));
