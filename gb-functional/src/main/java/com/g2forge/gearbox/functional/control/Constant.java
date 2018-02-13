@@ -6,10 +6,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Indicates a boolean argument, which when <code>true</code> will result in the {@link #value()} being added to the command line.
+ * Indicates a constant argument, to be added to the command line after the argument this annotation appears on.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PARAMETER)
-public @interface Flag {
-	public String value();
+public @interface Constant {
+	public String[] value();
 }

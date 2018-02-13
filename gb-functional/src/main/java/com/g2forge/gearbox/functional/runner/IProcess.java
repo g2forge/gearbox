@@ -1,11 +1,18 @@
 package com.g2forge.gearbox.functional.runner;
 
 import java.io.InputStream;
+import java.io.OutputStream;
 
 import com.g2forge.alexandria.java.close.ICloseable;
 
-public interface IProcess extends ICloseable {
-	public InputStream getStandardOut();
-
+public interface IProcess extends ICloseable, IStandardIO<OutputStream, InputStream> {
 	public int getExitCode();
+
+	public default boolean isSuccess() {
+		return getExitCode() == 0;
+	}
+
+	public default void assertSuccess() {
+		if (!isSuccess()) throw new RuntimeException();
+	}
 }

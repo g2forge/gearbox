@@ -10,11 +10,28 @@ import org.junit.Test;
 
 import com.g2forge.alexandria.java.core.helpers.HArray;
 import com.g2forge.alexandria.java.core.helpers.HString;
+import com.g2forge.gearbox.functional.control.Command;
 import com.g2forge.gearbox.functional.proxy.Proxifier;
+import com.g2forge.gearbox.functional.runner.IProcess;
+import com.g2forge.gearbox.functional.runner.IRunner;
 import com.g2forge.gearbox.functional.runner.ProcessBuilderRunner;
 
 public class TestProxifier {
-	protected final IUtils utils = new Proxifier().generate(new ProcessBuilderRunner(), IUtils.class);
+	public interface ForTesting {
+		@Command("false")
+		public IProcess false_();
+	}
+
+	protected final Proxifier proxifier = new Proxifier();
+
+	protected final IRunner runner = new ProcessBuilderRunner(null);
+
+	protected final IUtils utils = proxifier.generate(runner, IUtils.class);
+
+	@Test(expected = RuntimeException.class)
+	public void assertSuccess() {
+		proxifier.generate(runner, ForTesting.class).false_().assertSuccess();
+	}
 
 	@Test
 	public void echo() {
@@ -22,7 +39,7 @@ public class TestProxifier {
 		final String expected = HString.unescape(Stream.of(args).collect(Collectors.joining(" "))) + "\n";
 		final String actual = utils.echo(true, args);
 		Assert.assertEquals(expected, actual);
-	}
+	};
 
 	@Test
 	public void exitcode() {
