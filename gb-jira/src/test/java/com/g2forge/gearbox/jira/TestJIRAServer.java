@@ -6,16 +6,16 @@ import java.util.concurrent.ExecutionException;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.slf4j.event.Level;
 
 import com.atlassian.jira.rest.client.api.JiraRestClient;
 import com.atlassian.jira.rest.client.api.domain.Issue;
-
-import ch.qos.logback.classic.Level;
+import com.g2forge.alexandria.log.HLog;
 
 public class TestJIRAServer {
 	@Test
 	public void test() throws IOException, URISyntaxException, InterruptedException, ExecutionException {
-		HLogback.setLogLevel(Level.INFO);
+		HLog.getLogControl().setLogLevel(Level.INFO);
 		try (final JiraRestClient client = JIRAServer.builder().host("jira.atlassian.com").build().connect(true)) {
 			final String key = "JRASERVER-1";
 			final Issue simple = client.getIssueClient().getIssue(key).get();
