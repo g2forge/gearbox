@@ -13,7 +13,6 @@ import org.eclipse.jgit.lib.CheckoutEntry;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.ReflogEntry;
-import org.eclipse.jgit.lib.StoredConfig;
 
 import com.g2forge.alexandria.java.io.RuntimeIOException;
 import com.g2forge.alexandria.java.marker.Helpers;
@@ -63,18 +62,6 @@ public class HGit {
 		}
 	}
 
-	public static void configAddRemote(StoredConfig config, String name, Path path, String... branches) {
-		config.setString("remote", name, "url", path.toString());
-		if ((branches == null) || (branches.length < 1)) branches = new String[] { "*" };
-		for (String branch : branches) {
-			config.setString("remote", name, "fetch", String.format("+refs/heads/%2$s:refs/remotes/%1$s/%2$s", name, branch));
-		}
-	}
-
-	public static void configDeleteRemote(StoredConfig config, String name) {
-		config.unsetSection("remote", name);
-	}
-
 	public static Git createGit(Path root) {
 		return createGit(root, true);
 	}
@@ -104,5 +91,6 @@ public class HGit {
 	public static Path getGitFile(Path root) {
 		return root.resolve(".git");
 	}
+
 	public static final String GIT_DIRECTORY = ".git";
 }
