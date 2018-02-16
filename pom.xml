@@ -11,6 +11,9 @@
 		<version>0.0.2-SNAPSHOT</version>
 		<relativePath>gb-project/pom.xml</relativePath>
 	</parent>
+	
+	<name>Gearbox</name>
+	<description>A library of clients and frameworks for building them, including REST and command line.</description>
 
 	<modules>
 		<module>gb-project</module>
