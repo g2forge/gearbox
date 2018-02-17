@@ -7,12 +7,14 @@ import java.io.UncheckedIOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import com.g2forge.alexandria.adt.collection.CircularBuffer;
 import com.g2forge.alexandria.java.io.RuntimeIOException;
 import com.g2forge.alexandria.java.typed.ATypeRef;
 import com.g2forge.alexandria.java.typed.ATypeRefIdentity;
@@ -105,9 +107,18 @@ class ResultContext implements IResultContext {
 
 				protected String line = null;
 
+				protected final CircularBuffer<String> buffer = new CircularBuffer<String>(10);
+
 				protected void close() {
 					done = true;
-					process.assertSuccess();
+					if (!process.isSuccess()) {
+						final List<String> lines = buffer.getList();
+						final StringBuilder builder = new StringBuilder().append("Showing last ").append(lines.size()).append(" lines:");
+						for (String line : lines) {
+							builder.append('\t').append(line).append('\n');
+						}
+						throw new RuntimeException(builder.toString());
+					}
 					try {
 						reader.close();
 					} catch (IOException e) {
@@ -124,6 +135,7 @@ class ResultContext implements IResultContext {
 						try {
 							line = reader.readLine();
 							if (line == null) close();
+							else buffer.add(line);
 						} catch (IOException e) {
 							throw new UncheckedIOException(e);
 						}

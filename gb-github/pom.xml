@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>gb-functional</artifactId>
+	<artifactId>gb-github</artifactId>
 
 	<parent>
 		<groupId>com.g2forge.gearbox</groupId>
@@ -11,11 +11,14 @@
 		<relativePath>../gb-project/pom.xml</relativePath>
 	</parent>
 
+	<name>Gearbox Github</name>
+	<description>Client API for Github</description>
+
 	<dependencies>
 		<dependency>
-			<groupId>com.g2forge.alexandria</groupId>
-			<artifactId>ax-collection</artifactId>
-			<version>${alexandria.version}</version>
+			<groupId>org.kohsuke</groupId>
+			<artifactId>github-api</artifactId>
+			<version>1.92</version>
 		</dependency>
 	</dependencies>
 </project>

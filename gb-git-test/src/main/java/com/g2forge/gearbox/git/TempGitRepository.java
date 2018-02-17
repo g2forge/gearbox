@@ -1,8 +1,11 @@
 package com.g2forge.gearbox.git;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
 
 import com.g2forge.alexandria.java.io.TempDirectory;
 
@@ -26,6 +29,17 @@ public class TempGitRepository extends TempDirectory {
 			if (gitToClose != null) gitToClose.close();
 		} finally {
 			super.closeInternal();
+		}
+	}
+
+	public void createFirstCommit() {
+		final String file = "file";
+		try {
+			Files.createFile(getPath().resolve(file));
+			getGit().add().addFilepattern(file).call();
+			getGit().commit().setMessage(file).call();
+		} catch (IOException | GitAPIException e) {
+			throw new RuntimeException(e);
 		}
 	}
 }
