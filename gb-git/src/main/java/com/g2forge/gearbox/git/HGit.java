@@ -5,6 +5,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.ZonedDateTime;
 import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -15,6 +17,7 @@ import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.ReflogEntry;
 
+import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.java.io.RuntimeIOException;
 import com.g2forge.alexandria.java.marker.Helpers;
 
@@ -108,5 +111,18 @@ public class HGit {
 		} catch (IOException exception) {
 			throw new RuntimeIOException(String.format("Failed to check for branch \"%1$s\" in repository \"%2$s\"!", branch, git.getRepository().getDirectory().toPath()), exception);
 		}
+	}
+
+	public static String getMyRemote(final Git git) {
+		final Set<String> remotes = git.getRepository().getRemoteNames();
+		if (remotes.size() == 1) return HCollection.getOne(remotes);
+		if (remotes.size() == 2) {
+			if (remotes.contains(Constants.DEFAULT_REMOTE_NAME)) {
+				final Set<String> modify = new HashSet<>(remotes);
+				modify.remove(Constants.DEFAULT_REMOTE_NAME);
+				return HCollection.getOne(modify);
+			}
+		}
+		throw new IllegalStateException(String.format("Cannot automatically guess your git remote from among %1$s!", remotes));
 	}
 }
