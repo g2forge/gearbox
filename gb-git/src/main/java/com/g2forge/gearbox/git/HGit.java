@@ -10,6 +10,7 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.lib.CheckoutEntry;
+import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.ReflogEntry;
@@ -89,8 +90,23 @@ public class HGit {
 	}
 
 	public static Path getGitFile(Path root) {
-		return root.resolve(".git");
+		return root.resolve(GIT_DIRECTORY);
 	}
 
 	public static final String GIT_DIRECTORY = ".git";
+
+	/**
+	 * Test if the given git repository has a branch with the specified name.
+	 * 
+	 * @param git The git repository to check for the branch
+	 * @param branch The name of the branch to look for
+	 * @return <code>true</code> if a branch with the specified name exists in the specified repository
+	 */
+	public static boolean isBranch(final Git git, final String branch) {
+		try {
+			return git.getRepository().findRef(Constants.R_HEADS + branch) != null;
+		} catch (IOException exception) {
+			throw new RuntimeIOException(String.format("Failed to check for branch \"%1$s\" in repository \"%2$s\"!", branch, git.getRepository().getDirectory().toPath()), exception);
+		}
+	}
 }
