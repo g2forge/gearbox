@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>gb-jira</artifactId>
@@ -10,9 +11,8 @@
 		<relativePath>../gb-project/pom.xml</relativePath>
 	</parent>
 
-	<properties>
-		<atlassianhttpclient.version>0.23.4</atlassianhttpclient.version>
-	</properties>
+	<name>Gearbox Jira</name>
+	<description>A thin wrapper of helpers methods around the Atlassian Jira Java REST client, along with some helpful utilities.</description>
 
 	<repositories>
 		<repository>
@@ -34,6 +34,7 @@
 		</dependency>
 
 		<!-- Don't even ask about the black magic necessary to find these dependencies -->
+		<!-- ...and do be careful when updating versions. -->
 		<dependency>
 			<groupId>com.atlassian.jira</groupId>
 			<artifactId>jira-rest-java-client-core</artifactId>
@@ -47,7 +48,7 @@
 		<dependency>
 			<groupId>com.atlassian.httpclient</groupId>
 			<artifactId>atlassian-httpclient-plugin</artifactId>
-			<version>${atlassianhttpclient.version}</version>
+			<version>0.23.4</version>
 		</dependency>
 
 		<dependency>
