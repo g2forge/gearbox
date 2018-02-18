@@ -22,8 +22,8 @@
 		<gearbox.repository>gearbox</gearbox.repository>
 	</properties>
 
-	<name>${gearbox.name} Project</name>
-	<description>Parent project for ${gearbox.name}.</description>
+	<name>Gearbox Project</name>
+	<description>Parent project for Gearbox.</description>
 	<url>https://github.com/${gearbox.organization}/${gearbox.repository}/tree/${project.version}/${project.artifactId}</url>
 	<developers>
 		<developer>
