@@ -20,17 +20,23 @@ public class GitRemote implements IGitConfigAccessor {
 	@Getter(AccessLevel.PUBLIC)
 	protected final String name;
 
-	public void add(Path path, String... branches) {
+	public GitRemote add(Path path, String... branches) {
+		return add(path.toString(), branches);
+	}
+
+	public GitRemote add(String uri, String... branches) {
 		final StoredConfig config = getConfig().getConfig();
-		config.setString(ConfigConstants.CONFIG_REMOTE_SECTION, name, ConfigConstants.CONFIG_KEY_URL, path.toString());
+		config.setString(ConfigConstants.CONFIG_REMOTE_SECTION, name, ConfigConstants.CONFIG_KEY_URL, uri);
 		if ((branches == null) || (branches.length < 1)) branches = new String[] { "*" };
 		for (String branch : branches) {
 			config.setString(ConfigConstants.CONFIG_REMOTE_SECTION, name, ConfigConstants.CONFIG_FETCH_SECTION, String.format("+refs/heads/%2$s:refs/remotes/%1$s/%2$s", name, branch));
 		}
+		return this;
 	}
 
-	public void delete() {
+	public GitRemote delete() {
 		getConfig().getConfig().unsetSection(ConfigConstants.CONFIG_REMOTE_SECTION, name);
+		return this;
 	}
 
 	public String getURL() {
