@@ -19,7 +19,9 @@ import lombok.Singular;
 @AllArgsConstructor
 public class GitIgnore {
 	public static GitIgnore load(Path directory) throws IOException {
-		try (final BufferedReader reader = Files.newBufferedReader(directory.resolve(Constants.GITIGNORE_FILENAME))) {
+		final Path file = directory.resolve(Constants.GITIGNORE_FILENAME);
+		if (!Files.exists(file)) return GitIgnore.builder().build();
+		try (final BufferedReader reader = Files.newBufferedReader(file)) {
 			final GitIgnore.GitIgnoreBuilder retVal = GitIgnore.builder();
 			while (true) {
 				final String line = reader.readLine();
