@@ -29,24 +29,22 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.g2forge.alexandria.command.IArgsCommand;
 import com.g2forge.alexandria.java.function.IConsumer1;
 import com.g2forge.alexandria.log.HLog;
 import com.g2forge.alexandria.wizard.PropertyStringInput;
 import com.g2forge.alexandria.wizard.UserStringInput;
 import com.g2forge.gearbox.jira.JIRAServer;
 
-public class CreateIssues {
+public class CreateIssues implements IArgsCommand {
 	protected static final Pattern PATTERN_KEY = Pattern.compile("([A-Z0-9]{2,4}-[0-9]+)(\\s.*)?");
 
 	protected static boolean isKey(String keySummary) {
 		return PATTERN_KEY.matcher(keySummary).matches();
 	}
 
-	public static void main(String[] args) throws JsonParseException, JsonMappingException, IOException, URISyntaxException, InterruptedException, ExecutionException {
-		if (args.length != 1) throw new IllegalArgumentException();
-		try (final InputStream stream = Files.newInputStream(Paths.get(args[0]))) {
-			new CreateIssues().createIssues(stream).forEach(System.out::println);
-		}
+	public static void main(String[] args) throws Throwable {
+		IArgsCommand.main(args, CreateIssues::new);
 	}
 
 	protected static void set(IConsumer1<? super String> consumer, Class<?> clazz, String property) {
@@ -125,5 +123,14 @@ public class CreateIssues {
 	protected List<CreateIssue> loadIssues(final InputStream stream) throws IOException, JsonParseException, JsonMappingException {
 		final ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 		return mapper.readValue(stream, new TypeReference<List<CreateIssue>>() {});
+	}
+
+	@Override
+	public int invoke(String... args) throws Throwable {
+		if (args.length != 1) throw new IllegalArgumentException();
+		try (final InputStream stream = Files.newInputStream(Paths.get(args[0]))) {
+			createIssues(stream).forEach(System.out::println);
+		}
+		return SUCCESS;
 	}
 }
