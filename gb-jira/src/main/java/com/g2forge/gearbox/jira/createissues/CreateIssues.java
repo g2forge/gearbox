@@ -2,6 +2,7 @@ package com.g2forge.gearbox.jira.createissues;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -29,14 +30,16 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.g2forge.alexandria.command.IArgsCommand;
+import com.g2forge.alexandria.command.IStandardCommand;
+import com.g2forge.alexandria.command.IStructuredCommand;
+import com.g2forge.alexandria.command.Invocation;
 import com.g2forge.alexandria.java.function.IConsumer1;
 import com.g2forge.alexandria.log.HLog;
 import com.g2forge.alexandria.wizard.PropertyStringInput;
 import com.g2forge.alexandria.wizard.UserStringInput;
 import com.g2forge.gearbox.jira.JIRAServer;
 
-public class CreateIssues implements IArgsCommand {
+public class CreateIssues implements IStandardCommand {
 	protected static final Pattern PATTERN_KEY = Pattern.compile("([A-Z0-9]{2,4}-[0-9]+)(\\s.*)?");
 
 	protected static boolean isKey(String keySummary) {
@@ -44,7 +47,7 @@ public class CreateIssues implements IArgsCommand {
 	}
 
 	public static void main(String[] args) throws Throwable {
-		IArgsCommand.main(args, CreateIssues::new);
+		IStructuredCommand.main(args, new CreateIssues());
 	}
 
 	protected static void set(IConsumer1<? super String> consumer, Class<?> clazz, String property) {
@@ -126,9 +129,9 @@ public class CreateIssues implements IArgsCommand {
 	}
 
 	@Override
-	public int invoke(String... args) throws Throwable {
-		if (args.length != 1) throw new IllegalArgumentException();
-		try (final InputStream stream = Files.newInputStream(Paths.get(args[0]))) {
+	public int invoke(Invocation<InputStream, PrintStream> invocation) throws Throwable {
+		if (invocation.getArguments().size() != 1) throw new IllegalArgumentException();
+		try (final InputStream stream = Files.newInputStream(Paths.get(invocation.getArguments().get(0)))) {
 			createIssues(stream).forEach(System.out::println);
 		}
 		return SUCCESS;
