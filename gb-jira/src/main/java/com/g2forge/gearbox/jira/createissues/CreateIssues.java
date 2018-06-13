@@ -31,8 +31,8 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.g2forge.alexandria.command.IStandardCommand;
-import com.g2forge.alexandria.command.IStructuredCommand;
 import com.g2forge.alexandria.command.Invocation;
+import com.g2forge.alexandria.command.exit.IExit;
 import com.g2forge.alexandria.java.function.IConsumer1;
 import com.g2forge.alexandria.log.HLog;
 import com.g2forge.alexandria.wizard.PropertyStringInput;
@@ -47,7 +47,7 @@ public class CreateIssues implements IStandardCommand {
 	}
 
 	public static void main(String[] args) throws Throwable {
-		IStructuredCommand.main(args, new CreateIssues());
+		IStandardCommand.main(args, new CreateIssues());
 	}
 
 	protected static void set(IConsumer1<? super String> consumer, Class<?> clazz, String property) {
@@ -129,7 +129,7 @@ public class CreateIssues implements IStandardCommand {
 	}
 
 	@Override
-	public int invoke(Invocation<InputStream, PrintStream> invocation) throws Throwable {
+	public IExit invoke(Invocation<InputStream, PrintStream> invocation) throws Throwable {
 		if (invocation.getArguments().size() != 1) throw new IllegalArgumentException();
 		try (final InputStream stream = Files.newInputStream(Paths.get(invocation.getArguments().get(0)))) {
 			createIssues(stream).forEach(System.out::println);
