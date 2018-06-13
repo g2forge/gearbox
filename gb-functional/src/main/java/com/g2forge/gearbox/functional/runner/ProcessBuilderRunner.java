@@ -8,6 +8,8 @@ import java.lang.ProcessBuilder.Redirect;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.g2forge.alexandria.command.Invocation;
+import com.g2forge.alexandria.command.stdio.IStandardIO;
 import com.g2forge.alexandria.java.function.IFunction1;
 import com.g2forge.alexandria.java.function.IFunction2;
 import com.g2forge.alexandria.java.io.HIO;
@@ -18,7 +20,6 @@ import com.g2forge.gearbox.functional.runner.redirect.FileRedirect;
 import com.g2forge.gearbox.functional.runner.redirect.IRedirect;
 import com.g2forge.gearbox.functional.runner.redirect.InheritRedirect;
 import com.g2forge.gearbox.functional.runner.redirect.PipeRedirect;
-import com.g2forge.gearbox.functional.runner.redirect.Redirects;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -44,18 +45,18 @@ public class ProcessBuilderRunner implements IRunner {
 	}
 
 	@Override
-	public IProcess run(Command command) {
+	public IProcess run(Invocation<IRedirect, IRedirect> invocation) {
 		final ProcessBuilder builder = new ProcessBuilder();
 		// Set the working directory
-		if (command.getWorking() != null) builder.directory(command.getWorking().toFile());
+		if (invocation.getWorking() != null) builder.directory(invocation.getWorking().toFile());
 
 		// Build the command and arguments
 		final IFunction1<? super List<? extends String>, ? extends List<? extends String>> commandFunction = getCommandFunction();
-		if (commandFunction != null) builder.command(new ArrayList<>(commandFunction.apply(command.getArguments())));
-		else builder.command(command.getArguments());
+		if (commandFunction != null) builder.command(new ArrayList<>(commandFunction.apply(invocation.getArguments())));
+		else builder.command(invocation.getArguments());
 
 		// Set the redirects
-		final Redirects redirects = command.getRedirects();
+		final IStandardIO<IRedirect, IRedirect> redirects = invocation.getIo();
 		if (redirects != null) {
 			final IRedirect standardInput = redirects.getStandardInput();
 			if (standardInput != null) builder.redirectInput(redirectTranslater.apply(standardInput, false));
