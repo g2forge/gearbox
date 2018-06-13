@@ -1,6 +1,6 @@
 package com.g2forge.gearbox.functional.runner.redirect;
 
-import com.g2forge.gearbox.functional.runner.IStandardIO;
+import com.g2forge.alexandria.command.stdio.IStandardIO;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
