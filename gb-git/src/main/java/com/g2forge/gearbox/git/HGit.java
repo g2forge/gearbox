@@ -9,10 +9,20 @@ import java.time.ZonedDateTime;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.PullCommand;
 import org.eclipse.jgit.api.TransportConfigCallback;
+import org.eclipse.jgit.api.errors.CanceledException;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.InvalidConfigurationException;
+import org.eclipse.jgit.api.errors.InvalidRemoteException;
+import org.eclipse.jgit.api.errors.NoHeadException;
+import org.eclipse.jgit.api.errors.RefNotAdvertisedException;
+import org.eclipse.jgit.api.errors.RefNotFoundException;
+import org.eclipse.jgit.api.errors.TransportException;
+import org.eclipse.jgit.api.errors.WrongRepositoryStateException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.lib.CheckoutEntry;
 import org.eclipse.jgit.lib.ConfigConstants;
@@ -197,5 +207,40 @@ public class HGit {
 		config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, localBranch, ConfigConstants.CONFIG_KEY_REMOTE, remote);
 		config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, localBranch, ConfigConstants.CONFIG_KEY_MERGE, Constants.R_HEADS + (remoteBranch == null ? localBranch : remoteBranch));
 		config.save();
+	}
+
+	/**
+	 * Add a new remote, and pull from it.
+	 * 
+	 * @param git The git repository to add the remote to.
+	 * @param name The name to use for the new remote.
+	 * @param adder A consumer of the new git remote, which should call the appropriate {@link GitRemote#add(Path, String...)} or
+	 *            {@link GitRemote#add(String, String...)} method.
+	 * @param transportConfigCallback An optional transport config callback for the remote.
+	 * 
+	 * @return The newly added git remote.
+	 * 
+	 * @throws WrongRepositoryStateException
+	 * @throws InvalidConfigurationException
+	 * @throws InvalidRemoteException
+	 * @throws CanceledException
+	 * @throws RefNotFoundException
+	 * @throws RefNotAdvertisedException
+	 * @throws NoHeadException
+	 * @throws TransportException
+	 * @throws GitAPIException
+	 */
+	public static GitRemote addAndPullRemote(Git git, String name, Consumer<? super GitRemote> adder, TransportConfigCallback transportConfigCallback) throws WrongRepositoryStateException, InvalidConfigurationException, InvalidRemoteException, CanceledException, RefNotFoundException, RefNotAdvertisedException, NoHeadException, TransportException, GitAPIException {
+		final GitConfig config = new GitConfig(git);
+
+		final GitRemote remote = config.getRemote(name);
+		adder.accept(remote);
+		remote.save();
+
+		final PullCommand pull = git.pull();
+		if (transportConfigCallback != null) pull.setTransportConfigCallback(transportConfigCallback);
+		pull.setRemote(name).call();
+
+		return remote;
 	}
 }
