@@ -6,10 +6,13 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.ZonedDateTime;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PullCommand;
@@ -23,16 +26,22 @@ import org.eclipse.jgit.api.errors.RefNotAdvertisedException;
 import org.eclipse.jgit.api.errors.RefNotFoundException;
 import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.api.errors.WrongRepositoryStateException;
+import org.eclipse.jgit.errors.IncorrectObjectTypeException;
+import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.lib.CheckoutEntry;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.ReflogEntry;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.revwalk.filter.RevFilter;
 import org.eclipse.jgit.transport.JschConfigSessionFactory;
 import org.eclipse.jgit.transport.OpenSshConfig;
-import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.OpenSshConfig.Host;
+import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.SshSessionFactory;
 import org.eclipse.jgit.transport.SshTransport;
 import org.eclipse.jgit.transport.Transport;
@@ -231,5 +240,25 @@ public class HGit {
 
 	public static RefSpec createRefSpec(String remote, String local) {
 		return new RefSpec(remote + HGit.REFSPEC_SEPARATOR + local);
+	}
+
+	public static RevCommit getMergeBase(Repository repository, ObjectId... commits) throws MissingObjectException, IncorrectObjectTypeException, IOException {
+		final List<RevCommit> revCommits;
+		try (final RevWalk walk = new RevWalk(repository)) {
+			revCommits = Arrays.stream(commits).map(commit -> {
+				try {
+					return walk.parseCommit(commit);
+				} catch (IOException exception) {
+					throw new RuntimeIOException(exception);
+				} finally {
+					walk.reset();
+				}
+			}).collect(Collectors.toList());
+		}
+		try (final RevWalk walk = new RevWalk(repository)) {
+			walk.setRevFilter(RevFilter.MERGE_BASE);
+			walk.markStart(revCommits);
+			return walk.next();
+		}
 	}
 }
