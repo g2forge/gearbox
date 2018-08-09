@@ -261,4 +261,8 @@ public class HGit {
 			return walk.next();
 		}
 	}
+
+	public static RefSpec reverse(RefSpec refSpec) {
+		return refSpec.setSourceDestination(refSpec.getDestination(), refSpec.getSource());
+	}
 }
