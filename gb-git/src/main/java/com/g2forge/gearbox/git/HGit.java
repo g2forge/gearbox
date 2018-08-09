@@ -25,14 +25,13 @@ import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.api.errors.WrongRepositoryStateException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.lib.CheckoutEntry;
-import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.ReflogEntry;
-import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.transport.JschConfigSessionFactory;
 import org.eclipse.jgit.transport.OpenSshConfig;
+import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.OpenSshConfig.Host;
 import org.eclipse.jgit.transport.SshSessionFactory;
 import org.eclipse.jgit.transport.SshTransport;
@@ -54,6 +53,8 @@ import lombok.experimental.UtilityClass;
 @Helpers
 @UtilityClass
 public class HGit {
+	public static final String REFSPEC_SEPARATOR = ":";
+
 	protected static void knownHosts(final JSch jsch, FS fs) throws JSchException {
 		final File home = fs.userHome();
 		if (home == null) return;
@@ -194,22 +195,6 @@ public class HGit {
 	}
 
 	/**
-	 * Set the local branch to track the specified remote branch.
-	 * 
-	 * @param git The git repository to configure.
-	 * @param localBranch The local branch to set tracking for.
-	 * @param remote The remote repository to track a branch in.
-	 * @param remoteBranch The branch in the remote repository, or <code>null</code> to use the branch named <code>localBranch</code> in the remote repository.
-	 * @throws IOException
-	 */
-	public static void setTracking(Git git, String localBranch, String remote, String remoteBranch) throws IOException {
-		final StoredConfig config = git.getRepository().getConfig();
-		config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, localBranch, ConfigConstants.CONFIG_KEY_REMOTE, remote);
-		config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, localBranch, ConfigConstants.CONFIG_KEY_MERGE, Constants.R_HEADS + (remoteBranch == null ? localBranch : remoteBranch));
-		config.save();
-	}
-
-	/**
 	 * Add a new remote, and pull from it.
 	 * 
 	 * @param git The git repository to add the remote to.
@@ -242,5 +227,9 @@ public class HGit {
 		pull.setRemote(name).call();
 
 		return remote;
+	}
+
+	public static RefSpec createRefSpec(String remote, String local) {
+		return new RefSpec(remote + HGit.REFSPEC_SEPARATOR + local);
 	}
 }
