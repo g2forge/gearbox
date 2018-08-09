@@ -24,6 +24,16 @@ public class GitConfig implements IGitConfigAccessor {
 		this(git.getRepository().getConfig());
 	}
 
+	/**
+	 * Get access to a branch with the specific name.
+	 * 
+	 * @param name The name of the branch.
+	 * @return An accessor which can be used to configure the specified branch.
+	 */
+	public GitBranch getBranch(String name) {
+		return new GitBranch(this, name);
+	}
+
 	public GitRemote getOrigin() {
 		return getRemote(Constants.DEFAULT_REMOTE_NAME);
 	}
