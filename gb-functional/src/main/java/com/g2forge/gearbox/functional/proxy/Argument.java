@@ -8,7 +8,8 @@ import com.g2forge.gearbox.functional.control.IArgument;
 
 import lombok.AllArgsConstructor;
 
-@AllArgsConstructor class Argument implements IArgument<Object> {
+@AllArgsConstructor
+class Argument implements IArgument<Object> {
 	protected final Object value;
 
 	protected final Parameter parameter;
