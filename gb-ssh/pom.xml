@@ -3,7 +3,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>gb-functional</artifactId>
+	<artifactId>gb-ssh</artifactId>
 
 	<parent>
 		<groupId>com.g2forge.gearbox</groupId>
@@ -12,21 +12,21 @@
 		<relativePath>../gb-project/pom.xml</relativePath>
 	</parent>
 
-	<name>Gearbox Functional</name>
-	<description>A functional abstraction of command line programs, allowing Java to invoke shell commands painlessly.</description>
+	<name>Gearbox SSH</name>
+	<description>Library for SSH client &amp; server, including support for gearbox functional runners.</description>
 
 	<dependencies>
 		<dependency>
-			<groupId>com.g2forge.alexandria</groupId>
-			<artifactId>ax-collection</artifactId>
-			<version>${alexandria.version}</version>
+			<groupId>com.g2forge.gearbox</groupId>
+			<artifactId>gb-functional</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>com.g2forge.alexandria</groupId>
-			<artifactId>ax-command</artifactId>
-			<version>${alexandria.version}</version>
+			<groupId>com.g2forge.gearbox</groupId>
+			<artifactId>gb-functional-test</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
 		</dependency>
-		
 		<dependency>
 			<groupId>org.apache.sshd</groupId>
 			<artifactId>sshd-core</artifactId>
