@@ -1,5 +1,7 @@
 package com.g2forge.gearbox.functional.runner;
 
+import java.nio.file.Paths;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
@@ -37,7 +39,12 @@ public class TestSSHRunner extends ATestRunner {
 	}
 
 	@Test
-	public void test() {
-		Assert.assertEquals(new PropertyStringInput("ssh.hostname").fallback(new UserStringInput("SSH Hostname", false)).get(), getUtils().echo(false, "${HOSTNAME}").trim());
+	public void cwd() {
+		Assert.assertEquals(new PropertyStringInput("sshtest.cwd").fallback(new UserStringInput("SSH Test CWD", false)).get(), getUtils().pwd(Paths.get("./"), false).trim());
+	}
+
+	@Test
+	public void hostname() {
+		Assert.assertEquals(new PropertyStringInput("sshtest.hostname").fallback(new UserStringInput("SSH Test Hostname", false)).get(), getUtils().echo(false, "${HOSTNAME}").trim());
 	}
 }
