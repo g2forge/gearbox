@@ -1,4 +1,4 @@
-package com.g2forge.gearbox.functional.runner;
+package com.g2forge.gearbox.ssh;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

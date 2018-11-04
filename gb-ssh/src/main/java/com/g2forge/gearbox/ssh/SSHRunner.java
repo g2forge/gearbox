@@ -1,4 +1,4 @@
-package com.g2forge.gearbox.functional.runner;
+package com.g2forge.gearbox.ssh;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,6 +15,8 @@ import org.apache.sshd.client.session.ClientSession;
 import com.g2forge.alexandria.command.Invocation;
 import com.g2forge.alexandria.java.close.ICloseable;
 import com.g2forge.alexandria.java.io.RuntimeIOException;
+import com.g2forge.gearbox.functional.runner.IProcess;
+import com.g2forge.gearbox.functional.runner.IRunner;
 import com.g2forge.gearbox.functional.runner.redirect.IRedirect;
 
 public class SSHRunner implements IRunner, ICloseable {

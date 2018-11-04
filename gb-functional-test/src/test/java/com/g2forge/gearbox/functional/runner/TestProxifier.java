@@ -1,4 +1,4 @@
-package com.g2forge.gearbox.functional;
+package com.g2forge.gearbox.functional.runner;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -11,7 +11,6 @@ import org.junit.Test;
 import com.g2forge.alexandria.java.core.helpers.HArray;
 import com.g2forge.alexandria.java.core.helpers.HString;
 import com.g2forge.gearbox.functional.control.Command;
-import com.g2forge.gearbox.functional.runner.ATestRunner;
 import com.g2forge.gearbox.functional.runner.IProcess;
 import com.g2forge.gearbox.functional.runner.IRunner;
 import com.g2forge.gearbox.functional.runner.ProcessBuilderRunner;

@@ -1,4 +1,4 @@
-package com.g2forge.gearbox.functional.runner;
+package com.g2forge.gearbox.ssh;
 
 import java.nio.file.Paths;
 
@@ -10,7 +10,9 @@ import com.g2forge.alexandria.java.close.ICloseable;
 import com.g2forge.alexandria.wizard.PropertyStringInput;
 import com.g2forge.alexandria.wizard.UserPasswordInput;
 import com.g2forge.alexandria.wizard.UserStringInput;
-import com.g2forge.gearbox.functional.runner.SSHServer.SSHServerBuilder;
+import com.g2forge.gearbox.functional.runner.ATestRunner;
+import com.g2forge.gearbox.functional.runner.IRunner;
+import com.g2forge.gearbox.ssh.SSHServer.SSHServerBuilder;
 
 import lombok.Getter;
 
