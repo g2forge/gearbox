@@ -1,0 +1,33 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>gb-browser</artifactId>
+
+	<parent>
+		<groupId>com.g2forge.gearbox</groupId>
+		<artifactId>gb-project</artifactId>
+		<version>0.0.3-SNAPSHOT</version>
+		<relativePath>../gb-project/pom.xml</relativePath>
+	</parent>
+
+	<name>Gearbox Browser</name>
+	<description>Library for browsing websites, screen scraping &amp; automation.</description>
+	
+	<properties>
+		<selenium.version>3.141.59</selenium.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.seleniumhq.selenium</groupId>
+			<artifactId>selenium-firefox-driver</artifactId>
+			<version>${selenium.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.seleniumhq.selenium</groupId>
+			<artifactId>selenium-support</artifactId>
+			<version>${selenium.version}</version>
+		</dependency>
+	</dependencies>
+</project>
