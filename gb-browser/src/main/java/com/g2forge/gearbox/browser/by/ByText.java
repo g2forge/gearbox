@@ -51,7 +51,12 @@ public class ByText extends By {
 	protected final IPredicate1<? super String> predicate;
 
 	public ByText(By base, String text) {
-		this(base, text, null);
+		this(base, text, IIdentity.standard());
+	}
+
+	@SafeVarargs
+	public ByText(By base, String text, IFunction1<? super String, ? extends String>... cleanups) {
+		this(base, text, new Parser(cleanups));
 	}
 
 	public ByText(By base, String text, IIdentity<? super String> identity) {
