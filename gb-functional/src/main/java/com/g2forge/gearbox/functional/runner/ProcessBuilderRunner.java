@@ -15,7 +15,7 @@ import com.g2forge.alexandria.java.function.IFunction2;
 import com.g2forge.alexandria.java.io.HIO;
 import com.g2forge.alexandria.java.io.RuntimeIOException;
 import com.g2forge.alexandria.java.platform.Platform;
-import com.g2forge.alexandria.java.typeswitch.TypeSwitch2;
+import com.g2forge.alexandria.java.type.function.TypeSwitch2;
 import com.g2forge.gearbox.functional.runner.redirect.FileRedirect;
 import com.g2forge.gearbox.functional.runner.redirect.IRedirect;
 import com.g2forge.gearbox.functional.runner.redirect.InheritRedirect;

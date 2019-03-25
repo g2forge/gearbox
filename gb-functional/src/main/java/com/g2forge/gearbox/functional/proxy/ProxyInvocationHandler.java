@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 import com.g2forge.alexandria.command.Invocation;
 import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.java.function.IConsumer2;
-import com.g2forge.alexandria.java.typeswitch.TypeSwitch2;
+import com.g2forge.alexandria.java.type.function.TypeSwitch2;
 import com.g2forge.gearbox.functional.control.Constant;
 import com.g2forge.gearbox.functional.control.Explicit;
 import com.g2forge.gearbox.functional.control.Flag;
