@@ -1,5 +1,9 @@
 package com.g2forge.gearbox.functional.proxy;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodHandles.Lookup;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -9,6 +13,7 @@ import java.util.stream.Stream;
 import com.g2forge.alexandria.command.Invocation;
 import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.java.function.IConsumer2;
+import com.g2forge.alexandria.java.function.IFunction1;
 import com.g2forge.alexandria.java.type.function.TypeSwitch2;
 import com.g2forge.gearbox.functional.control.Constant;
 import com.g2forge.gearbox.functional.control.Explicit;
@@ -16,7 +21,9 @@ import com.g2forge.gearbox.functional.control.Flag;
 import com.g2forge.gearbox.functional.control.IExplicitArgumentHandler;
 import com.g2forge.gearbox.functional.control.IExplicitResultHandler;
 import com.g2forge.gearbox.functional.control.IResultContext;
+import com.g2forge.gearbox.functional.control.ModifyCommandException;
 import com.g2forge.gearbox.functional.control.Named;
+import com.g2forge.gearbox.functional.control.TypedInvocation;
 import com.g2forge.gearbox.functional.control.Working;
 import com.g2forge.gearbox.functional.runner.IProcess;
 import com.g2forge.gearbox.functional.runner.IRunner;
@@ -68,25 +75,48 @@ class ProxyInvocationHandler implements InvocationHandler {
 
 	@Override
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-		final Invocation.InvocationBuilder<IRedirect, IRedirect> invocation = Invocation.builder();
+		final IFunction1<? super TypedInvocation, ? extends TypedInvocation> modifier;
+		if (method.isDefault()) {
+			final Class<?> declaringClass = method.getDeclaringClass();
+			final Constructor<Lookup> constructor = MethodHandles.Lookup.class.getDeclaredConstructor(Class.class);
+			constructor.setAccessible(true);
+			final MethodHandle bound = constructor.newInstance(declaringClass).in(declaringClass).unreflectSpecial(method, declaringClass).bindTo(proxy);
+			try {
+				return bound.invokeWithArguments(args);
+				// return MethodHandles.lookup().in(declaringClass).unreflectSpecial(method, declaringClass).bindTo(proxy).invokeWithArguments(args);
+			} catch (ModifyCommandException exception) {
+				modifier = exception.getModifier();
+			}
+		} else modifier = IFunction1.identity();
+
+		final ResultContext resultContext = new ResultContext(method);
+		final TypedInvocation original = createInvocation(method, args, resultContext);
+		final TypedInvocation modified = modifier.apply(original);
+		final IProcess process = getRunner().run(modified.getInvocation());
+		return modified.getResultHandler().apply(process, resultContext);
+	}
+
+	protected TypedInvocation createInvocation(Method method, Object[] args, final IResultContext resultContext) throws InstantiationException, IllegalAccessException {
+		final TypedInvocation.TypedInvocationBuilder typedInvocationBuilder = TypedInvocation.builder();
+		final Invocation.InvocationBuilder<IRedirect, IRedirect> invocationBuilder = Invocation.builder();
 
 		// Compute the command name
 		final com.g2forge.gearbox.functional.control.Command command = method.getAnnotation(com.g2forge.gearbox.functional.control.Command.class);
-		if (command != null) Stream.of(command.value()).forEach(invocation::argument);
-		else invocation.argument(method.getName());
+		if (command != null) Stream.of(command.value()).forEach(invocationBuilder::argument);
+		else invocationBuilder.argument(method.getName());
 
 		// Compute the result handler
-		final IResultContext resultContext = new ResultContext(method);
 		final IExplicitResultHandler resultHandler;
 		if ((command != null) && (command.handler() != IExplicitResultHandler.class)) resultHandler = command.handler().newInstance();
 		else resultHandler = resultContext.getStandard(resultContext.getType());
-		invocation.io(resultHandler.getRedirects());
+		invocationBuilder.io(resultHandler.getRedirects());
+		typedInvocationBuilder.resultHandler(resultHandler);
 
 		// Sort out all the arguments
 		final Parameter[] parameters = method.getParameters();
 		for (int i = 0; i < method.getParameterCount(); i++) {
 			final Argument argument = new Argument(args[i], parameters[i]);
-			final ArgumentContext argumentContext = new ArgumentContext(invocation, argument);
+			final ArgumentContext argumentContext = new ArgumentContext(invocationBuilder, argument);
 
 			final Explicit explicit = argument.getAnnotation(Explicit.class);
 			if (explicit != null) {
@@ -94,9 +124,10 @@ class ProxyInvocationHandler implements InvocationHandler {
 				handler.accept(argumentContext, argument.get());
 			} else argumentBuilder.accept(argumentContext, argument.get());
 
-			constant(invocation, argument.getAnnotation(Constant.class));
+			constant(invocationBuilder, argument.getAnnotation(Constant.class));
 		}
-		final IProcess process = getRunner().run(invocation.build());
-		return resultHandler.apply(process, resultContext);
+
+		typedInvocationBuilder.invocation(invocationBuilder.build());
+		return typedInvocationBuilder.build();
 	}
 }
