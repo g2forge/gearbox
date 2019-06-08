@@ -2,7 +2,7 @@ package com.g2forge.gearbox.browser.operation;
 
 import org.openqa.selenium.By;
 
-import com.g2forge.alexandria.java.core.iface.ISingleton;
+import com.g2forge.alexandria.java.core.marker.ISingleton;
 import com.g2forge.alexandria.java.function.IFunction1;
 import com.g2forge.gearbox.browser.IBrowsable;
 import com.g2forge.gearbox.browser.IBrowser;

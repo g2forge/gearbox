@@ -7,7 +7,7 @@ import java.nio.file.Path;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
-import com.g2forge.alexandria.java.io.TempDirectory;
+import com.g2forge.alexandria.java.io.file.TempDirectory;
 
 import lombok.Getter;
 
