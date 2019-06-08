@@ -7,10 +7,10 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.SearchContext;
 import org.openqa.selenium.WebElement;
 
+import com.g2forge.alexandria.java.adt.identity.IIdentity;
 import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.java.function.IFunction1;
 import com.g2forge.alexandria.java.function.IPredicate1;
-import com.g2forge.alexandria.java.identity.IIdentity;
 
 import lombok.RequiredArgsConstructor;
 
