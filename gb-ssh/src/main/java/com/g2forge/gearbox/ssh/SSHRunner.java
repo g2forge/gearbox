@@ -13,7 +13,7 @@ import org.apache.sshd.client.future.ConnectFuture;
 import org.apache.sshd.client.session.ClientSession;
 
 import com.g2forge.alexandria.annotations.message.TODO;
-import com.g2forge.alexandria.command.Invocation;
+import com.g2forge.alexandria.command.CommandInvocation;
 import com.g2forge.alexandria.java.close.ICloseable;
 import com.g2forge.alexandria.java.io.RuntimeIOException;
 import com.g2forge.gearbox.functional.runner.IProcess;
@@ -66,7 +66,7 @@ public class SSHRunner implements IRunner, ICloseable {
 
 	@TODO("IO redirection and working directories")
 	@Override
-	public IProcess run(Invocation<IRedirect, IRedirect> invocation) {
+	public IProcess apply(CommandInvocation<IRedirect, IRedirect> invocation) {
 		ensureOpen();
 		final ChannelExec channel;
 		try {
