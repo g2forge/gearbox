@@ -17,8 +17,8 @@
 
 	<modules>
 		<module>gb-project</module>
-		<module>gb-functional</module>
-		<module>gb-functional-test</module>
+		<module>gb-command</module>
+		<module>gb-command-test</module>
 		<module>gb-ssh</module>
 		<module>gb-jira</module>
 		<module>gb-git</module>

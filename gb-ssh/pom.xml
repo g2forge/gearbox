@@ -18,12 +18,12 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.g2forge.gearbox</groupId>
-			<artifactId>gb-functional</artifactId>
+			<artifactId>gb-command</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.g2forge.gearbox</groupId>
-			<artifactId>gb-functional-test</artifactId>
+			<artifactId>gb-command-test</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
