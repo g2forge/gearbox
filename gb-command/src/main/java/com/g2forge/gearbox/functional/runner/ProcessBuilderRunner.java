@@ -8,7 +8,7 @@ import java.lang.ProcessBuilder.Redirect;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.g2forge.alexandria.command.Invocation;
+import com.g2forge.alexandria.command.CommandInvocation;
 import com.g2forge.alexandria.command.stdio.IStandardIO;
 import com.g2forge.alexandria.java.function.IFunction1;
 import com.g2forge.alexandria.java.function.IFunction2;
@@ -45,7 +45,7 @@ public class ProcessBuilderRunner implements IRunner {
 	}
 
 	@Override
-	public IProcess run(Invocation<IRedirect, IRedirect> invocation) {
+	public IProcess run(CommandInvocation<IRedirect, IRedirect> invocation) {
 		final ProcessBuilder builder = new ProcessBuilder();
 		// Set the working directory
 		if (invocation.getWorking() != null) builder.directory(invocation.getWorking().toFile());

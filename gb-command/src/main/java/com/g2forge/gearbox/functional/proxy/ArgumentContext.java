@@ -1,6 +1,6 @@
 package com.g2forge.gearbox.functional.proxy;
 
-import com.g2forge.alexandria.command.Invocation;
+import com.g2forge.alexandria.command.CommandInvocation;
 import com.g2forge.gearbox.functional.control.IArgument;
 import com.g2forge.gearbox.functional.control.IArgumentContext;
 import com.g2forge.gearbox.functional.runner.redirect.IRedirect;
@@ -13,7 +13,7 @@ import lombok.Data;
 @Builder
 @AllArgsConstructor
 class ArgumentContext implements IArgumentContext {
-	protected final Invocation.InvocationBuilder<IRedirect, IRedirect> command;
+	protected final CommandInvocation.CommandInvocationBuilder<IRedirect, IRedirect> commandInvocation;
 
 	protected final IArgument<Object> argument;
 }
