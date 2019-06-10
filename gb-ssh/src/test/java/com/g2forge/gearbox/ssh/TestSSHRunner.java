@@ -6,12 +6,15 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.g2forge.alexandria.command.CommandInvocation;
 import com.g2forge.alexandria.java.close.ICloseable;
+import com.g2forge.alexandria.java.function.IFunction1;
 import com.g2forge.alexandria.wizard.PropertyStringInput;
 import com.g2forge.alexandria.wizard.UserPasswordInput;
 import com.g2forge.alexandria.wizard.UserStringInput;
 import com.g2forge.gearbox.functional.runner.ATestRunner;
-import com.g2forge.gearbox.functional.runner.IRunner;
+import com.g2forge.gearbox.functional.runner.IProcess;
+import com.g2forge.gearbox.functional.runner.redirect.IRedirect;
 import com.g2forge.gearbox.ssh.SSHServer.SSHServerBuilder;
 
 import lombok.Getter;
@@ -36,7 +39,7 @@ public class TestSSHRunner extends ATestRunner {
 	}
 
 	@Override
-	protected IRunner createRunner() {
+	protected IFunction1<CommandInvocation<IRedirect, IRedirect>, IProcess> createRunner() {
 		return new SSHRunner(getServer());
 	}
 

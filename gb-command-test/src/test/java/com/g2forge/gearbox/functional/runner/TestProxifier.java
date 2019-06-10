@@ -8,12 +8,12 @@ import java.util.stream.Stream;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.g2forge.alexandria.command.CommandInvocation;
 import com.g2forge.alexandria.java.core.helpers.HArray;
 import com.g2forge.alexandria.java.core.helpers.HString;
+import com.g2forge.alexandria.java.function.IFunction1;
 import com.g2forge.gearbox.functional.control.Command;
-import com.g2forge.gearbox.functional.runner.IProcess;
-import com.g2forge.gearbox.functional.runner.IRunner;
-import com.g2forge.gearbox.functional.runner.ProcessBuilderRunner;
+import com.g2forge.gearbox.functional.runner.redirect.IRedirect;
 
 public class TestProxifier extends ATestRunner {
 	public interface ForTesting {
@@ -26,7 +26,7 @@ public class TestProxifier extends ATestRunner {
 		proxifier.generate(getRunner(), ForTesting.class).false_().assertSuccess();
 	}
 
-	protected IRunner createRunner() {
+	protected IFunction1<CommandInvocation<IRedirect, IRedirect>, IProcess> createRunner() {
 		return new ProcessBuilderRunner(null);
 	}
 

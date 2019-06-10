@@ -26,7 +26,6 @@ import com.g2forge.gearbox.functional.control.Named;
 import com.g2forge.gearbox.functional.control.TypedInvocation;
 import com.g2forge.gearbox.functional.control.Working;
 import com.g2forge.gearbox.functional.runner.IProcess;
-import com.g2forge.gearbox.functional.runner.IRunner;
 import com.g2forge.gearbox.functional.runner.redirect.IRedirect;
 
 import lombok.AccessLevel;
@@ -67,7 +66,7 @@ class ProxyInvocationHandler implements InvocationHandler {
 	}).build();
 
 	@Getter(AccessLevel.PROTECTED)
-	protected final IRunner runner;
+	protected final IFunction1<CommandInvocation<IRedirect, IRedirect>, IProcess> runner;
 
 	protected void constant(final CommandInvocation.CommandInvocationBuilder<IRedirect, IRedirect> commandBuilder, final Constant constant) {
 		if (constant != null) commandBuilder.arguments(HCollection.asList(constant.value()));
@@ -127,7 +126,7 @@ class ProxyInvocationHandler implements InvocationHandler {
 		final ResultContext resultContext = new ResultContext(method);
 		final TypedInvocation original = createInvocation(method, args, resultContext);
 		final TypedInvocation modified = modifier.apply(original);
-		final IProcess process = getRunner().run(modified.getInvocation());
+		final IProcess process = getRunner().apply(modified.getInvocation());
 		return modified.getResultHandler().apply(process, resultContext);
 	}
 }

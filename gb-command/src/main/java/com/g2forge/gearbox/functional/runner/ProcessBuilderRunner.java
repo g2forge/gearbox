@@ -45,7 +45,7 @@ public class ProcessBuilderRunner implements IRunner {
 	}
 
 	@Override
-	public IProcess run(CommandInvocation<IRedirect, IRedirect> invocation) {
+	public IProcess apply(CommandInvocation<IRedirect, IRedirect> invocation) {
 		final ProcessBuilder builder = new ProcessBuilder();
 		// Set the working directory
 		if (invocation.getWorking() != null) builder.directory(invocation.getWorking().toFile());

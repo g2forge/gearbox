@@ -66,7 +66,7 @@ public class SSHRunner implements IRunner, ICloseable {
 
 	@TODO("IO redirection and working directories")
 	@Override
-	public IProcess run(CommandInvocation<IRedirect, IRedirect> invocation) {
+	public IProcess apply(CommandInvocation<IRedirect, IRedirect> invocation) {
 		ensureOpen();
 		final ChannelExec channel;
 		try {
