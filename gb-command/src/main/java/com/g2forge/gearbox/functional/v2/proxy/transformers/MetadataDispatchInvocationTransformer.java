@@ -5,9 +5,9 @@ import java.lang.reflect.Method;
 import com.g2forge.alexandria.java.core.error.RuntimeReflectionException;
 import com.g2forge.alexandria.java.function.IFunction1;
 import com.g2forge.alexandria.metadata.IMetadata;
-import com.g2forge.gearbox.functional.v2.process.ProcessInvocation;
-import com.g2forge.gearbox.functional.v2.proxy.MethodInvocation;
-import com.g2forge.gearbox.functional.v2.proxy.OverrideInvocationTransformer;
+import com.g2forge.gearbox.functional.v2.proxy.method.MethodInvocation;
+import com.g2forge.gearbox.functional.v2.proxy.method.OverrideInvocationTransformer;
+import com.g2forge.gearbox.functional.v2.proxy.process.ProcessInvocation;
 
 import lombok.Builder;
 import lombok.Data;

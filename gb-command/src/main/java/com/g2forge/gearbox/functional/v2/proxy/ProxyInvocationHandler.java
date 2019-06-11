@@ -6,8 +6,9 @@ import java.lang.reflect.Method;
 import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.java.function.IFunction1;
 import com.g2forge.gearbox.functional.v2.process.IProcess;
-import com.g2forge.gearbox.functional.v2.process.ProcessInvocation;
-import com.g2forge.gearbox.functional.v2.process.ReturnProcessInvocationException;
+import com.g2forge.gearbox.functional.v2.proxy.method.MethodInvocation;
+import com.g2forge.gearbox.functional.v2.proxy.process.ProcessInvocation;
+import com.g2forge.gearbox.functional.v2.proxy.process.ReturnProcessInvocationException;
 
 import lombok.AccessLevel;
 import lombok.Getter;

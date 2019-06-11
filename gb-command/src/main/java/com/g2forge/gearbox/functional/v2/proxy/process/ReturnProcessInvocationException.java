@@ -1,4 +1,4 @@
-package com.g2forge.gearbox.functional.v2.process;
+package com.g2forge.gearbox.functional.v2.proxy.process;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

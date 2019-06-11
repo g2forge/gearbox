@@ -1,8 +1,7 @@
-package com.g2forge.gearbox.functional.v2.process;
+package com.g2forge.gearbox.functional.v2.proxy.process;
 
 import com.g2forge.alexandria.command.CommandInvocation;
 import com.g2forge.gearbox.functional.runner.redirect.IRedirect;
-import com.g2forge.gearbox.functional.v2.proxy.IResultSupplier;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,5 +17,5 @@ public class ProcessInvocation<O> {
 	 */
 	protected final CommandInvocation<IRedirect, IRedirect> invocation;
 
-	protected final IResultSupplier<O> resultSupplier;
+	protected final IResultSupplier<? extends O> resultSupplier;
 }

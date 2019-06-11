@@ -1,7 +1,7 @@
-package com.g2forge.gearbox.functional.v2.proxy;
+package com.g2forge.gearbox.functional.v2.proxy.method;
 
 import java.lang.reflect.Method;
-import java.util.Collection;
+import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,9 +13,9 @@ import lombok.Singular;
 @AllArgsConstructor
 public class MethodInvocation {
 	protected final Object object;
-	
+
 	protected final Method method;
 
 	@Singular
-	protected final Collection<Object> arguments;
+	protected final List<Object> arguments;
 }
