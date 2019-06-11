@@ -12,6 +12,10 @@ import lombok.Data;
 @Builder(toBuilder = true)
 @AllArgsConstructor
 public class ProcessInvocation<O> {
+	/**
+	 * The command invocation. Can be <code>null</code> to indicate that no command should be run, and that a <code>null</code> process should be passed to
+	 * {@link #resultSupplier}.
+	 */
 	protected final CommandInvocation<IRedirect, IRedirect> invocation;
 
 	protected final IResultSupplier<O> resultSupplier;

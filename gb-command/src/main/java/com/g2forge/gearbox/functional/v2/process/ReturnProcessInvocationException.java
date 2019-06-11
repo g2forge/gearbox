@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Getter
-public class ProcessInvocationException extends RuntimeException {
+public class ReturnProcessInvocationException extends RuntimeException {
 	private static final long serialVersionUID = -4657201513721664083L;
 
 	protected final ProcessInvocation<?> processInvocation;
