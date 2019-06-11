@@ -16,6 +16,7 @@ import java.util.stream.StreamSupport;
 
 import com.g2forge.alexandria.adt.collection.CircularBuffer;
 import com.g2forge.alexandria.command.stdio.IStandardIO;
+import com.g2forge.alexandria.command.stdio.StandardIO;
 import com.g2forge.alexandria.java.io.RuntimeIOException;
 import com.g2forge.alexandria.java.type.ref.ATypeRef;
 import com.g2forge.alexandria.java.type.ref.ATypeRefIdentity;
@@ -25,7 +26,6 @@ import com.g2forge.gearbox.functional.control.IResultContext;
 import com.g2forge.gearbox.functional.runner.IProcess;
 import com.g2forge.gearbox.functional.runner.redirect.IRedirect;
 import com.g2forge.gearbox.functional.runner.redirect.InheritRedirect;
-import com.g2forge.gearbox.functional.runner.redirect.Redirects;
 
 import lombok.Data;
 import lombok.Getter;
@@ -81,7 +81,7 @@ class ResultContext implements IResultContext {
 
 			@Override
 			public IStandardIO<IRedirect, IRedirect> getRedirects() {
-				return Redirects.builder().standardInput(InheritRedirect.create()).standardOutput(InheritRedirect.create()).standardError(InheritRedirect.create()).build();
+				return StandardIO.<IRedirect, IRedirect>builder().standardInput(InheritRedirect.create()).standardOutput(InheritRedirect.create()).standardError(InheritRedirect.create()).build();
 			}
 		};
 		if (type.getErasedType().isAssignableFrom(String.class)) return (process, context) -> {
