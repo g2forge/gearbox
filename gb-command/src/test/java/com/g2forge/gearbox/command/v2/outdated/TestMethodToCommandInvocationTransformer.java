@@ -1,20 +1,20 @@
-package com.g2forge.gearbox.command.v2.proxy.transformers;
+package com.g2forge.gearbox.command.v2.outdated;
 
 import org.junit.Test;
 
 import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.test.HAssert;
 import com.g2forge.gearbox.command.v2.converter.IMethodArgument;
+import com.g2forge.gearbox.command.v2.outdated.ArgumentConsumer;
+import com.g2forge.gearbox.command.v2.outdated.IArgumentConsumer;
+import com.g2forge.gearbox.command.v2.outdated.IMethodConsumer;
+import com.g2forge.gearbox.command.v2.outdated.MethodConsumer;
+import com.g2forge.gearbox.command.v2.outdated.MethodToCommandInvocationTransformer;
 import com.g2forge.gearbox.command.v2.process.IProcess;
-import com.g2forge.gearbox.command.v2.proxy.method.ArgumentConsumer;
-import com.g2forge.gearbox.command.v2.proxy.method.IArgumentConsumer;
-import com.g2forge.gearbox.command.v2.proxy.method.IMethodConsumer;
-import com.g2forge.gearbox.command.v2.proxy.method.MethodConsumer;
 import com.g2forge.gearbox.command.v2.proxy.method.MethodInvocation;
 import com.g2forge.gearbox.command.v2.proxy.process.IResultSupplier;
 import com.g2forge.gearbox.command.v2.proxy.process.ProcessInvocation;
 import com.g2forge.gearbox.command.v2.proxy.process.ProcessInvocation.ProcessInvocationBuilder;
-import com.g2forge.gearbox.command.v2.proxy.transformers.MethodToCommandInvocationTransformer;
 
 import lombok.Data;
 
@@ -61,7 +61,7 @@ public class TestMethodToCommandInvocationTransformer {
 			}
 		}, Argument.class.getDeclaredMethods()[0], HCollection.asList("A"));
 		final ProcessInvocation<?> processInvocation = new MethodToCommandInvocationTransformer().apply(methodInvocation);
-		HAssert.assertNull(processInvocation.getInvocation());
+		HAssert.assertNull(processInvocation.getCommandInvocation());
 		HAssert.assertEquals("A", processInvocation.getResultSupplier().apply(null));
 	}
 
@@ -74,7 +74,7 @@ public class TestMethodToCommandInvocationTransformer {
 			}
 		}, Method.class.getDeclaredMethods()[0], HCollection.emptyList());
 		final ProcessInvocation<?> processInvocation = new MethodToCommandInvocationTransformer().apply(methodInvocation);
-		HAssert.assertNull(processInvocation.getInvocation());
+		HAssert.assertNull(processInvocation.getCommandInvocation());
 		HAssert.assertEquals("B", processInvocation.getResultSupplier().apply(null));
 	}
 }

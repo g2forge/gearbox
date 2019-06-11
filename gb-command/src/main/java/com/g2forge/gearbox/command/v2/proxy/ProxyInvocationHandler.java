@@ -16,7 +16,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Getter(AccessLevel.PROTECTED)
-class ProxyInvocationHandler implements InvocationHandler {
+public class ProxyInvocationHandler implements InvocationHandler {
 	protected final IFunction1<? super MethodInvocation, ? extends ProcessInvocation<?>> transform;
 
 	protected final IFunction1<? super ProcessInvocation<?>, ? extends IProcess> runner;

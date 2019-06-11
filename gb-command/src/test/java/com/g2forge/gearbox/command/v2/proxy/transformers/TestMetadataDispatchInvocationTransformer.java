@@ -42,7 +42,7 @@ public class TestMetadataDispatchInvocationTransformer {
 			}
 		}, IDelegate.class.getDeclaredMethods()[0], HCollection.emptyList());
 		final ProcessInvocation<?> processInvocation = new MetadataDispatchInvocationTransformer(new CustomInvocationTransformer(commandInvocation, 2)).apply(methodInvocation);
-		HAssert.assertSame(commandInvocation, processInvocation.getInvocation());
+		HAssert.assertSame(commandInvocation, processInvocation.getCommandInvocation());
 		HAssert.assertEquals(2, processInvocation.getResultSupplier().apply(null));
 	}
 
@@ -55,7 +55,7 @@ public class TestMetadataDispatchInvocationTransformer {
 			}
 		}, IOverride.class.getDeclaredMethods()[0], HCollection.emptyList());
 		final ProcessInvocation<?> processInvocation = new MetadataDispatchInvocationTransformer(new CustomInvocationTransformer(CommandInvocation.<IRedirect, IRedirect>builder().build(), 2)).apply(methodInvocation);
-		HAssert.assertNull(processInvocation.getInvocation());
+		HAssert.assertNull(processInvocation.getCommandInvocation());
 		HAssert.assertEquals(4, processInvocation.getResultSupplier().apply(null));
 	}
 }

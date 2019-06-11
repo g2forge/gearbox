@@ -1,4 +1,4 @@
-package com.g2forge.gearbox.command.v2.proxy.method;
+package com.g2forge.gearbox.command.v2.outdated;
 
 import com.g2forge.alexandria.java.core.error.RuntimeReflectionException;
 import com.g2forge.alexandria.java.function.IConsumer3;
@@ -6,6 +6,7 @@ import com.g2forge.alexandria.metadata.IMetadata;
 import com.g2forge.alexandria.metadata.IMetadataLoader;
 import com.g2forge.alexandria.metadata.MetadataLoader;
 import com.g2forge.gearbox.command.v2.converter.IMethodArgument;
+import com.g2forge.gearbox.command.v2.proxy.method.MethodInvocation;
 import com.g2forge.gearbox.command.v2.proxy.process.ProcessInvocation;
 
 @MetadataLoader(IArgumentConsumer.ArgumentConsumerMetadataLoader.class)

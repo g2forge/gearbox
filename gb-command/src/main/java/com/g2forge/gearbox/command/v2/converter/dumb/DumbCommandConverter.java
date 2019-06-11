@@ -30,6 +30,7 @@ public class DumbCommandConverter implements ICommandConverterR_ {
 
 	protected static final IConsumer2<ArgumentContext, Object> ARGUMENT_BUILDER = new TypeSwitch2.ConsumerBuilder<ArgumentContext, Object>().with(builder -> {
 		builder.add(ArgumentContext.class, String[].class, (c, v) -> {
+			if (c.getArgument().getMetadata().isMetadataPresent(Named.class)) throw new IllegalArgumentException("Named string arrays are not supported!");
 			for (String value : v) {
 				c.getCommand().argument(value);
 			}
@@ -40,8 +41,10 @@ public class DumbCommandConverter implements ICommandConverterR_ {
 		});
 		builder.add(ArgumentContext.class, Path.class, (c, v) -> {
 			final Working working = c.getArgument().getMetadata().getMetadata(Working.class);
-			if (working != null) c.getCommand().working(v);
-			else {
+			if (working != null) {
+				if (c.getArgument().getMetadata().isMetadataPresent(Named.class)) throw new IllegalArgumentException("Working directory arguments cannot also be named!");
+				c.getCommand().working(v);
+			} else {
 				final Named named = c.getArgument().getMetadata().getMetadata(Named.class);
 				final String string = v.toString();
 				c.getCommand().argument(named != null ? named.value() + string : string);
@@ -50,10 +53,15 @@ public class DumbCommandConverter implements ICommandConverterR_ {
 
 		final IConsumer2<? super ArgumentContext, ? super Boolean> bool = (c, v) -> {
 			final Flag flag = c.getArgument().getMetadata().getMetadata(Flag.class);
+			final Named named = c.getArgument().getMetadata().getMetadata(Named.class);
 			if (flag != null) {
+				if (named != null) throw new IllegalArgumentException("Flags cannot also be named!");
 				if (v) c.getCommand().argument(flag.value());
 				return;
-			} else c.getCommand().argument(Boolean.toString(v));
+			} else {
+				final String string = Boolean.toString(v);
+				c.getCommand().argument(named != null ? named.value() + string : string);
+			}
 		};
 		builder.add(ArgumentContext.class, Boolean.class, bool);
 		builder.add(ArgumentContext.class, Boolean.TYPE, bool);
@@ -62,7 +70,7 @@ public class DumbCommandConverter implements ICommandConverterR_ {
 	@Override
 	public <T> ProcessInvocation<T> apply(ProcessInvocation<T> processInvocation, MethodInvocation methodInvocation) {
 		final ProcessInvocationBuilder<T> processInvocationBuilder = processInvocation.toBuilder();
-		final CommandInvocation.CommandInvocationBuilder<IRedirect, IRedirect> commandInvocationBuilder = processInvocation.getInvocation().toBuilder();
+		final CommandInvocation.CommandInvocationBuilder<IRedirect, IRedirect> commandInvocationBuilder = processInvocation.getCommandInvocation() != null ? processInvocation.getCommandInvocation().toBuilder() : CommandInvocation.builder();
 
 		// Compute the command name
 		commandInvocationBuilder.clearArguments();
@@ -87,7 +95,7 @@ public class DumbCommandConverter implements ICommandConverterR_ {
 			ARGUMENT_BUILDER.accept(argumentContext, value);
 		}
 
-		processInvocationBuilder.invocation(commandInvocationBuilder.build());
+		processInvocationBuilder.commandInvocation(commandInvocationBuilder.build());
 		return processInvocationBuilder.build();
 	}
 }

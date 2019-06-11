@@ -1,4 +1,4 @@
-package com.g2forge.gearbox.command.v2.proxy.method;
+package com.g2forge.gearbox.command.v2.outdated;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface MethodConsumers {
-	public MethodConsumer[] value();
+@Target(ElementType.PARAMETER)
+public @interface ArgumentConsumers {
+	public ArgumentConsumer[] value();
 }

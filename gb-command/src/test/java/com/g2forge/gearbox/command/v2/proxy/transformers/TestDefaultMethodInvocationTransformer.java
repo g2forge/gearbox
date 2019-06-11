@@ -14,7 +14,7 @@ import com.g2forge.gearbox.command.v2.proxy.transformers.DefaultMethodInvocation
 public class TestDefaultMethodInvocationTransformer {
 	public interface IDefaultModify {
 		public default int method() {
-			throw new ModifyProcessInvocationException(processInvocation -> new ProcessInvocation<>(processInvocation.getInvocation(), process -> 3));
+			throw new ModifyProcessInvocationException(processInvocation -> new ProcessInvocation<>(processInvocation.getCommandInvocation(), process -> 3));
 		}
 	}
 
@@ -33,7 +33,7 @@ public class TestDefaultMethodInvocationTransformer {
 		final CommandInvocation<IRedirect, IRedirect> commandInvocation = CommandInvocation.<IRedirect, IRedirect>builder().build();
 		final MethodInvocation methodInvocation = new MethodInvocation(new IDefaultModify() {}, IDefaultModify.class.getDeclaredMethods()[0], HCollection.emptyList());
 		final ProcessInvocation<?> processInvocation = new DefaultMethodInvocationTransformer(new CustomInvocationTransformer(commandInvocation, 2)).apply(methodInvocation);
-		HAssert.assertSame(commandInvocation, processInvocation.getInvocation());
+		HAssert.assertSame(commandInvocation, processInvocation.getCommandInvocation());
 		HAssert.assertEquals(3, processInvocation.getResultSupplier().apply(null));
 	}
 
@@ -54,7 +54,7 @@ public class TestDefaultMethodInvocationTransformer {
 			}
 		}, INoDefault.class.getDeclaredMethods()[0], HCollection.emptyList());
 		final ProcessInvocation<?> processInvocation = new DefaultMethodInvocationTransformer(new CustomInvocationTransformer(commandInvocation, 2)).apply(methodInvocation);
-		HAssert.assertSame(commandInvocation, processInvocation.getInvocation());
+		HAssert.assertSame(commandInvocation, processInvocation.getCommandInvocation());
 		HAssert.assertEquals(2, processInvocation.getResultSupplier().apply(null));
 	}
 }
