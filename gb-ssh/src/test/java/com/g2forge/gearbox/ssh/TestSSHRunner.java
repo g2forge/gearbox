@@ -12,9 +12,9 @@ import com.g2forge.alexandria.java.function.IFunction1;
 import com.g2forge.alexandria.wizard.PropertyStringInput;
 import com.g2forge.alexandria.wizard.UserPasswordInput;
 import com.g2forge.alexandria.wizard.UserStringInput;
-import com.g2forge.gearbox.functional.runner.ATestRunner;
-import com.g2forge.gearbox.functional.runner.IProcess;
-import com.g2forge.gearbox.functional.runner.redirect.IRedirect;
+import com.g2forge.gearbox.command.v1.runner.ATestRunner;
+import com.g2forge.gearbox.command.v1.runner.IProcess;
+import com.g2forge.gearbox.command.v1.runner.redirect.IRedirect;
 import com.g2forge.gearbox.ssh.SSHServer.SSHServerBuilder;
 
 import lombok.Getter;
