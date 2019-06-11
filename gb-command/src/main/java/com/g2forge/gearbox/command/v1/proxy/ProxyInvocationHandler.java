@@ -15,6 +15,8 @@ import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.java.function.IConsumer2;
 import com.g2forge.alexandria.java.function.IFunction1;
 import com.g2forge.alexandria.java.type.function.TypeSwitch2;
+import com.g2forge.gearbox.command.runner.IProcess;
+import com.g2forge.gearbox.command.runner.redirect.IRedirect;
 import com.g2forge.gearbox.command.v1.control.Constant;
 import com.g2forge.gearbox.command.v1.control.Explicit;
 import com.g2forge.gearbox.command.v1.control.Flag;
@@ -25,8 +27,6 @@ import com.g2forge.gearbox.command.v1.control.ModifyCommandException;
 import com.g2forge.gearbox.command.v1.control.Named;
 import com.g2forge.gearbox.command.v1.control.TypedInvocation;
 import com.g2forge.gearbox.command.v1.control.Working;
-import com.g2forge.gearbox.command.v1.runner.IProcess;
-import com.g2forge.gearbox.command.v1.runner.redirect.IRedirect;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

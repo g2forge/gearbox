@@ -8,6 +8,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import com.g2forge.alexandria.java.function.IConsumer3;
+import com.g2forge.gearbox.command.v2.converter.IMethodArgument;
 import com.g2forge.gearbox.command.v2.proxy.process.ProcessInvocation;
 
 @Documented
@@ -15,5 +16,5 @@ import com.g2forge.gearbox.command.v2.proxy.process.ProcessInvocation;
 @Target(ElementType.PARAMETER)
 @Repeatable(ArgumentConsumers.class)
 public @interface ArgumentConsumer {
-	public Class<? extends IConsumer3<ProcessInvocation.ProcessInvocationBuilder<Object>, MethodInvocation, IArgumentConsumer.IArgument<?>>> value();
+	public Class<? extends IConsumer3<ProcessInvocation.ProcessInvocationBuilder<Object>, MethodInvocation, IMethodArgument<?>>> value();
 }

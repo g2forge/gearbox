@@ -12,11 +12,11 @@ import com.g2forge.alexandria.command.CommandInvocation;
 import com.g2forge.alexandria.java.core.helpers.HArray;
 import com.g2forge.alexandria.java.core.helpers.HString;
 import com.g2forge.alexandria.java.function.IFunction1;
+import com.g2forge.gearbox.command.runner.IProcess;
+import com.g2forge.gearbox.command.runner.ProcessBuilderRunner;
+import com.g2forge.gearbox.command.runner.redirect.IRedirect;
 import com.g2forge.gearbox.command.v1.control.Command;
 import com.g2forge.gearbox.command.v1.runner.ATestRunner;
-import com.g2forge.gearbox.command.v1.runner.IProcess;
-import com.g2forge.gearbox.command.v1.runner.ProcessBuilderRunner;
-import com.g2forge.gearbox.command.v1.runner.redirect.IRedirect;
 
 public class TestProxifier extends ATestRunner {
 	public interface ForTesting {

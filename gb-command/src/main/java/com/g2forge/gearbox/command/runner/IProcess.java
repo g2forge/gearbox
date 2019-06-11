@@ -1,4 +1,4 @@
-package com.g2forge.gearbox.command.v1.runner;
+package com.g2forge.gearbox.command.runner;
 
 import java.io.InputStream;
 import java.io.OutputStream;

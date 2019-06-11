@@ -16,9 +16,9 @@ import com.g2forge.alexandria.annotations.message.TODO;
 import com.g2forge.alexandria.command.CommandInvocation;
 import com.g2forge.alexandria.java.close.ICloseable;
 import com.g2forge.alexandria.java.io.RuntimeIOException;
-import com.g2forge.gearbox.command.v1.runner.IProcess;
-import com.g2forge.gearbox.command.v1.runner.IRunner;
-import com.g2forge.gearbox.command.v1.runner.redirect.IRedirect;
+import com.g2forge.gearbox.command.runner.IProcess;
+import com.g2forge.gearbox.command.runner.IRunner;
+import com.g2forge.gearbox.command.runner.redirect.IRedirect;
 
 public class SSHRunner implements IRunner, ICloseable {
 	protected final SshClient client;

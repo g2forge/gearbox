@@ -4,6 +4,7 @@ import org.junit.Test;
 
 import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.test.HAssert;
+import com.g2forge.gearbox.command.v2.converter.IMethodArgument;
 import com.g2forge.gearbox.command.v2.process.IProcess;
 import com.g2forge.gearbox.command.v2.proxy.method.ArgumentConsumer;
 import com.g2forge.gearbox.command.v2.proxy.method.IArgumentConsumer;
@@ -24,7 +25,7 @@ public class TestMethodToCommandInvocationTransformer {
 
 	public static class FakeArgumentConsumer implements IArgumentConsumer {
 		@Override
-		public void accept(ProcessInvocationBuilder<Object> processInvocationBuilder, MethodInvocation methodInvocation, IArgumentConsumer.IArgument<?> argument) {
+		public void accept(ProcessInvocationBuilder<Object> processInvocationBuilder, MethodInvocation methodInvocation, IMethodArgument<?> argument) {
 			processInvocationBuilder.resultSupplier(new FakeResultSupplier((String) argument.get()));
 		}
 	}

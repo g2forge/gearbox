@@ -5,7 +5,7 @@ import org.junit.Test;
 import com.g2forge.alexandria.command.CommandInvocation;
 import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.test.HAssert;
-import com.g2forge.gearbox.command.v1.runner.redirect.IRedirect;
+import com.g2forge.gearbox.command.runner.redirect.IRedirect;
 import com.g2forge.gearbox.command.v2.proxy.method.MethodInvocation;
 import com.g2forge.gearbox.command.v2.proxy.process.ModifyProcessInvocationException;
 import com.g2forge.gearbox.command.v2.proxy.process.ProcessInvocation;

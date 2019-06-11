@@ -1,7 +1,7 @@
 package com.g2forge.gearbox.command.v1.control;
 
 import com.g2forge.alexandria.command.CommandInvocation;
-import com.g2forge.gearbox.command.v1.runner.redirect.IRedirect;
+import com.g2forge.gearbox.command.runner.redirect.IRedirect;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

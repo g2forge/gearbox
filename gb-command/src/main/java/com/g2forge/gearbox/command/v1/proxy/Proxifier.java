@@ -4,8 +4,8 @@ import java.lang.reflect.Proxy;
 
 import com.g2forge.alexandria.command.CommandInvocation;
 import com.g2forge.alexandria.java.function.IFunction1;
-import com.g2forge.gearbox.command.v1.runner.IProcess;
-import com.g2forge.gearbox.command.v1.runner.redirect.IRedirect;
+import com.g2forge.gearbox.command.runner.IProcess;
+import com.g2forge.gearbox.command.runner.redirect.IRedirect;
 
 public class Proxifier implements IProxifier {
 	@Override
