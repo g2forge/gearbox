@@ -16,10 +16,9 @@ import com.g2forge.gearbox.command.runner.IProcess;
 import com.g2forge.gearbox.command.runner.ProcessBuilderRunner;
 import com.g2forge.gearbox.command.runner.redirect.IRedirect;
 import com.g2forge.gearbox.command.v1.control.Command;
-import com.g2forge.gearbox.command.v1.runner.ATestRunner;
 
 public class TestProxifier extends ATestRunner {
-	public interface ForTesting {
+	public interface ForTesting extends ITestCommandInterface {
 		@Command("false")
 		public IProcess false_();
 	}

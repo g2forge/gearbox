@@ -11,6 +11,7 @@ import com.g2forge.gearbox.command.v2.outdated.IMethodConsumer;
 import com.g2forge.gearbox.command.v2.outdated.MethodConsumer;
 import com.g2forge.gearbox.command.v2.outdated.MethodToCommandInvocationTransformer;
 import com.g2forge.gearbox.command.v2.process.IProcess;
+import com.g2forge.gearbox.command.v2.proxy.method.ITestCommandInterface;
 import com.g2forge.gearbox.command.v2.proxy.method.MethodInvocation;
 import com.g2forge.gearbox.command.v2.proxy.process.IResultSupplier;
 import com.g2forge.gearbox.command.v2.proxy.process.ProcessInvocation;
@@ -19,7 +20,7 @@ import com.g2forge.gearbox.command.v2.proxy.process.ProcessInvocation.ProcessInv
 import lombok.Data;
 
 public class TestMethodToCommandInvocationTransformer {
-	public static interface Argument {
+	public static interface Argument extends ITestCommandInterface {
 		public void method(@ArgumentConsumer(FakeArgumentConsumer.class) String parameter);
 	}
 
@@ -47,7 +48,7 @@ public class TestMethodToCommandInvocationTransformer {
 		}
 	}
 
-	public static interface Method {
+	public static interface Method extends ITestCommandInterface {
 		@MethodConsumer(FakeMethodConsumer.class)
 		public void method();
 	}

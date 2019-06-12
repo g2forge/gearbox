@@ -6,25 +6,25 @@ import com.g2forge.alexandria.command.CommandInvocation;
 import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.test.HAssert;
 import com.g2forge.gearbox.command.runner.redirect.IRedirect;
+import com.g2forge.gearbox.command.v2.proxy.method.ITestCommandInterface;
 import com.g2forge.gearbox.command.v2.proxy.method.MethodInvocation;
 import com.g2forge.gearbox.command.v2.proxy.process.ModifyProcessInvocationException;
 import com.g2forge.gearbox.command.v2.proxy.process.ProcessInvocation;
-import com.g2forge.gearbox.command.v2.proxy.transformers.DefaultMethodInvocationTransformer;
 
 public class TestDefaultMethodInvocationTransformer {
-	public interface IDefaultModify {
+	public interface IDefaultModify extends ITestCommandInterface {
 		public default int method() {
 			throw new ModifyProcessInvocationException(processInvocation -> new ProcessInvocation<>(processInvocation.getCommandInvocation(), process -> 3));
 		}
 	}
 
-	public interface IDefaultReturn {
+	public interface IDefaultReturn extends ITestCommandInterface {
 		public default int method() {
 			return 1;
 		}
 	}
 
-	public interface INoDefault {
+	public interface INoDefault extends ITestCommandInterface {
 		public int method();
 	}
 

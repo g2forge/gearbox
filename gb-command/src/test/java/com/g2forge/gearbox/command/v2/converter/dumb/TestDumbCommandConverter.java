@@ -14,6 +14,7 @@ import com.g2forge.alexandria.test.HAssert;
 import com.g2forge.gearbox.command.runner.redirect.IRedirect;
 import com.g2forge.gearbox.command.v2.converter.ICommandConverterR_;
 import com.g2forge.gearbox.command.v2.proxy.ProxyInvocationHandler;
+import com.g2forge.gearbox.command.v2.proxy.method.ITestCommandInterface;
 import com.g2forge.gearbox.command.v2.proxy.method.MethodInvocation;
 import com.g2forge.gearbox.command.v2.proxy.process.ReturnProcessInvocationException;
 import com.g2forge.gearbox.command.v2.proxy.transformers.MethodToCommandInvocationTransformer;
@@ -21,43 +22,43 @@ import com.g2forge.gearbox.command.v2.proxy.transformers.MethodToCommandInvocati
 import lombok.Getter;
 
 public class TestDumbCommandConverter {
-	public interface IBooleanFlag {
+	public interface IBooleanFlag extends ITestCommandInterface {
 		public void method(@Flag("-flag") Boolean argument);
 	}
 
-	public interface IBooleanNamed {
+	public interface IBooleanNamed extends ITestCommandInterface {
 		public void method(@Named("name=") boolean argument);
 	}
 
-	public interface IBooleanValue {
+	public interface IBooleanValue extends ITestCommandInterface {
 		public void method(Boolean argument);
 	}
 
-	public interface IPathNamed {
+	public interface IPathNamed extends ITestCommandInterface {
 		public void method(@Named("name=") Path argument);
 	}
 
-	public interface IPathValue {
+	public interface IPathValue extends ITestCommandInterface {
 		public void method(Path argument);
 	}
 
-	public interface IPathWorking {
+	public interface IPathWorking extends ITestCommandInterface {
 		public void method(@Working Path argument);
 	}
 
-	public interface IStringArrayNamed {
+	public interface IStringArrayNamed extends ITestCommandInterface {
 		public void method(@Named("name=") String... argument);
 	}
 
-	public interface IStringArrayValue {
+	public interface IStringArrayValue extends ITestCommandInterface {
 		public void method(String... argument);
 	}
 
-	public interface IStringNamed {
+	public interface IStringNamed extends ITestCommandInterface {
 		public void method(@Named("name=") String argument);
 	}
 
-	public interface IStringValue {
+	public interface IStringValue extends ITestCommandInterface {
 		public void method(String argument);
 	}
 
