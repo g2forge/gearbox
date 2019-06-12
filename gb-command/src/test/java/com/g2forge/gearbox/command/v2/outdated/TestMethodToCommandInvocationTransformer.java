@@ -5,17 +5,12 @@ import org.junit.Test;
 import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.test.HAssert;
 import com.g2forge.gearbox.command.v2.converter.IMethodArgument;
-import com.g2forge.gearbox.command.v2.outdated.ArgumentConsumer;
-import com.g2forge.gearbox.command.v2.outdated.IArgumentConsumer;
-import com.g2forge.gearbox.command.v2.outdated.IMethodConsumer;
-import com.g2forge.gearbox.command.v2.outdated.MethodConsumer;
-import com.g2forge.gearbox.command.v2.outdated.MethodToCommandInvocationTransformer;
 import com.g2forge.gearbox.command.v2.process.IProcess;
 import com.g2forge.gearbox.command.v2.proxy.method.ITestCommandInterface;
 import com.g2forge.gearbox.command.v2.proxy.method.MethodInvocation;
-import com.g2forge.gearbox.command.v2.proxy.process.IResultSupplier;
 import com.g2forge.gearbox.command.v2.proxy.process.ProcessInvocation;
 import com.g2forge.gearbox.command.v2.proxy.process.ProcessInvocation.ProcessInvocationBuilder;
+import com.g2forge.gearbox.command.v2.proxy.result.IResultSupplier;
 
 import lombok.Data;
 

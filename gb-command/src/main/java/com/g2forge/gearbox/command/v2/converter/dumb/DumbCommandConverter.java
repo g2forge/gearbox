@@ -1,20 +1,34 @@
 package com.g2forge.gearbox.command.v2.converter.dumb;
 
+import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.lang.reflect.Type;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 
+import com.g2forge.alexandria.annotations.message.TODO;
 import com.g2forge.alexandria.command.CommandInvocation;
 import com.g2forge.alexandria.java.function.IConsumer2;
 import com.g2forge.alexandria.java.type.function.TypeSwitch2;
+import com.g2forge.alexandria.java.type.ref.ATypeRef;
+import com.g2forge.alexandria.java.type.ref.ATypeRefIdentity;
+import com.g2forge.alexandria.java.type.ref.ITypeRef;
 import com.g2forge.alexandria.metadata.IMetadata;
 import com.g2forge.gearbox.command.runner.redirect.IRedirect;
 import com.g2forge.gearbox.command.v2.converter.ICommandConverterR_;
 import com.g2forge.gearbox.command.v2.converter.IMethodArgument;
 import com.g2forge.gearbox.command.v2.converter.MethodArgument;
+import com.g2forge.gearbox.command.v2.process.IProcess;
 import com.g2forge.gearbox.command.v2.proxy.method.MethodInvocation;
 import com.g2forge.gearbox.command.v2.proxy.process.ProcessInvocation;
 import com.g2forge.gearbox.command.v2.proxy.process.ProcessInvocation.ProcessInvocationBuilder;
+import com.g2forge.gearbox.command.v2.proxy.result.BooleanResultSupplier;
+import com.g2forge.gearbox.command.v2.proxy.result.IResultSupplier;
+import com.g2forge.gearbox.command.v2.proxy.result.IntegerResultSupplier;
+import com.g2forge.gearbox.command.v2.proxy.result.ProcessResultSupplier;
+import com.g2forge.gearbox.command.v2.proxy.result.StreamResultSupplier;
+import com.g2forge.gearbox.command.v2.proxy.result.StringResultSupplier;
+import com.g2forge.gearbox.command.v2.proxy.result.VoidResultSupplier;
 
 import lombok.Builder;
 import lombok.Data;
@@ -67,6 +81,33 @@ public class DumbCommandConverter implements ICommandConverterR_ {
 		builder.add(ArgumentContext.class, Boolean.TYPE, bool);
 	}).build();
 
+	@SuppressWarnings("unchecked")
+	protected static <T> ITypeRef<T> computeReturnTypeRef(Method method) {
+		return (ITypeRef<T>) new ATypeRefIdentity<Object>() {
+			@Override
+			public Class<Object> getErasedType() {
+				return (Class<Object>) method.getReturnType();
+			}
+
+			@Override
+			public Type getType() {
+				return method.getGenericReturnType();
+			}
+		};
+	}
+
+	@SuppressWarnings("unchecked")
+	@TODO(value = "Use static type switch", link = "G2-432")
+	protected static <T> IResultSupplier<T> getStandard(ITypeRef<T> type) {
+		if (type.getErasedType().isAssignableFrom(Boolean.class) || type.getErasedType().isAssignableFrom(Boolean.TYPE)) return (IResultSupplier<T>) BooleanResultSupplier.create();
+		if (type.getErasedType().isAssignableFrom(Integer.class) || type.getErasedType().isAssignableFrom(Integer.TYPE)) return (IResultSupplier<T>) IntegerResultSupplier.create();
+		if (type.getErasedType().isAssignableFrom(Void.class) || type.getErasedType().isAssignableFrom(Void.TYPE)) return (IResultSupplier<T>) VoidResultSupplier.create();
+		if (type.getErasedType().isAssignableFrom(String.class)) return (IResultSupplier<T>) StringResultSupplier.create();
+		if (type.getErasedType().isAssignableFrom(IProcess.class)) return (IResultSupplier<T>) ProcessResultSupplier.create();
+		if (new ATypeRef<Stream<String>>() {}.getType().equals(type.getType())) return (IResultSupplier<T>) StreamResultSupplier.create();
+		throw new IllegalArgumentException(String.format("Return type \"%1$s\" is not supported!", type.getType()));
+	}
+
 	@Override
 	public <T> ProcessInvocation<T> apply(ProcessInvocation<T> processInvocation, MethodInvocation methodInvocation) {
 		final ProcessInvocationBuilder<T> processInvocationBuilder = processInvocation.toBuilder();
@@ -79,12 +120,11 @@ public class DumbCommandConverter implements ICommandConverterR_ {
 		else commandInvocationBuilder.argument(methodInvocation.getMethod().getName());
 
 		// Compute the result generator
-		/*
-		final IExplicitResultHandler resultHandler;
-		if ((command != null) && (command.handler() != IExplicitResultHandler.class)) resultHandler = command.handler().newInstance();
-		else resultHandler = resultContext.getStandard(resultContext.getType());
-		commandInvocationBuilder.io(resultHandler.getRedirects());
-		typedInvocationBuilder.resultHandler(resultHandler);*/
+		if (processInvocation.getResultSupplier() == null) {
+			final ITypeRef<T> typeRef = computeReturnTypeRef(methodInvocation.getMethod());
+			final IResultSupplier<T> standard = getStandard(typeRef);
+			processInvocationBuilder.resultSupplier(standard);
+		}
 
 		// Sort out all the arguments
 		final Parameter[] parameters = methodInvocation.getMethod().getParameters();
