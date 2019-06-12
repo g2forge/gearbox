@@ -1,4 +1,4 @@
-package com.g2forge.gearbox.command.v2.outdated;
+package com.g2forge.gearbox.command.v2.converter.manual.v1;
 
 import com.g2forge.alexandria.java.core.error.RuntimeReflectionException;
 import com.g2forge.alexandria.java.function.IConsumer3;

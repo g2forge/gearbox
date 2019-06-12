@@ -1,4 +1,4 @@
-package com.g2forge.gearbox.command.v2.outdated;
+package com.g2forge.gearbox.command.v2.converter.manual.v1;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
