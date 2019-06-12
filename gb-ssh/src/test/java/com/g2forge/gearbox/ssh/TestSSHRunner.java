@@ -14,7 +14,7 @@ import com.g2forge.alexandria.wizard.UserPasswordInput;
 import com.g2forge.alexandria.wizard.UserStringInput;
 import com.g2forge.gearbox.command.process.IProcess;
 import com.g2forge.gearbox.command.process.redirect.IRedirect;
-import com.g2forge.gearbox.command.v2.test.ATestCommand;
+import com.g2forge.gearbox.command.test.ATestCommand;
 import com.g2forge.gearbox.ssh.SSHServer.SSHServerBuilder;
 
 import lombok.Getter;

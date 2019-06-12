@@ -5,12 +5,14 @@ import org.junit.Test;
 import com.g2forge.alexandria.command.CommandInvocation;
 import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.test.HAssert;
+import com.g2forge.gearbox.command.converter.dumb.DumbCommandConverter;
 import com.g2forge.gearbox.command.process.redirect.IRedirect;
-import com.g2forge.gearbox.command.v2.converter.dumb.DumbCommandConverter;
+import com.g2forge.gearbox.command.proxy.CommandProxyFactory;
+import com.g2forge.gearbox.command.proxy.ICommandProxyFactory;
+import com.g2forge.gearbox.command.proxy.process.ProcessInvocation;
+import com.g2forge.gearbox.command.proxy.process.ReturnProcessInvocationException;
+import com.g2forge.gearbox.command.proxy.result.IntegerResultSupplier;
 import com.g2forge.gearbox.command.v2.proxy.method.ITestCommandInterface;
-import com.g2forge.gearbox.command.v2.proxy.process.ProcessInvocation;
-import com.g2forge.gearbox.command.v2.proxy.process.ReturnProcessInvocationException;
-import com.g2forge.gearbox.command.v2.proxy.result.IntegerResultSupplier;
 
 public class TestCommandProxyFactory {
 	public interface ICommand extends ITestCommandInterface {

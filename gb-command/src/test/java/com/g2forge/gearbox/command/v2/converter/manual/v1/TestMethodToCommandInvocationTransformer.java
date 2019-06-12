@@ -4,13 +4,18 @@ import org.junit.Test;
 
 import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.test.HAssert;
+import com.g2forge.gearbox.command.converter.IMethodArgument;
+import com.g2forge.gearbox.command.converter.manual.v1.ArgumentConsumer;
+import com.g2forge.gearbox.command.converter.manual.v1.IArgumentConsumer;
+import com.g2forge.gearbox.command.converter.manual.v1.IMethodConsumer;
+import com.g2forge.gearbox.command.converter.manual.v1.MethodConsumer;
+import com.g2forge.gearbox.command.converter.manual.v1.MethodToCommandInvocationTransformer;
 import com.g2forge.gearbox.command.process.IProcess;
-import com.g2forge.gearbox.command.v2.converter.IMethodArgument;
+import com.g2forge.gearbox.command.proxy.method.MethodInvocation;
+import com.g2forge.gearbox.command.proxy.process.ProcessInvocation;
+import com.g2forge.gearbox.command.proxy.process.ProcessInvocation.ProcessInvocationBuilder;
+import com.g2forge.gearbox.command.proxy.result.IResultSupplier;
 import com.g2forge.gearbox.command.v2.proxy.method.ITestCommandInterface;
-import com.g2forge.gearbox.command.v2.proxy.method.MethodInvocation;
-import com.g2forge.gearbox.command.v2.proxy.process.ProcessInvocation;
-import com.g2forge.gearbox.command.v2.proxy.process.ProcessInvocation.ProcessInvocationBuilder;
-import com.g2forge.gearbox.command.v2.proxy.result.IResultSupplier;
 
 import lombok.Data;
 

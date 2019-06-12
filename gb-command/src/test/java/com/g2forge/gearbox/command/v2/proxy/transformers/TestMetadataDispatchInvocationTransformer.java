@@ -6,10 +6,12 @@ import com.g2forge.alexandria.command.CommandInvocation;
 import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.test.HAssert;
 import com.g2forge.gearbox.command.process.redirect.IRedirect;
+import com.g2forge.gearbox.command.proxy.method.MethodInvocation;
+import com.g2forge.gearbox.command.proxy.method.OverrideInvocationTransformer;
+import com.g2forge.gearbox.command.proxy.process.ProcessInvocation;
+import com.g2forge.gearbox.command.proxy.transformers.IInvocationTransformer;
+import com.g2forge.gearbox.command.proxy.transformers.MetadataDispatchInvocationTransformer;
 import com.g2forge.gearbox.command.v2.proxy.method.ITestCommandInterface;
-import com.g2forge.gearbox.command.v2.proxy.method.MethodInvocation;
-import com.g2forge.gearbox.command.v2.proxy.method.OverrideInvocationTransformer;
-import com.g2forge.gearbox.command.v2.proxy.process.ProcessInvocation;
 
 import lombok.RequiredArgsConstructor;
 

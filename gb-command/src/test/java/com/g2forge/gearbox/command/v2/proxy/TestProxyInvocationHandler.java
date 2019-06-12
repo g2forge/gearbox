@@ -6,9 +6,10 @@ import org.junit.Test;
 
 import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.test.HAssert;
+import com.g2forge.gearbox.command.proxy.ProxyInvocationHandler;
+import com.g2forge.gearbox.command.proxy.process.ProcessInvocation;
+import com.g2forge.gearbox.command.proxy.process.ReturnProcessInvocationException;
 import com.g2forge.gearbox.command.v2.proxy.method.ITestCommandInterface;
-import com.g2forge.gearbox.command.v2.proxy.process.ProcessInvocation;
-import com.g2forge.gearbox.command.v2.proxy.process.ReturnProcessInvocationException;
 
 public class TestProxyInvocationHandler {
 	public interface ICommand extends ITestCommandInterface {
