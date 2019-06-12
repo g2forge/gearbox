@@ -15,7 +15,7 @@ import java.util.stream.StreamSupport;
 import com.g2forge.alexandria.adt.collection.CircularBuffer;
 import com.g2forge.alexandria.java.core.marker.ISingleton;
 import com.g2forge.alexandria.java.io.RuntimeIOException;
-import com.g2forge.gearbox.command.v2.process.IProcess;
+import com.g2forge.gearbox.command.process.IProcess;
 
 public class StreamResultSupplier implements IResultSupplier<Stream<String>>, ISingleton {
 	protected static final StreamResultSupplier INSTANCE = new StreamResultSupplier();

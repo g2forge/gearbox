@@ -12,15 +12,14 @@ import com.g2forge.alexandria.java.core.error.UnreachableCodeError;
 import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.java.function.IConsumer1;
 import com.g2forge.alexandria.test.HAssert;
-import com.g2forge.gearbox.command.runner.redirect.IRedirect;
-import com.g2forge.gearbox.command.v2.converter.ICommandConverterR_;
+import com.g2forge.gearbox.command.process.redirect.IRedirect;
 import com.g2forge.gearbox.command.v2.proxy.ProxyInvocationHandler;
 import com.g2forge.gearbox.command.v2.proxy.method.ITestCommandInterface;
-import com.g2forge.gearbox.command.v2.proxy.method.MethodInvocation;
 import com.g2forge.gearbox.command.v2.proxy.process.ProcessInvocation;
 import com.g2forge.gearbox.command.v2.proxy.process.ReturnProcessInvocationException;
 import com.g2forge.gearbox.command.v2.proxy.result.BooleanResultSupplier;
 import com.g2forge.gearbox.command.v2.proxy.result.IResultSupplier;
+import com.g2forge.gearbox.command.v2.proxy.result.IntegerResultSupplier;
 import com.g2forge.gearbox.command.v2.proxy.result.StreamResultSupplier;
 import com.g2forge.gearbox.command.v2.proxy.result.StringResultSupplier;
 import com.g2forge.gearbox.command.v2.proxy.result.VoidResultSupplier;
@@ -33,34 +32,42 @@ public class TestDumbCommandConverter {
 		public Boolean method(@Flag("-flag") Boolean argument);
 	}
 
-	public interface IBooleanNamed extends ITestCommandInterface{
+	public interface IBooleanNamed extends ITestCommandInterface {
 		public boolean method(@Named("name=") boolean argument);
 	}
 
-	public interface IBooleanValue extends ITestCommandInterface{
+	public interface IBooleanValue extends ITestCommandInterface {
 		public Boolean method(Boolean argument);
 	}
 
-	public interface IPathNamed extends ITestCommandInterface{
+	public interface IIntegerNamed extends ITestCommandInterface {
+		public int method(@Named("name=") Integer argument);
+	}
+
+	public interface IIntegerValue extends ITestCommandInterface {
+		public Integer method(int argument);
+	}
+
+	public interface IPathNamed extends ITestCommandInterface {
 		public void method(@Named("name=") Path argument);
 	}
 
-	public interface IPathValue extends ITestCommandInterface{
+	public interface IPathValue extends ITestCommandInterface {
 		public void method(Path argument);
 	}
 
-	public interface IPathWorking extends ITestCommandInterface{
+	public interface IPathWorking extends ITestCommandInterface {
 		public void method(@Working Path argument);
 	}
 
-	public interface IStringArrayNamed extends ITestCommandInterface{
+	public interface IStringArrayNamed extends ITestCommandInterface {
 		public Stream<String> method(@Named("name=") String... argument);
 	}
 
-	public interface IStringArrayValue extends ITestCommandInterface{
+	public interface IStringArrayValue extends ITestCommandInterface {
 		public Stream<String> method(String... argument);
 	}
-
+	
 	public interface IStringNamed extends ITestCommandInterface {
 		public String method(@Named("name=") String argument);
 	}
@@ -70,7 +77,7 @@ public class TestDumbCommandConverter {
 	}
 
 	@Getter(lazy = true)
-	private static final ProxyInvocationHandler handler = createHandler();
+	private static final ProxyInvocationHandler handler = new ProxyInvocationHandler(new MethodToCommandInvocationTransformer(DumbCommandConverter.create()), null);
 
 	public static <T> void assertCommand(Class<T> type, IConsumer1<? super T> invoke, Class<? extends IResultSupplier<?>> expectedResultSupplierType, Path expectedWorking, String... expectedArguments) {
 		@SuppressWarnings("unchecked")
@@ -89,16 +96,6 @@ public class TestDumbCommandConverter {
 		}
 	}
 
-	protected static ProxyInvocationHandler createHandler() {
-		final ProxyInvocationHandler handler = new ProxyInvocationHandler(new MethodToCommandInvocationTransformer() {
-			@Override
-			protected ICommandConverterR_ getRenderer(MethodInvocation methodInvocation) {
-				return new DumbCommandConverter();
-			}
-		}, null);
-		return handler;
-	}
-
 	@Test
 	public void booleanFlag() {
 		assertCommand(IBooleanFlag.class, x -> x.method(true), BooleanResultSupplier.class, null, "method", "-flag");
@@ -113,6 +110,16 @@ public class TestDumbCommandConverter {
 	@Test
 	public void booleanValue() {
 		assertCommand(IBooleanValue.class, x -> x.method(false), BooleanResultSupplier.class, null, "method", "false");
+	}
+
+	@Test
+	public void intNamed() {
+		assertCommand(IIntegerNamed.class, x -> x.method(0), IntegerResultSupplier.class, null, "method", "name=0");
+	}
+
+	@Test
+	public void intValue() {
+		assertCommand(IIntegerValue.class, x -> x.method(1), IntegerResultSupplier.class, null, "method", "1");
 	}
 
 	@Test
@@ -141,7 +148,7 @@ public class TestDumbCommandConverter {
 		assertCommand(IStringArrayValue.class, x -> x.method("A"), StreamResultSupplier.class, null, "method", "A");
 		assertCommand(IStringArrayValue.class, x -> x.method("A", "B"), StreamResultSupplier.class, null, "method", "A", "B");
 	}
-
+	
 	@Test
 	public void stringNamed() {
 		assertCommand(IStringNamed.class, x -> x.method("A"), StringResultSupplier.class, null, "method", "name=A");

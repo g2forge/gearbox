@@ -1,4 +1,4 @@
-package com.g2forge.gearbox.command.v1.runner;
+package com.g2forge.gearbox.command.v2.test;
 
 import com.g2forge.gearbox.command.v2.proxy.method.ICommandInterface;
 

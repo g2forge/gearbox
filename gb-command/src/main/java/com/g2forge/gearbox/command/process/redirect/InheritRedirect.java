@@ -1,4 +1,4 @@
-package com.g2forge.gearbox.command.runner.redirect;
+package com.g2forge.gearbox.command.process.redirect;
 
 import com.g2forge.alexandria.java.core.marker.ISingleton;
 

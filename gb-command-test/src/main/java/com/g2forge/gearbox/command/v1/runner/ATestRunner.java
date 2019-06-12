@@ -5,8 +5,8 @@ import org.junit.Test;
 
 import com.g2forge.alexandria.command.CommandInvocation;
 import com.g2forge.alexandria.java.function.IFunction1;
-import com.g2forge.gearbox.command.runner.IProcess;
-import com.g2forge.gearbox.command.runner.redirect.IRedirect;
+import com.g2forge.gearbox.command.process.IProcess;
+import com.g2forge.gearbox.command.process.redirect.IRedirect;
 import com.g2forge.gearbox.command.v1.IUtils;
 import com.g2forge.gearbox.command.v1.proxy.Proxifier;
 

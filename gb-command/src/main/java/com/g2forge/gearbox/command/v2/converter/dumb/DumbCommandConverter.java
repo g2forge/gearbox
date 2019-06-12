@@ -9,18 +9,19 @@ import java.util.stream.Stream;
 import com.g2forge.alexandria.annotations.message.TODO;
 import com.g2forge.alexandria.command.CommandInvocation;
 import com.g2forge.alexandria.command.stdio.StandardIO;
+import com.g2forge.alexandria.java.core.marker.ISingleton;
 import com.g2forge.alexandria.java.function.IConsumer2;
 import com.g2forge.alexandria.java.type.function.TypeSwitch2;
 import com.g2forge.alexandria.java.type.ref.ATypeRef;
 import com.g2forge.alexandria.java.type.ref.ATypeRefIdentity;
 import com.g2forge.alexandria.java.type.ref.ITypeRef;
 import com.g2forge.alexandria.metadata.IMetadata;
-import com.g2forge.gearbox.command.runner.redirect.IRedirect;
-import com.g2forge.gearbox.command.runner.redirect.InheritRedirect;
+import com.g2forge.gearbox.command.process.IProcess;
+import com.g2forge.gearbox.command.process.redirect.IRedirect;
+import com.g2forge.gearbox.command.process.redirect.InheritRedirect;
 import com.g2forge.gearbox.command.v2.converter.ICommandConverterR_;
 import com.g2forge.gearbox.command.v2.converter.IMethodArgument;
 import com.g2forge.gearbox.command.v2.converter.MethodArgument;
-import com.g2forge.gearbox.command.v2.process.IProcess;
 import com.g2forge.gearbox.command.v2.proxy.method.MethodInvocation;
 import com.g2forge.gearbox.command.v2.proxy.process.ProcessInvocation;
 import com.g2forge.gearbox.command.v2.proxy.process.ProcessInvocation.ProcessInvocationBuilder;
@@ -35,7 +36,7 @@ import com.g2forge.gearbox.command.v2.proxy.result.VoidResultSupplier;
 import lombok.Builder;
 import lombok.Data;
 
-public class DumbCommandConverter implements ICommandConverterR_ {
+public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 	@Data
 	@Builder(toBuilder = true)
 	protected static class ArgumentContext {
@@ -43,6 +44,8 @@ public class DumbCommandConverter implements ICommandConverterR_ {
 
 		protected final IMethodArgument<Object> argument;
 	}
+
+	protected static final DumbCommandConverter instance = new DumbCommandConverter();
 
 	protected static final IConsumer2<ArgumentContext, Object> ARGUMENT_BUILDER = new TypeSwitch2.ConsumerBuilder<ArgumentContext, Object>().with(builder -> {
 		builder.add(ArgumentContext.class, String[].class, (c, v) -> {
@@ -54,6 +57,11 @@ public class DumbCommandConverter implements ICommandConverterR_ {
 		builder.add(ArgumentContext.class, String.class, (c, v) -> {
 			final Named named = c.getArgument().getMetadata().getMetadata(Named.class);
 			c.getCommand().argument(named != null ? named.value() + v : v);
+		});
+		builder.add(ArgumentContext.class, Integer.class, (c, v) -> {
+			final Named named = c.getArgument().getMetadata().getMetadata(Named.class);
+			final String string = Integer.toString(v);
+			c.getCommand().argument(named != null ? named.value() + string : string);
 		});
 		builder.add(ArgumentContext.class, Path.class, (c, v) -> {
 			final Working working = c.getArgument().getMetadata().getMetadata(Working.class);
@@ -96,6 +104,10 @@ public class DumbCommandConverter implements ICommandConverterR_ {
 				return method.getGenericReturnType();
 			}
 		};
+	}
+
+	public static DumbCommandConverter create() {
+		return instance;
 	}
 
 	@SuppressWarnings("unchecked")

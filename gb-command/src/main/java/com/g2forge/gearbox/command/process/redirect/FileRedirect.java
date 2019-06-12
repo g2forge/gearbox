@@ -1,4 +1,4 @@
-package com.g2forge.gearbox.command.runner.redirect;
+package com.g2forge.gearbox.command.process.redirect;
 
 import java.nio.file.Path;
 

@@ -1,4 +1,4 @@
-package com.g2forge.gearbox.command.runner;
+package com.g2forge.gearbox.command.process;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,10 +16,10 @@ import com.g2forge.alexandria.java.io.HIO;
 import com.g2forge.alexandria.java.io.RuntimeIOException;
 import com.g2forge.alexandria.java.platform.Platform;
 import com.g2forge.alexandria.java.type.function.TypeSwitch2;
-import com.g2forge.gearbox.command.runner.redirect.FileRedirect;
-import com.g2forge.gearbox.command.runner.redirect.IRedirect;
-import com.g2forge.gearbox.command.runner.redirect.InheritRedirect;
-import com.g2forge.gearbox.command.runner.redirect.PipeRedirect;
+import com.g2forge.gearbox.command.process.redirect.FileRedirect;
+import com.g2forge.gearbox.command.process.redirect.IRedirect;
+import com.g2forge.gearbox.command.process.redirect.InheritRedirect;
+import com.g2forge.gearbox.command.process.redirect.PipeRedirect;
 
 import lombok.AccessLevel;
 import lombok.Getter;

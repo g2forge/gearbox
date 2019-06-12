@@ -1,7 +1,7 @@
 package com.g2forge.gearbox.command.v2.proxy.result;
 
 import com.g2forge.alexandria.java.core.marker.ISingleton;
-import com.g2forge.gearbox.command.v2.process.IProcess;
+import com.g2forge.gearbox.command.process.IProcess;
 
 public class VoidResultSupplier implements IResultSupplier<Void>, ISingleton {
 	protected static final VoidResultSupplier INSTANCE = new VoidResultSupplier();

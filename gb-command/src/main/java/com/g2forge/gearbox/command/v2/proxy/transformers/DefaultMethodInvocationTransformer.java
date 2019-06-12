@@ -14,9 +14,11 @@ import com.g2forge.gearbox.command.v2.proxy.process.ProcessInvocation;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
 @Data
 @Builder(toBuilder = true)
+@RequiredArgsConstructor
 public class DefaultMethodInvocationTransformer implements IDelegatingInvocationTransformer {
 	protected final IFunction1<MethodInvocation, ProcessInvocation<?>> delegate;
 

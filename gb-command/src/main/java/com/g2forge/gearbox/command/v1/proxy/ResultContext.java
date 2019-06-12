@@ -21,9 +21,9 @@ import com.g2forge.alexandria.java.io.RuntimeIOException;
 import com.g2forge.alexandria.java.type.ref.ATypeRef;
 import com.g2forge.alexandria.java.type.ref.ATypeRefIdentity;
 import com.g2forge.alexandria.java.type.ref.ITypeRef;
-import com.g2forge.gearbox.command.runner.IProcess;
-import com.g2forge.gearbox.command.runner.redirect.IRedirect;
-import com.g2forge.gearbox.command.runner.redirect.InheritRedirect;
+import com.g2forge.gearbox.command.process.IProcess;
+import com.g2forge.gearbox.command.process.redirect.IRedirect;
+import com.g2forge.gearbox.command.process.redirect.InheritRedirect;
 import com.g2forge.gearbox.command.v1.control.IExplicitResultHandler;
 import com.g2forge.gearbox.command.v1.control.IResultContext;
 

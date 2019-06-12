@@ -1,4 +1,4 @@
-package com.g2forge.gearbox.command.v1.runner;
+package com.g2forge.gearbox.command.v2.test;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -8,17 +8,14 @@ import java.util.stream.Stream;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.g2forge.alexandria.command.CommandInvocation;
 import com.g2forge.alexandria.java.core.helpers.HArray;
 import com.g2forge.alexandria.java.core.helpers.HString;
-import com.g2forge.alexandria.java.function.IFunction1;
 import com.g2forge.gearbox.command.process.IProcess;
-import com.g2forge.gearbox.command.process.ProcessBuilderRunner;
-import com.g2forge.gearbox.command.process.redirect.IRedirect;
-import com.g2forge.gearbox.command.v1.control.Command;
-import com.g2forge.gearbox.command.v2.test.ITestCommandInterface;
+import com.g2forge.gearbox.command.v2.converter.ICommandConverterR_;
+import com.g2forge.gearbox.command.v2.converter.dumb.Command;
+import com.g2forge.gearbox.command.v2.converter.dumb.DumbCommandConverter;
 
-public class TestProxifier extends ATestRunner {
+public class TestCommand extends ATestCommand {
 	public interface ForTesting extends ITestCommandInterface {
 		@Command("false")
 		public IProcess false_();
@@ -26,11 +23,12 @@ public class TestProxifier extends ATestRunner {
 
 	@Test(expected = RuntimeException.class)
 	public void assertSuccess() {
-		proxifier.generate(getRunner(), ForTesting.class).false_().assertSuccess();
+		getFactory().apply(ForTesting.class).false_().assertSuccess();
 	}
 
-	protected IFunction1<CommandInvocation<IRedirect, IRedirect>, IProcess> createRunner() {
-		return new ProcessBuilderRunner(null);
+	@Override
+	protected ICommandConverterR_ createRenderer() {
+		return DumbCommandConverter.create();
 	}
 
 	@Test

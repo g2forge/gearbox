@@ -13,6 +13,7 @@ public interface ICommandConverter__ {
 	public static <T, U> T load(Class<T> type, IMetadata metadata, final Class<U> klass) {
 		return IMetadataLoader.load(type, metadata, klass, m -> {
 			final CommandConverters commandConvertersMetadata = m.getMetadata(CommandConverters.class);
+			if (commandConvertersMetadata == null) return null;
 			final Class<? extends ICommandConverter__> rendererType = HStream.findOne(Stream.of(commandConvertersMetadata.value()).map(CommandConverter::value).filter(klass::isAssignableFrom));
 			try {
 				return klass.cast(rendererType.newInstance());
