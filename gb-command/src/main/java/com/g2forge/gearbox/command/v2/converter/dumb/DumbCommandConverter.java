@@ -4,11 +4,13 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.stream.Stream;
 
 import com.g2forge.alexandria.annotations.message.TODO;
 import com.g2forge.alexandria.command.CommandInvocation;
 import com.g2forge.alexandria.command.stdio.StandardIO;
+import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.java.core.marker.ISingleton;
 import com.g2forge.alexandria.java.function.IConsumer2;
 import com.g2forge.alexandria.java.type.function.TypeSwitch2;
@@ -149,9 +151,20 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 		final Parameter[] parameters = methodInvocation.getMethod().getParameters();
 		for (int i = 0; i < parameters.length; i++) {
 			final Object value = methodInvocation.getArguments().get(i);
-			final MethodArgument methodArgument = new MethodArgument(value, parameters[i]);
-			final ArgumentContext argumentContext = new ArgumentContext(commandInvocationBuilder, methodArgument);
-			ARGUMENT_BUILDER.accept(argumentContext, value);
+			final IMethodArgument<Object> methodArgument = new MethodArgument(value, parameters[i]);
+
+			final IArgumentRenderer<?> argumentRenderer = methodArgument.getMetadata().getMetadata(IArgumentRenderer.class);
+			if (argumentRenderer != null) {
+				@SuppressWarnings({ "unchecked", "rawtypes" })
+				final List<String> arguments = argumentRenderer.render((IMethodArgument) methodArgument);
+				commandInvocationBuilder.arguments(arguments);
+			} else {
+				final ArgumentContext argumentContext = new ArgumentContext(commandInvocationBuilder, methodArgument);
+				ARGUMENT_BUILDER.accept(argumentContext, value);
+			}
+
+			final Constant constant = methodArgument.getMetadata().getMetadata(Constant.class);
+			if ((constant != null) && (constant.value() != null)) commandInvocationBuilder.arguments(HCollection.asList(constant.value()));
 		}
 
 		processInvocationBuilder.commandInvocation(commandInvocationBuilder.build());

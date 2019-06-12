@@ -14,12 +14,12 @@ import com.g2forge.alexandria.wizard.UserPasswordInput;
 import com.g2forge.alexandria.wizard.UserStringInput;
 import com.g2forge.gearbox.command.process.IProcess;
 import com.g2forge.gearbox.command.process.redirect.IRedirect;
-import com.g2forge.gearbox.command.v1.runner.ATestRunner;
+import com.g2forge.gearbox.command.v2.test.ATestCommand;
 import com.g2forge.gearbox.ssh.SSHServer.SSHServerBuilder;
 
 import lombok.Getter;
 
-public class TestSSHRunner extends ATestRunner {
+public class TestSSHRunner extends ATestCommand {
 	@Getter(lazy = true)
 	private static final SSHServer server = createServer();
 
