@@ -30,7 +30,8 @@ public class ProxyInvocationHandler implements InvocationHandler {
 
 		final IFunction1<? super CommandInvocation<IRedirect, IRedirect>, ? extends IProcess> runner = getRunner();
 		if (runner != null) {
-			final IProcess process = runner.apply(processInvocation.getCommandInvocation());
+			final CommandInvocation<IRedirect, IRedirect> commandInvocation = processInvocation.getCommandInvocation();
+			final IProcess process = (commandInvocation == null) ? null : runner.apply(commandInvocation);
 			return processInvocation.getResultSupplier().apply(process);
 		} else throw new ReturnProcessInvocationException(processInvocation);
 	}
