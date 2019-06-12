@@ -45,18 +45,18 @@ public class ProcessBuilderRunner implements IRunner {
 	}
 
 	@Override
-	public IProcess apply(CommandInvocation<IRedirect, IRedirect> invocation) {
+	public IProcess apply(CommandInvocation<IRedirect, IRedirect> commandInvocation) {
 		final ProcessBuilder builder = new ProcessBuilder();
 		// Set the working directory
-		if (invocation.getWorking() != null) builder.directory(invocation.getWorking().toFile());
+		if (commandInvocation.getWorking() != null) builder.directory(commandInvocation.getWorking().toFile());
 
 		// Build the command and arguments
 		final IFunction1<? super List<? extends String>, ? extends List<? extends String>> commandFunction = getCommandFunction();
-		if (commandFunction != null) builder.command(new ArrayList<>(commandFunction.apply(invocation.getArguments())));
-		else builder.command(invocation.getArguments());
+		if (commandFunction != null) builder.command(new ArrayList<>(commandFunction.apply(commandInvocation.getArguments())));
+		else builder.command(commandInvocation.getArguments());
 
 		// Set the redirects
-		final IStandardIO<IRedirect, IRedirect> redirects = invocation.getIo();
+		final IStandardIO<IRedirect, IRedirect> redirects = commandInvocation.getIo();
 		if (redirects != null) {
 			final IRedirect standardInput = redirects.getStandardInput();
 			if (standardInput != null) builder.redirectInput(redirectTranslater.apply(standardInput, false));
