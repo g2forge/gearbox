@@ -5,21 +5,22 @@ import org.junit.Test;
 import com.g2forge.alexandria.command.CommandInvocation;
 import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.test.HAssert;
-import com.g2forge.gearbox.command.v1.runner.redirect.IRedirect;
-import com.g2forge.gearbox.command.v2.proxy.method.MethodInvocation;
-import com.g2forge.gearbox.command.v2.proxy.method.OverrideInvocationTransformer;
-import com.g2forge.gearbox.command.v2.proxy.process.ProcessInvocation;
-import com.g2forge.gearbox.command.v2.proxy.transformers.IInvocationTransformer;
-import com.g2forge.gearbox.command.v2.proxy.transformers.MetadataDispatchInvocationTransformer;
+import com.g2forge.gearbox.command.process.redirect.IRedirect;
+import com.g2forge.gearbox.command.proxy.method.MethodInvocation;
+import com.g2forge.gearbox.command.proxy.method.OverrideInvocationTransformer;
+import com.g2forge.gearbox.command.proxy.process.ProcessInvocation;
+import com.g2forge.gearbox.command.proxy.transformers.IInvocationTransformer;
+import com.g2forge.gearbox.command.proxy.transformers.MetadataDispatchInvocationTransformer;
+import com.g2forge.gearbox.command.v2.proxy.method.ITestCommandInterface;
 
 import lombok.RequiredArgsConstructor;
 
 public class TestMetadataDispatchInvocationTransformer {
-	public interface IDelegate {
+	public interface IDelegate extends ITestCommandInterface {
 		public int method();
 	}
 
-	public interface IOverride {
+	public interface IOverride extends ITestCommandInterface {
 		@OverrideInvocationTransformer(MyOverrideInvocationTransformer.class)
 		public int method();
 	}
@@ -42,7 +43,7 @@ public class TestMetadataDispatchInvocationTransformer {
 			}
 		}, IDelegate.class.getDeclaredMethods()[0], HCollection.emptyList());
 		final ProcessInvocation<?> processInvocation = new MetadataDispatchInvocationTransformer(new CustomInvocationTransformer(commandInvocation, 2)).apply(methodInvocation);
-		HAssert.assertSame(commandInvocation, processInvocation.getInvocation());
+		HAssert.assertSame(commandInvocation, processInvocation.getCommandInvocation());
 		HAssert.assertEquals(2, processInvocation.getResultSupplier().apply(null));
 	}
 
@@ -55,7 +56,7 @@ public class TestMetadataDispatchInvocationTransformer {
 			}
 		}, IOverride.class.getDeclaredMethods()[0], HCollection.emptyList());
 		final ProcessInvocation<?> processInvocation = new MetadataDispatchInvocationTransformer(new CustomInvocationTransformer(CommandInvocation.<IRedirect, IRedirect>builder().build(), 2)).apply(methodInvocation);
-		HAssert.assertNull(processInvocation.getInvocation());
+		HAssert.assertNull(processInvocation.getCommandInvocation());
 		HAssert.assertEquals(4, processInvocation.getResultSupplier().apply(null));
 	}
 }
