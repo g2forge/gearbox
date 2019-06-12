@@ -8,6 +8,7 @@ import java.util.stream.Stream;
 
 import com.g2forge.alexandria.annotations.message.TODO;
 import com.g2forge.alexandria.command.CommandInvocation;
+import com.g2forge.alexandria.command.stdio.StandardIO;
 import com.g2forge.alexandria.java.function.IConsumer2;
 import com.g2forge.alexandria.java.type.function.TypeSwitch2;
 import com.g2forge.alexandria.java.type.ref.ATypeRef;
@@ -15,6 +16,7 @@ import com.g2forge.alexandria.java.type.ref.ATypeRefIdentity;
 import com.g2forge.alexandria.java.type.ref.ITypeRef;
 import com.g2forge.alexandria.metadata.IMetadata;
 import com.g2forge.gearbox.command.runner.redirect.IRedirect;
+import com.g2forge.gearbox.command.runner.redirect.InheritRedirect;
 import com.g2forge.gearbox.command.v2.converter.ICommandConverterR_;
 import com.g2forge.gearbox.command.v2.converter.IMethodArgument;
 import com.g2forge.gearbox.command.v2.converter.MethodArgument;
@@ -112,6 +114,12 @@ public class DumbCommandConverter implements ICommandConverterR_ {
 	public <T> ProcessInvocation<T> apply(ProcessInvocation<T> processInvocation, MethodInvocation methodInvocation) {
 		final ProcessInvocationBuilder<T> processInvocationBuilder = processInvocation.toBuilder();
 		final CommandInvocation.CommandInvocationBuilder<IRedirect, IRedirect> commandInvocationBuilder = processInvocation.getCommandInvocation() != null ? processInvocation.getCommandInvocation().toBuilder() : CommandInvocation.builder();
+		final ITypeRef<T> returnTypeRef = computeReturnTypeRef(methodInvocation.getMethod());
+
+		// Compute the IO redirection
+		if ((processInvocation.getCommandInvocation() == null) || (processInvocation.getCommandInvocation().getIo() == null)) {
+			if (returnTypeRef.getErasedType().isAssignableFrom(Void.class) || returnTypeRef.getErasedType().isAssignableFrom(Void.TYPE)) commandInvocationBuilder.io(StandardIO.<IRedirect, IRedirect>builder().standardInput(InheritRedirect.create()).standardOutput(InheritRedirect.create()).standardError(InheritRedirect.create()).build());
+		}
 
 		// Compute the command name
 		commandInvocationBuilder.clearArguments();
@@ -121,8 +129,7 @@ public class DumbCommandConverter implements ICommandConverterR_ {
 
 		// Compute the result generator
 		if (processInvocation.getResultSupplier() == null) {
-			final ITypeRef<T> typeRef = computeReturnTypeRef(methodInvocation.getMethod());
-			final IResultSupplier<T> standard = getStandard(typeRef);
+			final IResultSupplier<T> standard = getStandard(returnTypeRef);
 			processInvocationBuilder.resultSupplier(standard);
 		}
 
