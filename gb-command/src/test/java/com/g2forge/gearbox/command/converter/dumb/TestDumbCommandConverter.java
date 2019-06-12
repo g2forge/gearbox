@@ -1,4 +1,4 @@
-package com.g2forge.gearbox.command.v2.converter.dumb;
+package com.g2forge.gearbox.command.converter.dumb;
 
 import java.lang.reflect.Proxy;
 import java.nio.file.Path;
@@ -18,6 +18,7 @@ import com.g2forge.gearbox.command.converter.dumb.Named;
 import com.g2forge.gearbox.command.converter.dumb.Working;
 import com.g2forge.gearbox.command.process.redirect.IRedirect;
 import com.g2forge.gearbox.command.proxy.ProxyInvocationHandler;
+import com.g2forge.gearbox.command.proxy.method.ITestCommandInterface;
 import com.g2forge.gearbox.command.proxy.process.ProcessInvocation;
 import com.g2forge.gearbox.command.proxy.process.ReturnProcessInvocationException;
 import com.g2forge.gearbox.command.proxy.result.BooleanResultSupplier;
@@ -27,7 +28,6 @@ import com.g2forge.gearbox.command.proxy.result.StreamResultSupplier;
 import com.g2forge.gearbox.command.proxy.result.StringResultSupplier;
 import com.g2forge.gearbox.command.proxy.result.VoidResultSupplier;
 import com.g2forge.gearbox.command.proxy.transformers.MethodToCommandInvocationTransformer;
-import com.g2forge.gearbox.command.v2.proxy.method.ITestCommandInterface;
 
 import lombok.Getter;
 

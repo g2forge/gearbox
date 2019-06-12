@@ -10,6 +10,7 @@ import com.g2forge.gearbox.command.proxy.method.MethodInvocation;
 import com.g2forge.gearbox.command.proxy.process.ProcessInvocation;
 
 @MetadataLoader(IArgumentConsumer.ArgumentConsumerMetadataLoader.class)
+@FunctionalInterface
 public interface IArgumentConsumer extends IConsumer3<ProcessInvocation.ProcessInvocationBuilder<Object>, MethodInvocation, IMethodArgument<?>> {
 	public static class ArgumentConsumerMetadataLoader implements IMetadataLoader {
 		@Override

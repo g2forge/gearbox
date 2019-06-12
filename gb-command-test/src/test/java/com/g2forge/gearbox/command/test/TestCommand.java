@@ -34,12 +34,18 @@ public class TestCommand extends ATestCommand {
 	}
 
 	@Test
-	public void echo() {
+	public void echoExpressions() {
 		final String[] args = HArray.create("foo\\n!", "bar");
 		final String expected = HString.unescape(Stream.of(args).collect(Collectors.joining(" "))) + "\n";
 		final String actual = getUtils().echo(true, args);
 		Assert.assertEquals(expected, actual);
-	};
+	}
+	
+	@Test
+	public void echoSimple() {
+		final String string = "Hello, World!";
+		Assert.assertEquals(string, getUtils().echo(false, string).trim());
+	}
 
 	@Test
 	public void pwd() {

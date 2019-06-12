@@ -1,4 +1,4 @@
-package com.g2forge.gearbox.command.v2.proxy.transformers;
+package com.g2forge.gearbox.command.proxy.transformers;
 
 import com.g2forge.alexandria.command.CommandInvocation;
 import com.g2forge.gearbox.command.process.redirect.IRedirect;

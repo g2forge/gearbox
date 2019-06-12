@@ -1,4 +1,4 @@
-package com.g2forge.gearbox.command.v2.proxy;
+package com.g2forge.gearbox.command.proxy;
 
 import org.junit.Test;
 
@@ -9,10 +9,10 @@ import com.g2forge.gearbox.command.converter.dumb.DumbCommandConverter;
 import com.g2forge.gearbox.command.process.redirect.IRedirect;
 import com.g2forge.gearbox.command.proxy.CommandProxyFactory;
 import com.g2forge.gearbox.command.proxy.ICommandProxyFactory;
+import com.g2forge.gearbox.command.proxy.method.ITestCommandInterface;
 import com.g2forge.gearbox.command.proxy.process.ProcessInvocation;
 import com.g2forge.gearbox.command.proxy.process.ReturnProcessInvocationException;
 import com.g2forge.gearbox.command.proxy.result.IntegerResultSupplier;
-import com.g2forge.gearbox.command.v2.proxy.method.ITestCommandInterface;
 
 public class TestCommandProxyFactory {
 	public interface ICommand extends ITestCommandInterface {
@@ -20,7 +20,7 @@ public class TestCommandProxyFactory {
 	}
 
 	@Test
-	public void testReturnProcessInvocationException() {
+	public void returnProcessInvocationException() {
 		final ICommandProxyFactory factory = new CommandProxyFactory(DumbCommandConverter.create(), null);
 		try {
 			factory.apply(ICommand.class).method(0);

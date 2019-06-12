@@ -1,4 +1,4 @@
-package com.g2forge.gearbox.command.v2.proxy;
+package com.g2forge.gearbox.command.proxy;
 
 import java.lang.reflect.Proxy;
 
@@ -6,10 +6,13 @@ import org.junit.Test;
 
 import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.test.HAssert;
+import com.g2forge.gearbox.command.converter.dumb.DumbCommandConverter;
+import com.g2forge.gearbox.command.proxy.CommandProxyFactory;
+import com.g2forge.gearbox.command.proxy.ICommandProxyFactory;
 import com.g2forge.gearbox.command.proxy.ProxyInvocationHandler;
+import com.g2forge.gearbox.command.proxy.method.ITestCommandInterface;
 import com.g2forge.gearbox.command.proxy.process.ProcessInvocation;
 import com.g2forge.gearbox.command.proxy.process.ReturnProcessInvocationException;
-import com.g2forge.gearbox.command.v2.proxy.method.ITestCommandInterface;
 
 public class TestProxyInvocationHandler {
 	public interface ICommand extends ITestCommandInterface {
@@ -17,7 +20,7 @@ public class TestProxyInvocationHandler {
 	}
 
 	@Test
-	public void testReturnProcessInvocationException() {
+	public void returnProcessInvocationException() {
 		final ProcessInvocation<?>[] processInvocation = new ProcessInvocation<?>[1];
 		final ICommand[] object = new ICommand[1];
 		object[0] = (ICommand) Proxy.newProxyInstance(ICommand.class.getClassLoader(), new Class[] { ICommand.class }, new ProxyInvocationHandler(methodInvocation -> {
@@ -35,5 +38,16 @@ public class TestProxyInvocationHandler {
 		} catch (ReturnProcessInvocationException exception) {
 			HAssert.assertSame(processInvocation[0], exception.getProcessInvocation());
 		}
+	}
+
+	@Test
+	public void testIdentity() {
+		final ICommandProxyFactory factory = new CommandProxyFactory(DumbCommandConverter.create(), null);
+		final ICommand instance0 = factory.apply(ICommand.class);
+		final ICommand instance1 = factory.apply(ICommand.class);
+		HAssert.assertEquals("Command proxy for " + ICommand.class.getName(), instance0.toString());
+		HAssert.assertEquals("Command proxy for " + ICommand.class.getName(), instance1.toString());
+		HAssert.assertNotEquals(instance0, instance1);
+		HAssert.assertNotEquals(instance0.hashCode(), instance1.hashCode());
 	}
 }
