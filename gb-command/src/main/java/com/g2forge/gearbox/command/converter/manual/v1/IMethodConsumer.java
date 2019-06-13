@@ -7,6 +7,7 @@ import com.g2forge.alexandria.metadata.IMetadataLoader;
 import com.g2forge.alexandria.metadata.MetadataLoader;
 import com.g2forge.gearbox.command.proxy.method.MethodInvocation;
 import com.g2forge.gearbox.command.proxy.process.ProcessInvocation;
+import com.g2forge.gearbox.command.proxy.process.ProcessInvocation.ProcessInvocationBuilder;
 
 @MetadataLoader(IMethodConsumer.MethodConsumerMetadataLoader.class)
 @FunctionalInterface
@@ -17,15 +18,18 @@ public interface IMethodConsumer extends IConsumer2<ProcessInvocation.ProcessInv
 			return IMetadataLoader.load(type, metadata, IMethodConsumer.class, m -> {
 				final MethodConsumers methodConsumers = m.getMetadata(MethodConsumers.class);
 				if (methodConsumers == null) return null;
-				return (processInvocationBuilder, methodInvocation) -> {
-					for (MethodConsumer methodConsumerMetadata : methodConsumers.value()) {
-						final IConsumer2<ProcessInvocation.ProcessInvocationBuilder<Object>, MethodInvocation> methodConsumer;
-						try {
-							methodConsumer = methodConsumerMetadata.value().newInstance();
-						} catch (InstantiationException | IllegalAccessException e) {
-							throw new RuntimeReflectionException(e);
+				return new IMethodConsumer() {
+					@Override
+					public void accept(ProcessInvocationBuilder<Object> processInvocationBuilder, MethodInvocation methodInvocation) {
+						for (MethodConsumer methodConsumerMetadata : methodConsumers.value()) {
+							final IConsumer2<ProcessInvocation.ProcessInvocationBuilder<Object>, MethodInvocation> methodConsumer;
+							try {
+								methodConsumer = methodConsumerMetadata.value().newInstance();
+							} catch (InstantiationException | IllegalAccessException e) {
+								throw new RuntimeReflectionException(e);
+							}
+							methodConsumer.accept(processInvocationBuilder, methodInvocation);
 						}
-						methodConsumer.accept(processInvocationBuilder, methodInvocation);
 					}
 				};
 			});
