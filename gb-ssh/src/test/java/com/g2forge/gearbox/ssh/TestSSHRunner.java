@@ -12,6 +12,8 @@ import com.g2forge.alexandria.java.function.IFunction1;
 import com.g2forge.alexandria.wizard.PropertyStringInput;
 import com.g2forge.alexandria.wizard.UserPasswordInput;
 import com.g2forge.alexandria.wizard.UserStringInput;
+import com.g2forge.gearbox.command.converter.ICommandConverterR_;
+import com.g2forge.gearbox.command.converter.dumb.DumbCommandConverter;
 import com.g2forge.gearbox.command.process.IProcess;
 import com.g2forge.gearbox.command.process.redirect.IRedirect;
 import com.g2forge.gearbox.command.test.ATestCommand;
@@ -36,6 +38,11 @@ public class TestSSHRunner extends ATestCommand {
 	@After
 	public void close() {
 		((ICloseable) getRunner()).close();
+	}
+
+	@Override
+	protected ICommandConverterR_ createRenderer() {
+		return new DumbCommandConverter();
 	}
 
 	@Override
