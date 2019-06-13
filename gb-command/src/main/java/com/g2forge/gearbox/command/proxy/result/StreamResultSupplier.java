@@ -32,7 +32,7 @@ public class StreamResultSupplier implements IResultSupplier<Stream<String>>, IS
 
 			protected String line = null;
 
-			protected final CircularBuffer<String> buffer = new CircularBuffer<String>(10);
+			protected final CircularBuffer<String> buffer = new CircularBuffer<String>(30);
 
 			protected void close() {
 				done = true;
