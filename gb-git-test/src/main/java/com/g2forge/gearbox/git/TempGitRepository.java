@@ -13,7 +13,7 @@ import lombok.Getter;
 
 public class TempGitRepository extends TempDirectory {
 	@Getter(lazy = true)
-	private final Git git = gitToClose = HGit.createGit(getPath());
+	private final Git git = gitToClose = HGit.createGit(get());
 
 	private Git gitToClose = null;
 
@@ -35,7 +35,7 @@ public class TempGitRepository extends TempDirectory {
 	public void createFirstCommit() {
 		final String file = "file";
 		try {
-			Files.createFile(getPath().resolve(file));
+			Files.createFile(get().resolve(file));
 			getGit().add().addFilepattern(file).call();
 			getGit().commit().setMessage(file).call();
 		} catch (IOException | GitAPIException e) {
