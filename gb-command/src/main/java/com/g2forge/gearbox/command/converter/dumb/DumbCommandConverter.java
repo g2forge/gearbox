@@ -7,7 +7,8 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Stream;
 
-import com.g2forge.alexandria.annotations.message.TODO;
+import com.g2forge.alexandria.annotations.note.Note;
+import com.g2forge.alexandria.annotations.note.NoteType;
 import com.g2forge.alexandria.command.CommandInvocation;
 import com.g2forge.alexandria.command.stdio.StandardIO;
 import com.g2forge.alexandria.java.core.helpers.HCollection;
@@ -113,7 +114,7 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 	}
 
 	@SuppressWarnings("unchecked")
-	@TODO(value = "Use static type switch", link = "G2-432")
+	@Note(type = NoteType.TODO, value = "Use static type switch", issue = "G2-432")
 	protected static <T> IResultSupplier<T> getStandard(ITypeRef<T> type) {
 		if (type.getErasedType().isAssignableFrom(Boolean.class) || type.getErasedType().isAssignableFrom(Boolean.TYPE)) return (IResultSupplier<T>) BooleanResultSupplier.create();
 		if (type.getErasedType().isAssignableFrom(Integer.class) || type.getErasedType().isAssignableFrom(Integer.TYPE)) return (IResultSupplier<T>) IntegerResultSupplier.create();
