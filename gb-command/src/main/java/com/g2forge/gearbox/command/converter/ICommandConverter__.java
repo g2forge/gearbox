@@ -2,14 +2,15 @@ package com.g2forge.gearbox.command.converter;
 
 import java.util.stream.Stream;
 
-import com.g2forge.alexandria.annotations.message.TODO;
+import com.g2forge.alexandria.annotations.note.Note;
+import com.g2forge.alexandria.annotations.note.NoteType;
 import com.g2forge.alexandria.java.core.error.RuntimeReflectionException;
 import com.g2forge.alexandria.java.core.helpers.HStream;
 import com.g2forge.alexandria.metadata.IMetadata;
 import com.g2forge.alexandria.metadata.IMetadataLoader;
 
 public interface ICommandConverter__ {
-	@TODO(value = "Check for metadata on the type containing the method, will require upgrades to metadata first", link = "G2-469")
+	@Note(type = NoteType.TODO, value = "Check for metadata on the type containing the method, will require upgrades to metadata first", issue = "G2-469")
 	public static <T, U> T load(Class<T> type, IMetadata metadata, final Class<U> klass) {
 		return IMetadataLoader.load(type, metadata, klass, m -> {
 			final CommandConverters commandConvertersMetadata = m.getMetadata(CommandConverters.class);

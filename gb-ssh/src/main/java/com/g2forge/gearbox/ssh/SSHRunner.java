@@ -12,7 +12,8 @@ import org.apache.sshd.client.channel.ClientChannelEvent;
 import org.apache.sshd.client.future.ConnectFuture;
 import org.apache.sshd.client.session.ClientSession;
 
-import com.g2forge.alexandria.annotations.message.TODO;
+import com.g2forge.alexandria.annotations.note.Note;
+import com.g2forge.alexandria.annotations.note.NoteType;
 import com.g2forge.alexandria.command.CommandInvocation;
 import com.g2forge.alexandria.java.close.ICloseable;
 import com.g2forge.alexandria.java.io.RuntimeIOException;
@@ -64,7 +65,7 @@ public class SSHRunner implements IRunner, ICloseable {
 		if (!open) throw new IllegalStateException();
 	}
 
-	@TODO("IO redirection and working directories")
+	@Note(type = NoteType.TODO, value = "IO redirection and working directories")
 	@Override
 	public IProcess apply(CommandInvocation<IRedirect, IRedirect> invocation) {
 		ensureOpen();
