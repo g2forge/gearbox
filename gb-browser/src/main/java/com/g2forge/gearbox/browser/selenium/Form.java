@@ -18,13 +18,13 @@ class Form extends Element implements IForm {
 	}
 
 	@Override
-	public IForm set(By by, String test) {
+	public IForm set(By by, String text) {
 		final WebElement field = element.findElement(by);
 		field.clear();
-		field.sendKeys(test);
+		field.sendKeys(text);
 		return this;
 	}
-	
+
 	@Override
 	public IForm submit() {
 		element.submit();

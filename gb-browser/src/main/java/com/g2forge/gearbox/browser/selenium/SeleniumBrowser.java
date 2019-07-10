@@ -15,6 +15,7 @@ import com.g2forge.alexandria.java.function.IFunction1;
 import com.g2forge.gearbox.browser.IBrowser;
 import com.g2forge.gearbox.browser.IElement;
 import com.g2forge.gearbox.browser.IForm;
+import com.g2forge.gearbox.browser.ISelect;
 import com.g2forge.gearbox.browser.operation.IOperationBuilder;
 
 public class SeleniumBrowser implements IBrowser {
@@ -36,6 +37,7 @@ public class SeleniumBrowser implements IBrowser {
 		final Object retVal;
 		if (IElement.class.equals(type)) retVal = new Element(element, this);
 		else if (IForm.class.equals(type)) retVal = new Form(element, this);
+		else if (ISelect.class.equals(type)) retVal = new Select(element, this);
 		else throw new IllegalArgumentException(type.toString());
 
 		@SuppressWarnings("unchecked")
