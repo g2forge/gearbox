@@ -20,7 +20,7 @@ class Form extends Element implements IForm {
 	@Override
 	public IForm set(By by, boolean selected) {
 		final WebElement input = element.findElement(by);
-		assertTag(input, "input");
+		assertInput(input, "checkbox");
 		if (input.isSelected() != selected) input.click();
 		return this;
 	}
@@ -28,7 +28,7 @@ class Form extends Element implements IForm {
 	@Override
 	public IForm set(By by, String text) {
 		final WebElement input = element.findElement(by);
-		assertTag(input, "input");
+		assertInput(input, "email", "number", "text");
 		input.clear();
 		input.sendKeys(text);
 		return this;
