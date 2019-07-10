@@ -19,7 +19,7 @@ class Select extends Element implements ISelect {
 	class Option extends Element implements ISelect.IOption {
 		public Option(WebElement element, SeleniumBrowser browser) {
 			super(element, browser);
-			if (!"option".equals(element.getTagName().toLowerCase())) throw new IllegalArgumentException();
+			assertTag(element, "option");
 		}
 
 		@Override
@@ -42,7 +42,7 @@ class Select extends Element implements ISelect {
 
 	public Select(WebElement element, SeleniumBrowser browser) {
 		super(element, browser);
-		if (!"select".equals(element.getTagName().toLowerCase())) throw new IllegalArgumentException();
+		assertTag(element, "select");
 		internal = new org.openqa.selenium.support.ui.Select(element);
 	}
 

@@ -7,6 +7,8 @@ import com.g2forge.gearbox.browser.operation.IOperationBuilder;
 public interface IForm extends IElement {
 	public IForm set(By by, String text);
 
+	public IForm set(By by, boolean selected);
+
 	public IForm submit();
 
 	@Override

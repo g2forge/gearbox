@@ -9,7 +9,7 @@ import com.g2forge.gearbox.browser.operation.IOperationBuilder;
 class Form extends Element implements IForm {
 	public Form(WebElement element, SeleniumBrowser browser) {
 		super(element, browser);
-		if (!"form".equals(element.getTagName().toLowerCase())) throw new IllegalArgumentException();
+		assertTag(element, "form");
 	}
 
 	@Override
@@ -18,10 +18,19 @@ class Form extends Element implements IForm {
 	}
 
 	@Override
+	public IForm set(By by, boolean selected) {
+		final WebElement input = element.findElement(by);
+		assertTag(input, "input");
+		if (input.isSelected() != selected) input.click();
+		return this;
+	}
+
+	@Override
 	public IForm set(By by, String text) {
-		final WebElement field = element.findElement(by);
-		field.clear();
-		field.sendKeys(text);
+		final WebElement input = element.findElement(by);
+		assertTag(input, "input");
+		input.clear();
+		input.sendKeys(text);
 		return this;
 	}
 

@@ -39,6 +39,10 @@ class Element implements IElement {
 		}
 	}
 
+	protected static void assertTag(WebElement element, String tag) {
+		if (!tag.toLowerCase().equals(element.getTagName().toLowerCase())) throw new IllegalArgumentException(String.format("Expected tag %1$s, found %2$s", tag, element.getTagName()));
+	}
+
 	protected final WebElement element;
 
 	protected final SeleniumBrowser browser;
