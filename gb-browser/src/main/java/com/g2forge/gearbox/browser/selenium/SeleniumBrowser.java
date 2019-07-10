@@ -3,15 +3,21 @@ package com.g2forge.gearbox.browser.selenium;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.NoAlertPresentException;
+import org.openqa.selenium.UnexpectedAlertBehaviour;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxOptions;
+import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import com.g2forge.alexandria.java.function.IConsumer1;
 import com.g2forge.alexandria.java.function.IFunction1;
+import com.g2forge.gearbox.browser.IAlert;
 import com.g2forge.gearbox.browser.IBrowser;
 import com.g2forge.gearbox.browser.IElement;
 import com.g2forge.gearbox.browser.IForm;
@@ -19,9 +25,15 @@ import com.g2forge.gearbox.browser.ISelect;
 import com.g2forge.gearbox.browser.operation.IOperationBuilder;
 
 public class SeleniumBrowser implements IBrowser {
-	protected final WebDriver driver = new FirefoxDriver();
+	protected final WebDriver driver;
 
 	protected boolean open = true;
+
+	public SeleniumBrowser() {
+		final FirefoxOptions options = new FirefoxOptions();
+		options.setCapability(CapabilityType.UNEXPECTED_ALERT_BEHAVIOUR, UnexpectedAlertBehaviour.IGNORE);
+		this.driver = new FirefoxDriver(options);
+	}
 
 	protected void assertOpen() {
 		if (!open) throw new IllegalStateException();
@@ -68,6 +80,38 @@ public class SeleniumBrowser implements IBrowser {
 	public <T extends IElement> List<T> findAll(By by, Class<T> type) {
 		final List<WebElement> elements = driver.findElements(by);
 		return elements.stream().map(e -> convert(e, type)).collect(Collectors.toList());
+	}
+
+	@Override
+	public IAlert getAlert() {
+		final Alert alert;
+		try {
+			alert = driver.switchTo().alert();
+		} catch (NoAlertPresentException e) {
+			return null;
+		}
+		return new IAlert() {
+			@Override
+			public void accept() {
+				alert.accept();
+			}
+
+			@Override
+			public void dismiss() {
+				alert.dismiss();
+			}
+
+			@Override
+			public String getText() {
+				return alert.getText();
+			}
+
+			@Override
+			public IAlert send(String text) {
+				alert.sendKeys(text);
+				return this;
+			}
+		};
 	}
 
 	@Override
