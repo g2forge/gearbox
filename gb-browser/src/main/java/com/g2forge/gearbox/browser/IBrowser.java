@@ -24,4 +24,6 @@ public interface IBrowser extends ICloseable, IBrowsable {
 
 	@Override
 	public IOperationBuilder<? extends IBrowser> operation();
+
+	public IAlert getAlert();
 }

@@ -1,6 +1,7 @@
 package com.g2forge.gearbox.browser.operation;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.UnhandledAlertException;
 
 import com.g2forge.alexandria.java.core.marker.ISingleton;
 import com.g2forge.alexandria.java.function.IFunction1;
@@ -22,7 +23,13 @@ public class ChangeWait implements IFunction1<IBrowsable, IOperationWrapper>, IS
 
 		@Override
 		public void post() {
-			browser.operation().until(b -> !getHTML(b).equals(original));
+			browser.operation().until(b -> {
+				try {
+					return !getHTML(b).equals(original);
+				} catch (UnhandledAlertException e) {
+					return false;
+				}
+			});
 			super.post();
 		}
 

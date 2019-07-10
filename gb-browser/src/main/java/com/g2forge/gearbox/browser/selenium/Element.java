@@ -1,6 +1,9 @@
 package com.g2forge.gearbox.browser.selenium;
 
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
@@ -37,6 +40,22 @@ class Element implements IElement {
 		public IOperationBuilder<T> wrap(IFunction1<? super T, IOperationWrapper> factory) {
 			return new WrappedOperationBuilder<>(factory, this);
 		}
+	}
+
+	protected static void assertInput(WebElement element, String... types) {
+		assertTag(element, "input");
+		final String actual = element.getAttribute("type");
+		if (types.length == 1) {
+			final String expected = types[0];
+			if (!expected.toLowerCase().equals(actual.toLowerCase())) throw new IllegalArgumentException(String.format("Expected input type %1$s, found %2$s", expected, actual));
+		} else {
+			final Set<String> set = Stream.of(types).map(String::toLowerCase).collect(Collectors.toSet());
+			if (!set.contains(actual.toLowerCase())) throw new IllegalArgumentException(String.format("Expected input type to be one of %1$s, found %2$s", set, actual));
+		}
+	}
+
+	protected static void assertTag(WebElement element, String tag) {
+		if (!tag.toLowerCase().equals(element.getTagName().toLowerCase())) throw new IllegalArgumentException(String.format("Expected tag %1$s, found %2$s", tag, element.getTagName()));
 	}
 
 	protected final WebElement element;
