@@ -4,6 +4,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.g2forge.gearbox.browser.IForm;
+import com.g2forge.gearbox.browser.ISelect.IOptionSelector;
 import com.g2forge.gearbox.browser.operation.IOperationBuilder;
 
 class Form extends Element implements IForm {
@@ -15,6 +16,15 @@ class Form extends Element implements IForm {
 	@Override
 	public IOperationBuilder<? extends IForm> operation() {
 		return new OperationBuilder<>(this);
+	}
+
+	@Override
+	public IForm select(By by, IOptionSelector... selectors) {
+		final Select select = new Select(element.findElement(by), browser);
+		for (IOptionSelector selector : selectors) {
+			select.getOption(selector).setSelected(true);
+		}
+		return this;
 	}
 
 	@Override
