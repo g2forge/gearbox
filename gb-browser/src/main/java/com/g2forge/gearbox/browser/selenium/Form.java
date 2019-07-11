@@ -38,7 +38,7 @@ class Form extends Element implements IForm {
 	@Override
 	public IForm set(By by, String text) {
 		final WebElement input = element.findElement(by);
-		if (!"textarea".equals(input.getTagName().toLowerCase())) assertInput(input, "email", "number", "text", "password");
+		if (!"textarea".equals(input.getTagName().toLowerCase())) assertInput(input, "email", "number", "text", "password", "file");
 		input.clear();
 		input.sendKeys(text);
 		return this;
