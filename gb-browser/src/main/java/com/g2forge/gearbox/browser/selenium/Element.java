@@ -32,8 +32,8 @@ class Element implements IElement {
 		}
 
 		@Override
-		public <V> V until(IFunction1<? super T, ? extends V> function) {
-			return value.getBrowser().operation().until(b -> function.apply(value));
+		public <V> V until(int seconds, IFunction1<? super T, ? extends V> function) {
+			return value.getBrowser().operation().until(seconds, b -> function.apply(value));
 		}
 
 		@Override
