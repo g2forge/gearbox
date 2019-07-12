@@ -143,6 +143,11 @@ public class SeleniumBrowser implements IBrowser {
 			public <V> V until(IFunction1<? super IBrowser, ? extends V> function) {
 				return new WebDriverWait(driver, 30).until(d -> function.apply(SeleniumBrowser.this));
 			}
+
+			@Override
+			public <V> V until(int seconds, IFunction1<? super IBrowser, ? extends V> function) {
+				return new WebDriverWait(driver, seconds).until(d -> function.apply(SeleniumBrowser.this));
+			}
 		};
 	}
 }

@@ -20,8 +20,8 @@ public class WrappedOperationBuilder<T> implements IOperationBuilder<T> {
 	}
 
 	@Override
-	public <V> V until(IFunction1<? super T, ? extends V> function) {
-		return this.operation.until(t -> {
+	public <V> V until(int seconds, IFunction1<? super T, ? extends V> function) {
+		return this.operation.until(seconds, t -> {
 			final IOperationWrapper wrapper = factory.apply(t);
 			return function.curry(t).wrap(wrapper::pre, wrapper::post);
 		}).get();
