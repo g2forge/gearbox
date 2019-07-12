@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 
 public interface ISelect extends IElement {
 	public interface IOption extends IElement {
+		public String getValue();
+
 		public boolean isSelected();
 
 		public void setSelected(boolean selected);

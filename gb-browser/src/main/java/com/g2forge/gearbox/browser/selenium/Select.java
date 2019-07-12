@@ -25,6 +25,11 @@ class Select extends Element implements ISelect {
 		}
 
 		@Override
+		public String getValue() {
+			return getAttribute("value");
+		}
+
+		@Override
 		public boolean isSelected() {
 			return element.isSelected();
 		}
