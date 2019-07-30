@@ -1,6 +1,7 @@
 package com.g2forge.gearbox.browser.operation;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.NoSuchElementException;
 
 import com.g2forge.alexandria.java.function.IFunction1;
 import com.g2forge.gearbox.browser.IBrowsable;
@@ -15,30 +16,31 @@ import lombok.RequiredArgsConstructor;
 @Builder(toBuilder = true)
 @RequiredArgsConstructor
 public class DisplayedWait implements IFunction1<IBrowsable, IOperationWrapper> {
-	public static class Wrapper extends LoadWait.Wrapper {
-		protected final By by;
-
-		public Wrapper(IBrowser browser, By by) {
+	public class Wrapper extends LoadWait.Wrapper {
+		public Wrapper(IBrowser browser) {
 			super(browser);
-			this.by = by;
 		}
 
 		@Override
 		public void post() {
 			super.post();
-			browser.operation().until(b -> b.find(by)).operation().until(IElement::isDisplayed);
-		}
-
-		@Override
-		public void pre() {
-			super.pre();
+			if (isDisplayed()) browser.operation().until(b -> b.find(by)).operation().until(IElement::isDisplayed);
+			else browser.operation().until(b -> {
+				try {
+					return !b.find(by).isDisplayed();
+				} catch (NoSuchElementException e) {
+					return true;
+				}
+			});
 		}
 	}
 
 	protected final By by;
 
+	protected final boolean displayed;
+
 	@Override
 	public IOperationWrapper apply(IBrowsable browsable) {
-		return new Wrapper(browsable.getBrowser(), getBy());
+		return new Wrapper(browsable.getBrowser());
 	}
 }
