@@ -18,6 +18,8 @@ public interface IBrowser extends ICloseable, IBrowsable {
 
 	public <T extends IElement> List<T> findAll(By by, Class<T> type);
 
+	public IAlert getAlert();
+
 	public String getTitle();
 
 	public IBrowser go(String url);
@@ -25,5 +27,5 @@ public interface IBrowser extends ICloseable, IBrowsable {
 	@Override
 	public IOperationBuilder<? extends IBrowser> operation();
 
-	public IAlert getAlert();
+	public IBrowser refresh();
 }

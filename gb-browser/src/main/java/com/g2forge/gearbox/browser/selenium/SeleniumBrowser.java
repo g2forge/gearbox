@@ -150,4 +150,10 @@ public class SeleniumBrowser implements IBrowser {
 			}
 		};
 	}
+
+	@Override
+	public IBrowser refresh() {
+		driver.navigate().refresh();
+		return this;
+	}
 }

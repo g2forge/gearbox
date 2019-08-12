@@ -5,8 +5,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.interactions.MoveTargetOutOfBoundsException;
 
 import com.g2forge.alexandria.java.function.IConsumer1;
 import com.g2forge.alexandria.java.function.IFunction1;
@@ -62,6 +64,10 @@ class Element implements IElement {
 
 	protected final SeleniumBrowser browser;
 
+	protected void center() {
+		((JavascriptExecutor) browser.driver).executeScript("arguments[0].scrollIntoView({\"block\":\"center\",\"inline\":\"center\"});", element);
+	}
+
 	@Override
 	public IElement clear() {
 		element.clear();
@@ -111,6 +117,7 @@ class Element implements IElement {
 
 	@Override
 	public IElement moveTo() {
+		center();
 		new Actions(browser.driver).moveToElement(element).build().perform();
 		return this;
 	}
