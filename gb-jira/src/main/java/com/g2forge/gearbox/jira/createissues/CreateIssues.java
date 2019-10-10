@@ -20,11 +20,13 @@ import org.slf4j.event.Level;
 
 import com.atlassian.jira.rest.client.api.IssueRestClient;
 import com.atlassian.jira.rest.client.api.JiraRestClient;
+import com.atlassian.jira.rest.client.api.domain.BasicIssue;
 import com.atlassian.jira.rest.client.api.domain.IssueFieldId;
 import com.atlassian.jira.rest.client.api.domain.input.ComplexIssueInputFieldValue;
 import com.atlassian.jira.rest.client.api.domain.input.FieldInput;
 import com.atlassian.jira.rest.client.api.domain.input.IssueInputBuilder;
 import com.atlassian.jira.rest.client.api.domain.input.LinkIssuesInput;
+import com.atlassian.util.concurrent.Promise;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -33,6 +35,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.g2forge.alexandria.command.IStandardCommand;
 import com.g2forge.alexandria.command.CommandInvocation;
 import com.g2forge.alexandria.command.exit.IExit;
+import com.g2forge.alexandria.java.core.error.HError;
 import com.g2forge.alexandria.java.function.IConsumer1;
 import com.g2forge.alexandria.log.HLog;
 import com.g2forge.alexandria.wizard.PropertyStringInput;
@@ -110,12 +113,29 @@ public class CreateIssues implements IStandardCommand {
 				builder.setDescription(issue.getDescription());
 				if ((issue.getLabels() != null) && !issue.getLabels().isEmpty()) builder.setFieldInput(new FieldInput(IssueFieldId.LABELS_FIELD, issue.getLabels()));
 
-				issues.put(issue.getSummary(), issueClient.createIssue(builder.build()).get().getKey());
+				final List<Throwable> throwables = new ArrayList<>();
+				for (int i = 0; i < 5; i++) {
+					final Promise<BasicIssue> promise = issueClient.createIssue(builder.build());
+					final BasicIssue created;
+					try {
+						created = promise.get();
+					} catch (ExecutionException e) {
+						throwables.add(e);
+						continue;
+					}
+					issues.put(issue.getSummary(), created.getKey());
+					throwables.clear();
+					break;
+				}
+				if (!throwables.isEmpty()) {
+					HError.multithrow(String.format("Failed to create issue: %1$s", issue.getSummary()), throwables).printStackTrace(System.err);
+				}
 			}
 
 			for (LinkIssuesInput link : changes.getLinks()) {
 				final String from = issues.get(link.getFromIssueKey());
 				final String to = issues.getOrDefault(link.getToIssueKey(), link.getToIssueKey());
+				// TODO: Handle it when an issue we're linking wasn't created
 				issueClient.linkIssue(new LinkIssuesInput(from, to, link.getLinkType(), link.getComment())).get();
 			}
 
