@@ -5,11 +5,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Iterator;
+import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PullCommand;
@@ -38,6 +41,7 @@ import org.eclipse.jgit.transport.JschConfigSessionFactory;
 import org.eclipse.jgit.transport.OpenSshConfig;
 import org.eclipse.jgit.transport.OpenSshConfig.Host;
 import org.eclipse.jgit.transport.RefSpec;
+import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.SshSessionFactory;
 import org.eclipse.jgit.transport.SshTransport;
 import org.eclipse.jgit.transport.Transport;
@@ -187,16 +191,37 @@ public class HGit {
 	}
 
 	public static String getMyRemote(final Git git) {
-		final Set<String> remotes = git.getRepository().getRemoteNames();
-		if (remotes.size() == 1) return HCollection.getOne(remotes);
-		if (remotes.size() == 2) {
-			if (remotes.contains(Constants.DEFAULT_REMOTE_NAME)) {
-				final Set<String> modify = new HashSet<>(remotes);
-				modify.remove(Constants.DEFAULT_REMOTE_NAME);
-				return HCollection.getOne(modify);
+		final List<RemoteConfig> remotes;
+		try {
+			remotes = git.remoteList().call();
+		} catch (GitAPIException e) {
+			throw new RuntimeException(e);
+		}
+		if (remotes.size() == 1) return HCollection.getOne(remotes).getName();
+
+		final List<RemoteConfig> modify = new ArrayList<>(remotes);
+		for (Iterator<RemoteConfig> i = modify.iterator(); i.hasNext();) {
+			final RemoteConfig remote = i.next();
+			if (remote.getName().equals(Constants.DEFAULT_REMOTE_NAME)) {
+				i.remove();
+				continue;
+			}
+
+			final String uri = HCollection.getOne(remote.getURIs()).toString();
+			final Path path;
+			try {
+				path = Paths.get(uri);
+			} catch (Throwable t) {
+				continue;
+			}
+			if (Files.isDirectory(path)) {
+				i.remove();
+				continue;
 			}
 		}
-		throw new IllegalStateException(String.format("Cannot automatically guess your git remote from among %1$s!", remotes));
+
+		if (modify.size() != 1) throw new IllegalStateException(String.format("Cannot automatically guess your git remote from among %1$s!", modify.stream().map(RemoteConfig::getName).collect(Collectors.toList())));
+		return HCollection.getOne(modify).getName();
 	}
 
 	/**
