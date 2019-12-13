@@ -14,6 +14,7 @@ import java.util.stream.StreamSupport;
 
 import com.g2forge.alexandria.adt.collection.CircularBuffer;
 import com.g2forge.alexandria.java.core.marker.ISingleton;
+import com.g2forge.alexandria.java.io.HIO;
 import com.g2forge.alexandria.java.io.RuntimeIOException;
 import com.g2forge.gearbox.command.process.IProcess;
 
@@ -36,18 +37,22 @@ public class StreamResultSupplier implements IResultSupplier<Stream<String>>, IS
 
 			protected void close() {
 				done = true;
-				if (!process.isSuccess()) {
-					final List<String> lines = buffer.getList();
-					final StringBuilder builder = new StringBuilder().append("Showing last ").append(lines.size()).append(" lines:");
-					for (String line : lines) {
-						builder.append('\t').append(line).append('\n');
-					}
-					throw new RuntimeException(builder.toString());
-				}
 				try {
-					reader.close();
-				} catch (IOException e) {
-					throw new RuntimeIOException(e);
+					if (!process.isSuccess()) {
+						final List<String> lines = buffer.getList();
+						final StringBuilder builder = new StringBuilder().append("Showing last ").append(lines.size()).append(" lines of standard out:\n");
+						for (String line : lines) {
+							builder.append('\t').append(line).append('\n');
+						}
+						builder.append("Showing all of standard error:\n");
+						HIO.readAll(process.getStandardError()).forEach(line -> builder.append('\t').append(line).append('\n'));
+						throw new RuntimeException(builder.toString());
+					}
+					try {
+						reader.close();
+					} catch (IOException e) {
+						throw new RuntimeIOException(e);
+					}
 				} finally {
 					process.close();
 				}
