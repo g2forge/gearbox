@@ -9,12 +9,12 @@
 	<parent>
 		<groupId>com.g2forge.alexandria</groupId>
 		<artifactId>ax-project</artifactId>
-		<version>0.0.11-SNAPSHOT</version>
+		<version>0.0.11</version>
 		<relativePath>../../alexandria/ax-project/pom.xml</relativePath>
 	</parent>
 
 	<properties>
-		<alexandria.version>0.0.11-SNAPSHOT</alexandria.version>
+		<alexandria.version>0.0.11</alexandria.version>
 
 		<gearbox.organization>g2forge</gearbox.organization>
 		<gearbox.name>Gearbox</gearbox.name>
