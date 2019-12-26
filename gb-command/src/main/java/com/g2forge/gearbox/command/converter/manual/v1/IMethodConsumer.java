@@ -2,36 +2,36 @@ package com.g2forge.gearbox.command.converter.manual.v1;
 
 import com.g2forge.alexandria.java.core.error.RuntimeReflectionException;
 import com.g2forge.alexandria.java.function.IConsumer2;
-import com.g2forge.alexandria.metadata.IMetadata;
-import com.g2forge.alexandria.metadata.IMetadataLoader;
-import com.g2forge.alexandria.metadata.MetadataLoader;
 import com.g2forge.gearbox.command.proxy.method.MethodInvocation;
 import com.g2forge.gearbox.command.proxy.process.ProcessInvocation;
-import com.g2forge.gearbox.command.proxy.process.ProcessInvocation.ProcessInvocationBuilder;
+import com.g2forge.habitat.metadata.access.ITypedMetadataAccessor;
+import com.g2forge.habitat.metadata.access.indirect.IndirectMetadata;
+import com.g2forge.habitat.metadata.type.predicate.IPredicateType;
+import com.g2forge.habitat.metadata.value.predicate.ConstantPredicate;
+import com.g2forge.habitat.metadata.value.predicate.IPredicate;
+import com.g2forge.habitat.metadata.value.subject.ISubject;
 
-@MetadataLoader(IMethodConsumer.MethodConsumerMetadataLoader.class)
+@IndirectMetadata(IMethodConsumer.MetadataAccessor.class)
 @FunctionalInterface
 public interface IMethodConsumer extends IConsumer2<ProcessInvocation.ProcessInvocationBuilder<Object>, MethodInvocation> {
-	public static class MethodConsumerMetadataLoader implements IMetadataLoader {
+	public static class MetadataAccessor implements ITypedMetadataAccessor<IMethodConsumer, ISubject, IPredicateType<IMethodConsumer>> {
 		@Override
-		public <T> T load(Class<T> type, IMetadata metadata) {
-			return IMetadataLoader.load(type, metadata, IMethodConsumer.class, m -> {
-				final MethodConsumers methodConsumers = m.getMetadata(MethodConsumers.class);
-				if (methodConsumers == null) return null;
-				return new IMethodConsumer() {
-					@Override
-					public void accept(ProcessInvocationBuilder<Object> processInvocationBuilder, MethodInvocation methodInvocation) {
-						for (MethodConsumer methodConsumerMetadata : methodConsumers.value()) {
-							final IConsumer2<ProcessInvocation.ProcessInvocationBuilder<Object>, MethodInvocation> methodConsumer;
-							try {
-								methodConsumer = methodConsumerMetadata.value().newInstance();
-							} catch (InstantiationException | IllegalAccessException e) {
-								throw new RuntimeReflectionException(e);
-							}
-							methodConsumer.accept(processInvocationBuilder, methodInvocation);
+		public IPredicate<IMethodConsumer> bindTyped(ISubject subject, IPredicateType<IMethodConsumer> predicateType) {
+			final MethodConsumers methodConsumers = subject.get(MethodConsumers.class);
+			if (methodConsumers == null) return ConstantPredicate.absent(subject, predicateType);
+			return ConstantPredicate.present(subject, predicateType, new IMethodConsumer() {
+				@Override
+				public void accept(ProcessInvocation.ProcessInvocationBuilder<Object> processInvocationBuilder, MethodInvocation methodInvocation) {
+					for (MethodConsumer methodConsumerMetadata : methodConsumers.value()) {
+						final IConsumer2<ProcessInvocation.ProcessInvocationBuilder<Object>, MethodInvocation> methodConsumer;
+						try {
+							methodConsumer = methodConsumerMetadata.value().newInstance();
+						} catch (InstantiationException | IllegalAccessException e) {
+							throw new RuntimeReflectionException(e);
 						}
+						methodConsumer.accept(processInvocationBuilder, methodInvocation);
 					}
-				};
+				}
 			});
 		}
 	}

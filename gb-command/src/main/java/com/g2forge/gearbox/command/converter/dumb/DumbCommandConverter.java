@@ -18,7 +18,6 @@ import com.g2forge.alexandria.java.type.function.TypeSwitch2;
 import com.g2forge.alexandria.java.type.ref.ATypeRef;
 import com.g2forge.alexandria.java.type.ref.ATypeRefIdentity;
 import com.g2forge.alexandria.java.type.ref.ITypeRef;
-import com.g2forge.alexandria.metadata.IMetadata;
 import com.g2forge.gearbox.command.converter.ICommandConverterR_;
 import com.g2forge.gearbox.command.converter.IMethodArgument;
 import com.g2forge.gearbox.command.converter.MethodArgument;
@@ -35,6 +34,7 @@ import com.g2forge.gearbox.command.proxy.result.ProcessResultSupplier;
 import com.g2forge.gearbox.command.proxy.result.StreamResultSupplier;
 import com.g2forge.gearbox.command.proxy.result.StringResultSupplier;
 import com.g2forge.gearbox.command.proxy.result.VoidResultSupplier;
+import com.g2forge.habitat.metadata.Metadata;
 
 import lombok.Builder;
 import lombok.Data;
@@ -52,35 +52,35 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 
 	protected static final IConsumer2<ArgumentContext, Object> ARGUMENT_BUILDER = new TypeSwitch2.ConsumerBuilder<ArgumentContext, Object>().with(builder -> {
 		builder.add(ArgumentContext.class, String[].class, (c, v) -> {
-			if (c.getArgument().getMetadata().isMetadataPresent(Named.class)) throw new IllegalArgumentException("Named string arrays are not supported!");
+			if (c.getArgument().getMetadata().isPresent(Named.class)) throw new IllegalArgumentException("Named string arrays are not supported!");
 			for (String value : v) {
 				c.getCommand().argument(value);
 			}
 		});
 		builder.add(ArgumentContext.class, String.class, (c, v) -> {
-			final Named named = c.getArgument().getMetadata().getMetadata(Named.class);
+			final Named named = c.getArgument().getMetadata().get(Named.class);
 			c.getCommand().argument(named != null ? named.value() + v : v);
 		});
 		builder.add(ArgumentContext.class, Integer.class, (c, v) -> {
-			final Named named = c.getArgument().getMetadata().getMetadata(Named.class);
+			final Named named = c.getArgument().getMetadata().get(Named.class);
 			final String string = Integer.toString(v);
 			c.getCommand().argument(named != null ? named.value() + string : string);
 		});
 		builder.add(ArgumentContext.class, Path.class, (c, v) -> {
-			final Working working = c.getArgument().getMetadata().getMetadata(Working.class);
+			final Working working = c.getArgument().getMetadata().get(Working.class);
 			if (working != null) {
-				if (c.getArgument().getMetadata().isMetadataPresent(Named.class)) throw new IllegalArgumentException("Working directory arguments cannot also be named!");
+				if (c.getArgument().getMetadata().isPresent(Named.class)) throw new IllegalArgumentException("Working directory arguments cannot also be named!");
 				c.getCommand().working(v);
 			} else {
-				final Named named = c.getArgument().getMetadata().getMetadata(Named.class);
+				final Named named = c.getArgument().getMetadata().get(Named.class);
 				final String string = v.toString();
 				c.getCommand().argument(named != null ? named.value() + string : string);
 			}
 		});
 
 		final IConsumer2<? super ArgumentContext, ? super Boolean> bool = (c, v) -> {
-			final Flag flag = c.getArgument().getMetadata().getMetadata(Flag.class);
-			final Named named = c.getArgument().getMetadata().getMetadata(Named.class);
+			final Flag flag = c.getArgument().getMetadata().get(Flag.class);
+			final Named named = c.getArgument().getMetadata().get(Named.class);
 			if (flag != null) {
 				if (named != null) throw new IllegalArgumentException("Flags cannot also be named!");
 				if (v) c.getCommand().argument(flag.value());
@@ -138,7 +138,7 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 
 		// Compute the command name
 		commandInvocationBuilder.clearArguments();
-		final Command command = IMetadata.of(methodInvocation.getMethod()).getMetadata(Command.class);
+		final Command command = Metadata.getStandard().of(methodInvocation.getMethod()).get(Command.class);
 		if (command != null) Stream.of(command.value()).forEach(commandInvocationBuilder::argument);
 		else commandInvocationBuilder.argument(methodInvocation.getMethod().getName());
 
@@ -154,7 +154,7 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 			final Object value = methodInvocation.getArguments().get(i);
 			final IMethodArgument<Object> methodArgument = new MethodArgument(value, parameters[i]);
 
-			final IArgumentRenderer<?> argumentRenderer = methodArgument.getMetadata().getMetadata(IArgumentRenderer.class);
+			final IArgumentRenderer<?> argumentRenderer = methodArgument.getMetadata().get(IArgumentRenderer.class);
 			if (argumentRenderer != null) {
 				@SuppressWarnings({ "unchecked", "rawtypes" })
 				final List<String> arguments = argumentRenderer.render((IMethodArgument) methodArgument);
@@ -164,7 +164,7 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 				ARGUMENT_BUILDER.accept(argumentContext, value);
 			}
 
-			final Constant constant = methodArgument.getMetadata().getMetadata(Constant.class);
+			final Constant constant = methodArgument.getMetadata().get(Constant.class);
 			if ((constant != null) && (constant.value() != null)) commandInvocationBuilder.arguments(HCollection.asList(constant.value()));
 		}
 
