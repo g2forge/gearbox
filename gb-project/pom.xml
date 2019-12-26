@@ -1,4 +1,6 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.g2forge.gearbox</groupId>
@@ -15,6 +17,7 @@
 
 	<properties>
 		<alexandria.version>0.0.12-SNAPSHOT</alexandria.version>
+		<habitat.version>0.0.1-SNAPSHOT</habitat.version>
 
 		<gearbox.organization>g2forge</gearbox.organization>
 		<gearbox.name>Gearbox</gearbox.name>
@@ -59,6 +62,15 @@
 								<dependency>
 									<groupId>com.g2forge.alexandria</groupId>
 									<artifactId>alexandria</artifactId>
+								</dependency>
+							</dependencies>
+						</property>
+						<property>
+							<name>habitat.version</name>
+							<dependencies>
+								<dependency>
+									<groupId>com.g2forge.habitat</groupId>
+									<artifactId>habitat</artifactId>
 								</dependency>
 							</dependencies>
 						</property>

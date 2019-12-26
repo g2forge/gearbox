@@ -3,25 +3,26 @@ package com.g2forge.gearbox.command.converter.dumb;
 import java.util.List;
 
 import com.g2forge.alexandria.java.core.error.RuntimeReflectionException;
-import com.g2forge.alexandria.metadata.IMetadata;
-import com.g2forge.alexandria.metadata.IMetadataLoader;
-import com.g2forge.alexandria.metadata.MetadataLoader;
 import com.g2forge.gearbox.command.converter.IMethodArgument;
+import com.g2forge.habitat.metadata.access.ITypedMetadataAccessor;
+import com.g2forge.habitat.metadata.access.indirect.IndirectMetadata;
+import com.g2forge.habitat.metadata.type.predicate.IPredicateType;
+import com.g2forge.habitat.metadata.value.predicate.ConstantPredicate;
+import com.g2forge.habitat.metadata.value.predicate.IPredicate;
+import com.g2forge.habitat.metadata.value.subject.ISubject;
 
-@MetadataLoader(IArgumentRenderer.MetadataLoader.class)
+@IndirectMetadata(IArgumentRenderer.MetadataAccessor.class)
 public interface IArgumentRenderer<T> {
-	public static class MetadataLoader implements IMetadataLoader {
+	public static class MetadataAccessor implements ITypedMetadataAccessor<IArgumentRenderer<?>, ISubject, IPredicateType<IArgumentRenderer<?>>> {
 		@Override
-		public <T> T load(Class<T> type, IMetadata metadata) {
-			return IMetadataLoader.load(type, metadata, IArgumentRenderer.class, m -> {
-				final ArgumentRenderer argumentRendererMetadata = m.getMetadata(ArgumentRenderer.class);
-				if (argumentRendererMetadata == null) return null;
-				try {
-					return argumentRendererMetadata.value().newInstance();
-				} catch (InstantiationException | IllegalAccessException e) {
-					throw new RuntimeReflectionException(e);
-				}
-			});
+		public IPredicate<IArgumentRenderer<?>> bindTyped(ISubject subject, IPredicateType<IArgumentRenderer<?>> predicateType) {
+			final ArgumentRenderer argumentRendererMetadata = subject.get(ArgumentRenderer.class);
+			if (argumentRendererMetadata == null) return ConstantPredicate.absent(subject, predicateType);
+			try {
+				return ConstantPredicate.present(subject, predicateType, argumentRendererMetadata.value().newInstance());
+			} catch (InstantiationException | IllegalAccessException e) {
+				throw new RuntimeReflectionException(e);
+			}
 		}
 	}
 

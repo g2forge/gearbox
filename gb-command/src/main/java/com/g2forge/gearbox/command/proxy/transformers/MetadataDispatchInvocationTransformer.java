@@ -4,10 +4,10 @@ import java.lang.reflect.Method;
 
 import com.g2forge.alexandria.java.core.error.RuntimeReflectionException;
 import com.g2forge.alexandria.java.function.IFunction1;
-import com.g2forge.alexandria.metadata.IMetadata;
 import com.g2forge.gearbox.command.proxy.method.MethodInvocation;
 import com.g2forge.gearbox.command.proxy.method.OverrideInvocationTransformer;
 import com.g2forge.gearbox.command.proxy.process.ProcessInvocation;
+import com.g2forge.habitat.metadata.Metadata;
 
 import lombok.Builder;
 import lombok.Data;
@@ -22,7 +22,7 @@ public class MetadataDispatchInvocationTransformer implements IDelegatingInvocat
 	@Override
 	public ProcessInvocation<?> apply(MethodInvocation methodInvocation) {
 		final Method method = methodInvocation.getMethod();
-		final OverrideInvocationTransformer specify = IMetadata.of(method).getMetadata(OverrideInvocationTransformer.class);
+		final OverrideInvocationTransformer specify = Metadata.getStandard().of(method).get(OverrideInvocationTransformer.class);
 		if (specify == null) return getDelegate().apply(methodInvocation);
 
 		final Class<? extends IFunction1<MethodInvocation, ProcessInvocation<?>>> klass = specify.value();
