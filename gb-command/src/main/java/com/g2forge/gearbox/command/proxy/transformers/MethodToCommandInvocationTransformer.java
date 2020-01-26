@@ -1,9 +1,10 @@
 package com.g2forge.gearbox.command.proxy.transformers;
 
-import com.g2forge.alexandria.metadata.IMetadata;
 import com.g2forge.gearbox.command.converter.ICommandConverterR_;
 import com.g2forge.gearbox.command.proxy.method.MethodInvocation;
 import com.g2forge.gearbox.command.proxy.process.ProcessInvocation;
+import com.g2forge.habitat.metadata.Metadata;
+import com.g2forge.habitat.metadata.value.subject.ISubject;
 
 import lombok.Builder;
 import lombok.Data;
@@ -23,7 +24,7 @@ public class MethodToCommandInvocationTransformer implements IInvocationTransfor
 	}
 
 	protected ICommandConverterR_ getRenderer(MethodInvocation methodInvocation) {
-		final IMetadata metadata = IMetadata.of(methodInvocation.getMethod());
-		return metadata.getMetadata(ICommandConverterR_.class);
+		final ISubject subject = Metadata.getStandard().of(methodInvocation.getMethod());
+		return subject.get(ICommandConverterR_.class);
 	}
 }

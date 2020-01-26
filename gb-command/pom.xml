@@ -25,9 +25,9 @@
 			<version>${alexandria.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>com.g2forge.alexandria</groupId>
-			<artifactId>ax-metadata</artifactId>
-			<version>${alexandria.version}</version>
+			<groupId>com.g2forge.habitat</groupId>
+			<artifactId>ha-metadata</artifactId>
+			<version>${habitat.version}</version>
 		</dependency>
 		
 		<dependency>

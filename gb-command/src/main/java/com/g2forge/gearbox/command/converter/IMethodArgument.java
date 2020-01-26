@@ -2,14 +2,14 @@ package com.g2forge.gearbox.command.converter;
 
 import java.lang.reflect.Type;
 
-import com.g2forge.alexandria.metadata.IMetadata;
+import com.g2forge.habitat.metadata.value.subject.ISubject;
 
 public interface IMethodArgument<T> {
 	public T get();
 
 	public Type getGenericType();
 
-	public IMetadata getMetadata();
+	public ISubject getMetadata();
 
 	public String getName();
 

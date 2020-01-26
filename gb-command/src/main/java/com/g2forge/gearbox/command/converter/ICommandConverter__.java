@@ -6,21 +6,22 @@ import com.g2forge.alexandria.annotations.note.Note;
 import com.g2forge.alexandria.annotations.note.NoteType;
 import com.g2forge.alexandria.java.core.error.RuntimeReflectionException;
 import com.g2forge.alexandria.java.core.helpers.HStream;
-import com.g2forge.alexandria.metadata.IMetadata;
-import com.g2forge.alexandria.metadata.IMetadataLoader;
+import com.g2forge.habitat.metadata.type.predicate.IPredicateType;
+import com.g2forge.habitat.metadata.value.predicate.ConstantPredicate;
+import com.g2forge.habitat.metadata.value.predicate.IPredicate;
+import com.g2forge.habitat.metadata.value.subject.ISubject;
 
 public interface ICommandConverter__ {
 	@Note(type = NoteType.TODO, value = "Check for metadata on the type containing the method, will require upgrades to metadata first", issue = "G2-469")
-	public static <T, U> T load(Class<T> type, IMetadata metadata, final Class<U> klass) {
-		return IMetadataLoader.load(type, metadata, klass, m -> {
-			final CommandConverters commandConvertersMetadata = m.getMetadata(CommandConverters.class);
-			if (commandConvertersMetadata == null) return null;
-			final Class<? extends ICommandConverter__> rendererType = HStream.findOne(Stream.of(commandConvertersMetadata.value()).map(CommandConverter::value).filter(klass::isAssignableFrom));
-			try {
-				return klass.cast(rendererType.newInstance());
-			} catch (InstantiationException | IllegalAccessException e) {
-				throw new RuntimeReflectionException(e);
-			}
-		});
+	public static <C extends ICommandConverter__> IPredicate<C> bind(ISubject subject, IPredicateType<C> predicateType, final Class<C> klass) {
+		final CommandConverters commandConverters = subject.get(CommandConverters.class);
+		if (commandConverters == null) return ConstantPredicate.absent(subject, predicateType);
+		final Class<? extends ICommandConverter__> rendererType = HStream.findOne(Stream.of(commandConverters.value()).map(CommandConverter::value).filter(klass::isAssignableFrom));
+		try {
+			final C thingy = klass.cast(rendererType.newInstance());
+			return ConstantPredicate.present(subject, predicateType, thingy);
+		} catch (InstantiationException | IllegalAccessException e) {
+			throw new RuntimeReflectionException(e);
+		}
 	}
 }
