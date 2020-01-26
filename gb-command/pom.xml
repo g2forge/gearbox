@@ -10,7 +10,7 @@
 		<relativePath>../gb-project/pom.xml</relativePath>
 	</parent>
 
-	<name>Gearbox Functional</name>
+	<name>Gearbox Command</name>
 	<description>A functional abstraction of command line programs, allowing Java to invoke shell commands painlessly.</description>
 
 	<dependencies>

@@ -10,8 +10,8 @@
 		<relativePath>../gb-project/pom.xml</relativePath>
 	</parent>
 
-	<name>Gearbox Functional Test</name>
-	<description>Helper code for testing modules build on GearBox Functional.</description>
+	<name>Gearbox Command Test</name>
+	<description>Helper code for testing modules build on GearBox Command.</description>
 
 	<dependencies>
 		<dependency>
