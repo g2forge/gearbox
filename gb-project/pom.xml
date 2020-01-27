@@ -11,12 +11,12 @@
 	<parent>
 		<groupId>com.g2forge.alexandria</groupId>
 		<artifactId>ax-project</artifactId>
-		<version>0.0.12-SNAPSHOT</version>
+		<version>0.0.13</version>
 	</parent>
 
 	<properties>
-		<alexandria.version>0.0.12-SNAPSHOT</alexandria.version>
-		<habitat.version>0.0.1-SNAPSHOT</habitat.version>
+		<alexandria.version>0.0.13</alexandria.version>
+		<habitat.version>0.0.1</habitat.version>
 
 		<gearbox.organization>g2forge</gearbox.organization>
 		<gearbox.name>Gearbox</gearbox.name>
