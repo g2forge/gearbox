@@ -42,7 +42,7 @@ public class SeleniumBrowser implements IBrowser {
 	public void close() {
 		assertOpen();
 		open = false;
-		driver.close();
+		driver.quit();
 	}
 
 	protected <T extends IElement> T convert(final WebElement element, Class<T> type) {
