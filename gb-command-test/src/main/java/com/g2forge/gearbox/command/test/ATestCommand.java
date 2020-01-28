@@ -1,10 +1,10 @@
 package com.g2forge.gearbox.command.test;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.g2forge.alexandria.command.CommandInvocation;
 import com.g2forge.alexandria.java.function.IFunction1;
+import com.g2forge.alexandria.test.HAssert;
 import com.g2forge.alexandria.test.HAssume;
 import com.g2forge.gearbox.command.IUtils;
 import com.g2forge.gearbox.command.converter.ICommandConverterR_;
@@ -37,8 +37,8 @@ public abstract class ATestCommand {
 	@Test
 	public void exitcode() {
 		HAssume.assumeTrue(isValid());
-		Assert.assertFalse(getUtils().false_());
-		Assert.assertTrue(getUtils().true_());
+		HAssert.assertFalse(getUtils().false_());
+		HAssert.assertTrue(getUtils().true_());
 	}
 
 	protected boolean isValid() {
