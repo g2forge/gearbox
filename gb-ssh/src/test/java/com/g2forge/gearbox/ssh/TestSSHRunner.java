@@ -1,14 +1,24 @@
 package com.g2forge.gearbox.ssh;
 
 import java.nio.file.Paths;
+import java.time.Duration;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.g2forge.alexandria.command.CommandInvocation;
 import com.g2forge.alexandria.java.close.ICloseable;
 import com.g2forge.alexandria.java.function.IFunction1;
+import com.g2forge.alexandria.test.HAssert;
+import com.g2forge.alexandria.test.HAssume;
+import com.g2forge.alexandria.wizard.InputUnspecifiedException;
 import com.g2forge.alexandria.wizard.PropertyStringInput;
 import com.g2forge.alexandria.wizard.UserPasswordInput;
 import com.g2forge.alexandria.wizard.UserStringInput;
@@ -26,18 +36,41 @@ public class TestSSHRunner extends ATestCommand {
 	private static final SSHServer server = createServer();
 
 	protected static SSHServer createServer() {
-		final SSHServerBuilder builder = SSHServer.builder();
-		builder.username(new PropertyStringInput("ssh.username").fallback(new UserStringInput("SSH Username", false)).get());
-		builder.password(new PropertyStringInput("ssh.password").fallback(new UserPasswordInput("SSH Password")).get());
-		builder.host(new PropertyStringInput("ssh.host").fallback(new UserStringInput("SSH Host", false)).get());
-		builder.port(Integer.valueOf(new PropertyStringInput("ssh.port").fallback(new UserStringInput("SSH Port", false)).get()));
-		final SSHServer server = builder.build();
-		return server;
+		final ExecutorService executor = Executors.newSingleThreadExecutor();
+		final Future<SSHServer> handler = executor.submit(new Callable<SSHServer>() {
+			@Override
+			public SSHServer call() throws Exception {
+				try {
+					final SSHServerBuilder builder = SSHServer.builder();
+					builder.username(new PropertyStringInput("ssh.username").fallback(new UserStringInput("SSH Username", false)).get());
+					builder.password(new PropertyStringInput("ssh.password").fallback(new UserPasswordInput("SSH Password")).get());
+					builder.host(new PropertyStringInput("ssh.host").fallback(new UserStringInput("SSH Host", false)).get());
+					builder.port(Integer.valueOf(new PropertyStringInput("ssh.port").fallback(new UserStringInput("SSH Port", false)).get()));
+					return builder.build();
+				} catch (InputUnspecifiedException exception) {
+					return null;
+				}
+			}
+		});
+		try {
+			return handler.get(Duration.ofSeconds(60).toMillis(), TimeUnit.MILLISECONDS);
+		} catch (TimeoutException | InterruptedException | ExecutionException exception) {
+			handler.cancel(true);
+			return null;
+		} finally {
+			executor.shutdownNow();
+		}
 	}
 
 	@After
 	public void close() {
-		((ICloseable) getRunner()).close();
+		final Object runner;
+		try {
+			runner = getRunner();
+		} catch (Throwable throwable) {
+			return;
+		}
+		((ICloseable) runner).close();
 	}
 
 	@Override
@@ -52,11 +85,19 @@ public class TestSSHRunner extends ATestCommand {
 
 	@Test
 	public void cwd() {
-		Assert.assertEquals(new PropertyStringInput("sshtest.cwd").fallback(new UserStringInput("SSH Test CWD", false)).get(), getUtils().pwd(Paths.get("./"), false).trim());
+		HAssume.assumeNotNull(getServer());
+		final String cwd = HAssume.assumeNoException(new PropertyStringInput("sshtest.cwd").fallback(new UserStringInput("SSH Test CWD", false)));
+		HAssert.assertEquals(cwd, getUtils().pwd(Paths.get("./"), false).trim());
 	}
 
 	@Test
 	public void hostname() {
-		Assert.assertEquals(new PropertyStringInput("sshtest.hostname").fallback(new UserStringInput("SSH Test Hostname", false)).get(), getUtils().echo(false, "${HOSTNAME}").trim());
+		HAssume.assumeNotNull(getServer());
+		final String hostname = HAssume.assumeNoException(new PropertyStringInput("sshtest.hostname").fallback(new UserStringInput("SSH Test Hostname", false)));
+		HAssert.assertEquals(hostname, getUtils().echo(false, "${HOSTNAME}").trim());
+	}
+
+	protected boolean isValid() {
+		return getServer() != null;
 	}
 }

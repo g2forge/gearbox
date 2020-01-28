@@ -5,6 +5,7 @@ import org.junit.Test;
 
 import com.g2forge.alexandria.command.CommandInvocation;
 import com.g2forge.alexandria.java.function.IFunction1;
+import com.g2forge.alexandria.test.HAssume;
 import com.g2forge.gearbox.command.IUtils;
 import com.g2forge.gearbox.command.converter.ICommandConverterR_;
 import com.g2forge.gearbox.command.process.IProcess;
@@ -18,7 +19,7 @@ import lombok.Getter;
 public abstract class ATestCommand {
 	@Getter(lazy = true)
 	private final ICommandProxyFactory factory = new CommandProxyFactory(createRenderer(), getRunner());
-	
+
 	@Getter(lazy = true)
 	private final IFunction1<CommandInvocation<IRedirect, IRedirect>, IProcess> runner = createRunner();
 
@@ -35,7 +36,12 @@ public abstract class ATestCommand {
 
 	@Test
 	public void exitcode() {
+		HAssume.assumeTrue(isValid());
 		Assert.assertFalse(getUtils().false_());
 		Assert.assertTrue(getUtils().true_());
+	}
+
+	protected boolean isValid() {
+		return true;
 	}
 }
