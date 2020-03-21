@@ -9,13 +9,11 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.g2forge.alexandria.java.core.helpers.HArray;
-import com.g2forge.alexandria.java.text.HString;
+import com.g2forge.alexandria.java.text.escape.JavaEscapeType;
 import com.g2forge.gearbox.command.converter.ICommandConverterR_;
 import com.g2forge.gearbox.command.converter.dumb.Command;
 import com.g2forge.gearbox.command.converter.dumb.DumbCommandConverter;
 import com.g2forge.gearbox.command.process.IProcess;
-import com.g2forge.gearbox.command.test.ATestCommand;
-import com.g2forge.gearbox.command.test.ITestCommandInterface;
 
 public class TestCommand extends ATestCommand {
 	public interface ForTesting extends ITestCommandInterface {
@@ -36,7 +34,7 @@ public class TestCommand extends ATestCommand {
 	@Test
 	public void echoExpressions() {
 		final String[] args = HArray.create("foo\\n!", "bar");
-		final String expected = HString.unescape(Stream.of(args).collect(Collectors.joining(" "))) + "\n";
+		final String expected = JavaEscapeType.String.getEscaper().unescape(Stream.of(args).collect(Collectors.joining(" "))) + "\n";
 		final String actual = getUtils().echo(true, args);
 		Assert.assertEquals(expected, actual);
 	}
