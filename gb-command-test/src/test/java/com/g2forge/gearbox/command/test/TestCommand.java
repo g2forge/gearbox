@@ -9,7 +9,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.g2forge.alexandria.java.core.helpers.HArray;
-import com.g2forge.alexandria.java.core.helpers.HString;
+import com.g2forge.alexandria.java.text.HString;
 import com.g2forge.gearbox.command.converter.ICommandConverterR_;
 import com.g2forge.gearbox.command.converter.dumb.Command;
 import com.g2forge.gearbox.command.converter.dumb.DumbCommandConverter;
