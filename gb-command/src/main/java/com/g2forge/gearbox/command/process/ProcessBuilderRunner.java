@@ -41,7 +41,7 @@ public class ProcessBuilderRunner implements IRunner {
 	protected final IFunction1<? super List<? extends String>, ? extends List<? extends String>> commandFunction;
 
 	public ProcessBuilderRunner() {
-		this(Platform.getPlatform().getShell().getCommandNesting());
+		this(Platform.getPlatform().getShell()::wrapCommand);
 	}
 
 	@Override
