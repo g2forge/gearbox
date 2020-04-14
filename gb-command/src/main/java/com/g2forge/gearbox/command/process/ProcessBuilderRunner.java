@@ -14,7 +14,7 @@ import com.g2forge.alexandria.java.function.IFunction1;
 import com.g2forge.alexandria.java.function.IFunction2;
 import com.g2forge.alexandria.java.io.HIO;
 import com.g2forge.alexandria.java.io.RuntimeIOException;
-import com.g2forge.alexandria.java.platform.Platform;
+import com.g2forge.alexandria.java.platform.HPlatform;
 import com.g2forge.alexandria.java.type.function.TypeSwitch2;
 import com.g2forge.gearbox.command.process.redirect.FileRedirect;
 import com.g2forge.gearbox.command.process.redirect.IRedirect;
@@ -41,7 +41,7 @@ public class ProcessBuilderRunner implements IRunner {
 	protected final IFunction1<? super List<? extends String>, ? extends List<? extends String>> commandFunction;
 
 	public ProcessBuilderRunner() {
-		this(Platform.getPlatform().getShell()::wrapCommand);
+		this(HPlatform.getPlatform().getShell()::wrapCommand);
 	}
 
 	@Override
