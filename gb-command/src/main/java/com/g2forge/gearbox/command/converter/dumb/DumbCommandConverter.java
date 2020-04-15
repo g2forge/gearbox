@@ -10,6 +10,7 @@ import java.util.stream.Stream;
 import com.g2forge.alexandria.annotations.note.Note;
 import com.g2forge.alexandria.annotations.note.NoteType;
 import com.g2forge.alexandria.command.invocation.CommandInvocation;
+import com.g2forge.alexandria.command.invocation.format.ICommandFormat;
 import com.g2forge.alexandria.command.stdio.StandardIO;
 import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.java.core.marker.ISingleton;
@@ -125,10 +126,11 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 		throw new IllegalArgumentException(String.format("Return type \"%1$s\" is not supported!", type.getType()));
 	}
 
+	@Note(type = NoteType.TODO, value = "Add an annotation to control format")
 	@Override
 	public <T> ProcessInvocation<T> apply(ProcessInvocation<T> processInvocation, MethodInvocation methodInvocation) {
 		final ProcessInvocationBuilder<T> processInvocationBuilder = processInvocation.toBuilder();
-		final CommandInvocation.CommandInvocationBuilder<IRedirect, IRedirect> commandInvocationBuilder = processInvocation.getCommandInvocation() != null ? processInvocation.getCommandInvocation().toBuilder() : CommandInvocation.builder();
+		final CommandInvocation.CommandInvocationBuilder<IRedirect, IRedirect> commandInvocationBuilder = processInvocation.getCommandInvocation() != null ? processInvocation.getCommandInvocation().toBuilder() : CommandInvocation.<IRedirect, IRedirect>builder().format(ICommandFormat.getDefault());
 		final ITypeRef<T> returnTypeRef = computeReturnTypeRef(methodInvocation.getMethod());
 
 		// Compute the IO redirection

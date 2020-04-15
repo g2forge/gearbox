@@ -29,7 +29,7 @@ public class TestHelloWorld {
 		// Create a new command proxy factory
 		// Use the "dumb" converter to render command line arguments from method arguments
 		// Use process builder to run the resulting commands
-		final ICommandProxyFactory factory = new CommandProxyFactory(DumbCommandConverter.create(), new ProcessBuilderRunner(null));
+		final ICommandProxyFactory factory = new CommandProxyFactory(DumbCommandConverter.create(), new ProcessBuilderRunner());
 
 		// Get a magical implementation of the interface
 		final IEcho echo = factory.apply(IEcho.class);

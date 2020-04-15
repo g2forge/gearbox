@@ -5,16 +5,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ProcessBuilder.Redirect;
-import java.util.ArrayList;
-import java.util.List;
 
 import com.g2forge.alexandria.command.invocation.CommandInvocation;
+import com.g2forge.alexandria.command.invocation.runner.ICommandRunner;
+import com.g2forge.alexandria.command.invocation.runner.IdentityCommandRunner;
+import com.g2forge.alexandria.command.process.HProcess;
 import com.g2forge.alexandria.command.stdio.IStandardIO;
-import com.g2forge.alexandria.java.function.IFunction1;
+import com.g2forge.alexandria.command.stdio.StandardIO;
+import com.g2forge.alexandria.command.stdio.StandardIO.StandardIOBuilder;
 import com.g2forge.alexandria.java.function.IFunction2;
 import com.g2forge.alexandria.java.io.HIO;
 import com.g2forge.alexandria.java.io.RuntimeIOException;
-import com.g2forge.alexandria.java.platform.HPlatform;
 import com.g2forge.alexandria.java.type.function.TypeSwitch2;
 import com.g2forge.gearbox.command.process.redirect.FileRedirect;
 import com.g2forge.gearbox.command.process.redirect.IRedirect;
@@ -38,34 +39,40 @@ public class ProcessBuilderRunner implements IRunner {
 	}).build();
 
 	@Getter(AccessLevel.PROTECTED)
-	protected final IFunction1<? super List<? extends String>, ? extends List<? extends String>> commandFunction;
+	protected final ICommandRunner commandRunner;
 
 	public ProcessBuilderRunner() {
-		this(HPlatform.getPlatform().getShell()::wrapCommand);
+		this(IdentityCommandRunner.create());
 	}
 
 	@Override
 	public IProcess apply(CommandInvocation<IRedirect, IRedirect> commandInvocation) {
-		final ProcessBuilder builder = new ProcessBuilder();
-		// Set the working directory
-		if (commandInvocation.getWorking() != null) builder.directory(commandInvocation.getWorking().toFile());
+		final CommandInvocation<IRedirect, IRedirect> wrapped = getCommandRunner().wrap(commandInvocation);
 
-		// Build the command and arguments
-		final IFunction1<? super List<? extends String>, ? extends List<? extends String>> commandFunction = getCommandFunction();
-		if (commandFunction != null) builder.command(new ArrayList<>(commandFunction.apply(commandInvocation.getArguments())));
-		else builder.command(commandInvocation.getArguments());
+		final CommandInvocation<ProcessBuilder.Redirect, ProcessBuilder.Redirect> translated;
+		{ // Translate the redirects
+			final CommandInvocation.CommandInvocationBuilder<ProcessBuilder.Redirect, ProcessBuilder.Redirect> invocationBuilder = CommandInvocation.builder();
+			invocationBuilder.format(wrapped.getFormat());
+			invocationBuilder.working(wrapped.getWorking());
+			invocationBuilder.arguments(wrapped.getArguments());
 
-		// Set the redirects
-		final IStandardIO<IRedirect, IRedirect> redirects = commandInvocation.getIo();
-		if (redirects != null) {
-			final IRedirect standardInput = redirects.getStandardInput();
-			if (standardInput != null) builder.redirectInput(redirectTranslater.apply(standardInput, false));
-			final IRedirect standardOutput = redirects.getStandardOutput();
-			if (standardOutput != null) builder.redirectOutput(redirectTranslater.apply(standardOutput, true));
-			final IRedirect standardError = redirects.getStandardError();
-			if (standardError != null) builder.redirectError(redirectTranslater.apply(standardError, true));
+			final IStandardIO<IRedirect, IRedirect> redirects = commandInvocation.getIo();
+			if (redirects != null) {
+				final StandardIOBuilder<Redirect, Redirect> stdioBuilder = StandardIO.<ProcessBuilder.Redirect, ProcessBuilder.Redirect>builder();
+				final IRedirect standardInput = redirects.getStandardInput();
+				if (standardInput != null) stdioBuilder.standardInput(redirectTranslater.apply(standardInput, false));
+				final IRedirect standardOutput = redirects.getStandardOutput();
+				if (standardOutput != null) stdioBuilder.standardOutput(redirectTranslater.apply(standardOutput, true));
+				final IRedirect standardError = redirects.getStandardError();
+				if (standardError != null) stdioBuilder.standardError(redirectTranslater.apply(standardError, true));
+				invocationBuilder.io(stdioBuilder.build());
+			}
+
+			translated = invocationBuilder.build();
 		}
 
+		// Create the process builder
+		final ProcessBuilder builder = HProcess.createProcessBuilder(translated);
 		// Start the process
 		final Process process;
 		try {

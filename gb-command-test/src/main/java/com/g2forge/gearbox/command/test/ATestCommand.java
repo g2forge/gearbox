@@ -31,7 +31,7 @@ public abstract class ATestCommand {
 	}
 
 	protected IFunction1<CommandInvocation<IRedirect, IRedirect>, IProcess> createRunner() {
-		return new ProcessBuilderRunner(null);
+		return new ProcessBuilderRunner();
 	}
 
 	@Test
