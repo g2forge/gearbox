@@ -13,7 +13,7 @@ import java.util.concurrent.TimeoutException;
 import org.junit.After;
 import org.junit.Test;
 
-import com.g2forge.alexandria.command.CommandInvocation;
+import com.g2forge.alexandria.command.invocation.CommandInvocation;
 import com.g2forge.alexandria.java.close.ICloseable;
 import com.g2forge.alexandria.java.function.IFunction1;
 import com.g2forge.alexandria.test.HAssert;

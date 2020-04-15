@@ -2,7 +2,7 @@ package com.g2forge.gearbox.command.proxy;
 
 import org.junit.Test;
 
-import com.g2forge.alexandria.command.CommandInvocation;
+import com.g2forge.alexandria.command.invocation.CommandInvocation;
 import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.test.HAssert;
 import com.g2forge.gearbox.command.converter.dumb.DumbCommandConverter;
