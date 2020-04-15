@@ -3,6 +3,7 @@ package com.g2forge.gearbox.command.test;
 import org.junit.Test;
 
 import com.g2forge.alexandria.command.invocation.CommandInvocation;
+import com.g2forge.alexandria.command.invocation.runner.IdentityCommandRunner;
 import com.g2forge.alexandria.java.function.IFunction1;
 import com.g2forge.alexandria.test.HAssert;
 import com.g2forge.alexandria.test.HAssume;
@@ -31,7 +32,7 @@ public abstract class ATestCommand {
 	}
 
 	protected IFunction1<CommandInvocation<IRedirect, IRedirect>, IProcess> createRunner() {
-		return new ProcessBuilderRunner();
+		return new ProcessBuilderRunner(IdentityCommandRunner.create());
 	}
 
 	@Test

@@ -8,7 +8,6 @@ import java.lang.ProcessBuilder.Redirect;
 
 import com.g2forge.alexandria.command.invocation.CommandInvocation;
 import com.g2forge.alexandria.command.invocation.runner.ICommandRunner;
-import com.g2forge.alexandria.command.invocation.runner.IdentityCommandRunner;
 import com.g2forge.alexandria.command.process.HProcess;
 import com.g2forge.alexandria.command.stdio.IStandardIO;
 import com.g2forge.alexandria.command.stdio.StandardIO;
@@ -42,7 +41,7 @@ public class ProcessBuilderRunner implements IRunner {
 	protected final ICommandRunner commandRunner;
 
 	public ProcessBuilderRunner() {
-		this(IdentityCommandRunner.create());
+		this(ICommandRunner.create(null));
 	}
 
 	@Override
