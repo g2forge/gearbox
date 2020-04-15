@@ -1,6 +1,6 @@
 package com.g2forge.gearbox.command.process;
 
-import com.g2forge.alexandria.command.CommandInvocation;
+import com.g2forge.alexandria.command.invocation.CommandInvocation;
 import com.g2forge.alexandria.java.function.IFunction1;
 import com.g2forge.gearbox.command.process.redirect.IRedirect;
 

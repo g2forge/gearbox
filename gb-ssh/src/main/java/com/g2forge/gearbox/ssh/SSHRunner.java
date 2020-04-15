@@ -14,7 +14,7 @@ import org.apache.sshd.client.session.ClientSession;
 
 import com.g2forge.alexandria.annotations.note.Note;
 import com.g2forge.alexandria.annotations.note.NoteType;
-import com.g2forge.alexandria.command.CommandInvocation;
+import com.g2forge.alexandria.command.invocation.CommandInvocation;
 import com.g2forge.alexandria.java.close.ICloseable;
 import com.g2forge.alexandria.java.io.RuntimeIOException;
 import com.g2forge.gearbox.command.process.IProcess;

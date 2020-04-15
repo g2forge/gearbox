@@ -2,7 +2,7 @@ package com.g2forge.gearbox.command.proxy;
 
 import java.lang.reflect.Proxy;
 
-import com.g2forge.alexandria.command.CommandInvocation;
+import com.g2forge.alexandria.command.invocation.CommandInvocation;
 import com.g2forge.alexandria.java.function.IFunction1;
 import com.g2forge.gearbox.command.converter.ICommandConverterR_;
 import com.g2forge.gearbox.command.process.IProcess;
