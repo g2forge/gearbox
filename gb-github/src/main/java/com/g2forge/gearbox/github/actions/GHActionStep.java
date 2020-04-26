@@ -4,6 +4,7 @@ import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Builder;
 import lombok.Data;
@@ -18,9 +19,12 @@ public class GHActionStep {
 	protected final String name;
 
 	protected final String uses;
-	
+
+	@JsonProperty("working-directory")
+	protected final String workingDirectory;
+
 	protected final String run;
-	
+
 	@Singular("with")
 	protected final Map<String, String> with;
 }
