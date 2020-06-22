@@ -1,7 +1,7 @@
 package com.g2forge.gearbox.command.proxy.result;
 
 import com.g2forge.alexandria.java.core.marker.ISingleton;
-import com.g2forge.alexandria.java.io.HIO;
+import com.g2forge.alexandria.java.io.HTextIO;
 import com.g2forge.gearbox.command.process.IProcess;
 
 public class StringResultSupplier implements IResultSupplier<String>, ISingleton {
@@ -15,7 +15,7 @@ public class StringResultSupplier implements IResultSupplier<String>, ISingleton
 	public String apply(IProcess process) {
 		try {
 			process.assertSuccess();
-			return HIO.readAll(process.getStandardOutput(), true);
+			return HTextIO.readAll(process.getStandardOutput(), true);
 		} finally {
 			process.close();
 		}
