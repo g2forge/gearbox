@@ -14,7 +14,7 @@ import java.util.stream.StreamSupport;
 
 import com.g2forge.alexandria.adt.collection.CircularBuffer;
 import com.g2forge.alexandria.java.core.marker.ISingleton;
-import com.g2forge.alexandria.java.io.HIO;
+import com.g2forge.alexandria.java.io.HTextIO;
 import com.g2forge.alexandria.java.io.RuntimeIOException;
 import com.g2forge.gearbox.command.process.IProcess;
 
@@ -45,7 +45,7 @@ public class StreamResultSupplier implements IResultSupplier<Stream<String>>, IS
 							builder.append('\t').append(line).append('\n');
 						}
 						builder.append("Showing all of standard error:\n");
-						HIO.readAll(process.getStandardError()).forEach(line -> builder.append('\t').append(line).append('\n'));
+						HTextIO.readAll(process.getStandardError()).forEach(line -> builder.append('\t').append(line).append('\n'));
 						throw new RuntimeException(builder.toString());
 					}
 					try {
