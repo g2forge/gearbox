@@ -20,7 +20,7 @@ public class TestGHAction {
 
 	@Test
 	public void write() throws JsonParseException, JsonMappingException, IOException {
-		final GHActionWorkflow maven = HGHActions.createMavenWorkflow();
+		final GHActionWorkflow maven = HGHActions.createMavenWorkflow(null, null);
 		HAssert.assertEquals(new Resource(getClass(), "maven.yaml"), HGHActions.getMapper().writeValueAsString(maven).trim());
 	}
 }
