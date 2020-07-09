@@ -31,6 +31,7 @@ public class SeleniumBrowser implements IBrowser {
 
 	public SeleniumBrowser() {
 		final FirefoxOptions options = new FirefoxOptions();
+		options.setHeadless(true);
 		options.setCapability(CapabilityType.UNEXPECTED_ALERT_BEHAVIOUR, UnexpectedAlertBehaviour.IGNORE);
 		this.driver = new FirefoxDriver(options);
 	}
