@@ -3,18 +3,18 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.g2forge.gearbox</groupId>
 	<artifactId>gb-project</artifactId>
-	<version>0.0.6-SNAPSHOT</version>
+	<version>0.0.7-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<parent>
 		<groupId>com.g2forge.alexandria</groupId>
 		<artifactId>ax-project</artifactId>
-		<version>0.0.14-SNAPSHOT</version>
+		<version>0.0.15-SNAPSHOT</version>
 	</parent>
 
 	<properties>
-		<alexandria.version>0.0.14-SNAPSHOT</alexandria.version>
-		<habitat.version>0.0.2-SNAPSHOT</habitat.version>
+		<alexandria.version>0.0.15-SNAPSHOT</alexandria.version>
+		<habitat.version>0.0.3-SNAPSHOT</habitat.version>
 
 		<gearbox.organization>g2forge</gearbox.organization>
 		<gearbox.name>Gearbox</gearbox.name>
@@ -38,12 +38,6 @@
 			<url>https://github.com/${gearbox.organization}/${gearbox.repository}/blob/${project.version}/LICENSE</url>
 		</license>
 	</licenses>
-	<scm>
-		<connection>scm:git:git://github.com/${gearbox.organization}/${gearbox.repository}.git</connection>
-		<developerConnection>scm:git:ssh://github.com:${gearbox.organization}/${gearbox.repository}.git</developerConnection>
-		<url>http://github.com/${gearbox.organization}/${gearbox.repository}/tree/${project.version}</url>
-		<tag>HEAD</tag>
-	</scm>
 
 	<build>
 		<plugins>
