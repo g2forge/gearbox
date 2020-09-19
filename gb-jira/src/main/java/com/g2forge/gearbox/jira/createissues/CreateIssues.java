@@ -128,7 +128,7 @@ public class CreateIssues implements IStandardCommand {
 					break;
 				}
 				if (!throwables.isEmpty()) {
-					HError.multithrow(String.format("Failed to create issue: %1$s", issue.getSummary()), throwables).printStackTrace(System.err);
+					HError.withSuppressed(new RuntimeException(String.format("Failed to create issue: %1$s", issue.getSummary())), throwables).printStackTrace(System.err);
 				}
 			}
 
