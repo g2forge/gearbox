@@ -154,6 +154,6 @@ public class CreateIssues implements IStandardCommand {
 		try (final InputStream stream = Files.newInputStream(Paths.get(invocation.getArguments().get(0)))) {
 			createIssues(stream).forEach(System.out::println);
 		}
-		return SUCCESS;
+		return IStandardCommand.SUCCESS;
 	}
 }
