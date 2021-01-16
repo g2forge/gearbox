@@ -27,5 +27,6 @@
 		<module>gb-github</module>
 		<module>gb-browser</module>
 		<module>gb-cli</module>
+		<module>gb-rest</module>
 	</modules>
 </project>
