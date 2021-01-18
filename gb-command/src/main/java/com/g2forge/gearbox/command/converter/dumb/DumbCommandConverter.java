@@ -122,7 +122,7 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 		if (type.getErasedType().isAssignableFrom(Void.class) || type.getErasedType().isAssignableFrom(Void.TYPE)) return (IResultSupplier<T>) VoidResultSupplier.create();
 		if (type.getErasedType().isAssignableFrom(String.class)) return (IResultSupplier<T>) StringResultSupplier.create();
 		if (type.getErasedType().isAssignableFrom(IProcess.class)) return (IResultSupplier<T>) ProcessResultSupplier.create();
-		if (new ATypeRef<Stream<String>>() {}.getType().equals(type.getType())) return (IResultSupplier<T>) StreamResultSupplier.create();
+		if (new ATypeRef<Stream<String>>() {}.getType().equals(type.getType())) return (IResultSupplier<T>) StreamResultSupplier.STANDARD;
 		throw new IllegalArgumentException(String.format("Return type \"%1$s\" is not supported!", type.getType()));
 	}
 
