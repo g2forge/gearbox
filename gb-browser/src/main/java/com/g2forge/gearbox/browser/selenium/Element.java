@@ -8,7 +8,6 @@ import java.util.stream.Stream;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.interactions.MoveTargetOutOfBoundsException;
 
 import com.g2forge.alexandria.java.function.IConsumer1;
 import com.g2forge.alexandria.java.function.IFunction1;
