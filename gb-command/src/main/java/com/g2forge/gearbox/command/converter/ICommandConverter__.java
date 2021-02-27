@@ -1,5 +1,6 @@
 package com.g2forge.gearbox.command.converter;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.stream.Stream;
 
 import com.g2forge.alexandria.annotations.note.Note;
@@ -18,9 +19,9 @@ public interface ICommandConverter__ {
 		if (commandConverters == null) return ConstantPredicate.absent(subject, predicateType);
 		final Class<? extends ICommandConverter__> rendererType = HStream.findOne(Stream.of(commandConverters.value()).map(CommandConverter::value).filter(klass::isAssignableFrom));
 		try {
-			final C thingy = klass.cast(rendererType.newInstance());
+			final C thingy = klass.cast(rendererType.getDeclaredConstructor().newInstance());
 			return ConstantPredicate.present(subject, predicateType, thingy);
-		} catch (InstantiationException | IllegalAccessException e) {
+		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
 			throw new RuntimeReflectionException(e);
 		}
 	}
