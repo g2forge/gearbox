@@ -114,6 +114,11 @@ public class ProcessBuilderRunner implements IRunner {
 			public InputStream getStandardOutput() {
 				return process.getInputStream();
 			}
+
+			@Override
+			public boolean isRunning() {
+				return process.isAlive();
+			}
 		};
 	}
 }
