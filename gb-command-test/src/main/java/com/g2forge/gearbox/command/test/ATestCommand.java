@@ -19,13 +19,17 @@ import lombok.Getter;
 
 public abstract class ATestCommand {
 	@Getter(lazy = true)
-	private final ICommandProxyFactory factory = new CommandProxyFactory(createRenderer(), getRunner());
+	private final ICommandProxyFactory factory = computeFactory();
 
 	@Getter(lazy = true)
 	private final IFunction1<CommandInvocation<IRedirect, IRedirect>, IProcess> runner = createRunner();
 
 	@Getter(lazy = true)
 	private final IUtils utils = getFactory().apply(IUtils.class);
+
+	protected ICommandProxyFactory computeFactory() {
+		return new CommandProxyFactory(createRenderer(), getRunner());
+	}
 
 	protected ICommandConverterR_ createRenderer() {
 		return null;
