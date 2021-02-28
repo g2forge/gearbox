@@ -1,5 +1,6 @@
 package com.g2forge.gearbox.command.converter.dumb;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 import com.g2forge.alexandria.java.core.error.RuntimeReflectionException;
@@ -19,8 +20,8 @@ public interface IArgumentRenderer<T> {
 			final ArgumentRenderer argumentRendererMetadata = subject.get(ArgumentRenderer.class);
 			if (argumentRendererMetadata == null) return ConstantPredicate.absent(subject, predicateType);
 			try {
-				return ConstantPredicate.present(subject, predicateType, argumentRendererMetadata.value().newInstance());
-			} catch (InstantiationException | IllegalAccessException e) {
+				return ConstantPredicate.present(subject, predicateType, argumentRendererMetadata.value().getDeclaredConstructor().newInstance());
+			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
 				throw new RuntimeReflectionException(e);
 			}
 		}

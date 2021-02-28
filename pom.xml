@@ -28,5 +28,6 @@
 		<module>gb-browser</module>
 		<module>gb-cli</module>
 		<module>gb-rest</module>
+		<module>gb-maven</module>
 	</modules>
 </project>

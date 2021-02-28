@@ -1,5 +1,6 @@
 package com.g2forge.gearbox.command.proxy.transformers;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import com.g2forge.alexandria.java.core.error.RuntimeReflectionException;
@@ -28,8 +29,8 @@ public class MetadataDispatchInvocationTransformer implements IDelegatingInvocat
 		final Class<? extends IFunction1<MethodInvocation, ProcessInvocation<?>>> klass = specify.value();
 		final IFunction1<MethodInvocation, ProcessInvocation<?>> transformer;
 		try {
-			transformer = klass.newInstance();
-		} catch (InstantiationException | IllegalAccessException e) {
+			transformer = klass.getDeclaredConstructor().newInstance();
+		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
 			throw new RuntimeReflectionException(e);
 		}
 		return transformer.apply(methodInvocation);

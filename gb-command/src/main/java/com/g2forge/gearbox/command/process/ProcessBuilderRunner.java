@@ -87,6 +87,8 @@ public class ProcessBuilderRunner implements IRunner {
 
 			@Override
 			public void close() {
+				process.descendants().forEach(handle -> handle.destroy());
+				process.destroy();
 				HIO.closeAll(process.getInputStream(), process.getErrorStream(), process.getOutputStream());
 			}
 
@@ -111,6 +113,11 @@ public class ProcessBuilderRunner implements IRunner {
 			@Override
 			public InputStream getStandardOutput() {
 				return process.getInputStream();
+			}
+
+			@Override
+			public boolean isRunning() {
+				return process.isAlive();
 			}
 		};
 	}

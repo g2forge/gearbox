@@ -21,6 +21,8 @@ public interface IProcess extends ICloseable, IStandardIO<OutputStream, InputStr
 
 	public int getExitCode();
 
+	public boolean isRunning();
+
 	public default boolean isSuccess() {
 		return getExitCode() == 0;
 	}

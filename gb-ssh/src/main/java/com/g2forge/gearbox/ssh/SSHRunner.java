@@ -107,6 +107,11 @@ public class SSHRunner implements IRunner, ICloseable {
 			public InputStream getStandardOutput() {
 				return channel.getInvertedOut();
 			}
+
+			@Override
+			public boolean isRunning() {
+				return channel.isOpen();
+			}
 		};
 	}
 }

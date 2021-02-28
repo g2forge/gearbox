@@ -5,6 +5,8 @@ import java.util.Set;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator.Feature;
+import com.g2forge.alexandria.annotations.note.Note;
+import com.g2forge.alexandria.annotations.note.NoteType;
 import com.g2forge.alexandria.java.core.marker.Helpers;
 import com.g2forge.gearbox.github.actions.GHActionJob.GHActionJobBuilder;
 import com.g2forge.gearbox.github.actions.GHActionStep.GHActionStepBuilder;
@@ -19,6 +21,7 @@ public class HGHActions {
 	@Getter(lazy = true)
 	private static final ObjectMapper mapper = new ObjectMapper(new YAMLFactory().enable(Feature.MINIMIZE_QUOTES).disable(Feature.WRITE_DOC_START_MARKER));
 
+	@Note(type = NoteType.TODO, value = "Use gb-command to render command lines")
 	public static GHActionWorkflow createMavenWorkflow(String name, Set<String> dependencies) {
 		if ((name == null) && (dependencies != null) && (dependencies.size() > 0)) throw new IllegalArgumentException("You must provide a name for this repository (subdirectory, logging, etc) if you want to build dependencies!");
 
@@ -28,7 +31,8 @@ public class HGHActions {
 		workflow.on(GHActionEvent.PullRequest, GHActionEventConfiguration.builder().branch("master").build());
 
 		final GHActionJobBuilder build = GHActionJob.builder().runsOn("ubuntu-latest");
-		build.step(GHActionStep.builder().name("Set up JDK 1.8").uses("actions/setup-java@v1").with("java-version", "1.8").build());
+		final String JAVA_VERSION = "11";
+		build.step(GHActionStep.builder().name("Set up JDK " + JAVA_VERSION).uses("actions/setup-java@v1").with("java-version", JAVA_VERSION).build());
 		if (dependencies != null) for (String dependency : dependencies) {
 			final String repo = dependency.substring(dependency.indexOf('/') + 1);
 			build.step(GHActionStep.builder().name("Checkout " + repo).uses("actions/checkout@v2").with("repository", dependency).with("path", repo).build());

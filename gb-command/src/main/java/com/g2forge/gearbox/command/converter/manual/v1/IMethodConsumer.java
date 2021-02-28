@@ -1,5 +1,7 @@
 package com.g2forge.gearbox.command.converter.manual.v1;
 
+import java.lang.reflect.InvocationTargetException;
+
 import com.g2forge.alexandria.java.core.error.RuntimeReflectionException;
 import com.g2forge.alexandria.java.function.IConsumer2;
 import com.g2forge.gearbox.command.proxy.method.MethodInvocation;
@@ -25,8 +27,8 @@ public interface IMethodConsumer extends IConsumer2<ProcessInvocation.ProcessInv
 					for (MethodConsumer methodConsumerMetadata : methodConsumers.value()) {
 						final IConsumer2<ProcessInvocation.ProcessInvocationBuilder<Object>, MethodInvocation> methodConsumer;
 						try {
-							methodConsumer = methodConsumerMetadata.value().newInstance();
-						} catch (InstantiationException | IllegalAccessException e) {
+							methodConsumer = methodConsumerMetadata.value().getDeclaredConstructor().newInstance();
+						} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
 							throw new RuntimeReflectionException(e);
 						}
 						methodConsumer.accept(processInvocationBuilder, methodInvocation);
