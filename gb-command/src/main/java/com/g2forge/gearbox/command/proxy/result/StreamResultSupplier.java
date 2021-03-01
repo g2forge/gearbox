@@ -81,25 +81,31 @@ public class StreamResultSupplier implements IResultSupplier<Stream<String>>, IS
 
 			if (threads.isEmpty()) close();
 			else if (line == null) {
-				threads.removeAll(threads.stream().filter(t -> !t.isOpen()).collect(Collectors.toList()));
-				if (threads.isEmpty()) close();
-				else {
-					// Wait until there's something in the queue
-					while (line == null) {
-						line = queue.poll();
-						if (line != null) break;
-						// There wasn't anything so wait for someone to wake us up
-						synchronized (queue) {
-							try {
-								queue.wait();
-							} catch (InterruptedException e) {}
-						}
+				// Wait until there's something in the queue
+				while (line == null) {
+					// Check if there are still threads filling the queue
+					threads.removeAll(threads.stream().filter(t -> !t.isOpen()).collect(Collectors.toList()));
+					if (threads.isEmpty()) {
+						close();
+						break;
 					}
+
+					line = queue.poll();
+					if (line != null) break;
+					// There wasn't anything so wait for someone to wake us up
+					synchronized (queue) {
+						try {
+							queue.wait();
+						} catch (InterruptedException e) {}
+					}
+				}
+				if (line != null) {
 					// Notify all the writers that there might be space in the queue
 					synchronized (queue) {
 						queue.notifyAll();
 					}
-					if (line != null) buffer.add(line);
+					// Record the line for potential error reporting 
+					buffer.add(line);
 				}
 			}
 
@@ -170,6 +176,10 @@ public class StreamResultSupplier implements IResultSupplier<Stream<String>>, IS
 				reader.close();
 			} catch (IOException e) {
 				throw new UncheckedIOException(e);
+			}
+			// Make sure no reader can get stuck waiting for lines that will never come
+			synchronized (queue) {
+				queue.notifyAll();
 			}
 		}
 	}
