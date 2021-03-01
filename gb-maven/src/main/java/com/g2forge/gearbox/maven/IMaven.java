@@ -20,9 +20,9 @@ public interface IMaven extends ICommandInterface {
 	public static class MavenCoordinatesArgumentRenderer implements IArgumentRenderer<MavenCoordinates> {
 		@Override
 		public List<String> render(IMethodArgument<MavenCoordinates> argument) {
-			final String name = argument.get().toString();
+			final String coordinates = argument.get().toString();
 			final Named named = argument.getMetadata().get(Named.class);
-			return HCollection.asList((named == null ? "" : named.value()) + name);
+			return HCollection.asList((named == null ? "" : named.value()) + coordinates);
 		}
 	}
 
