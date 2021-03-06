@@ -83,22 +83,23 @@ public class StreamResultSupplier implements IResultSupplier<Stream<String>>, IS
 			else if (line == null) {
 				// Wait until there's something in the queue
 				while (line == null) {
-					// Check if there are still threads filling the queue
+					line = queue.poll();
+					if (line != null) break;
+
+					// There wasn't anything so update the set of threads we might want to wait for
 					threads.removeAll(threads.stream().filter(t -> !t.isOpen()).collect(Collectors.toList()));
 					if (threads.isEmpty()) {
 						close();
 						break;
 					}
-
-					line = queue.poll();
-					if (line != null) break;
-					// There wasn't anything so wait for someone to wake us up
+					// There's still a thread, so wait for someone to wake us up (but don't wait for forever)
 					synchronized (queue) {
 						try {
-							queue.wait();
+							queue.wait(1000);
 						} catch (InterruptedException e) {}
 					}
 				}
+
 				if (line != null) {
 					// Notify all the writers that there might be space in the queue
 					synchronized (queue) {
@@ -164,6 +165,7 @@ public class StreamResultSupplier implements IResultSupplier<Stream<String>>, IS
 					line = reader.readLine();
 				}
 			} catch (IOException e) {
+				if ("Stream closed".equals(e.getMessage())) return;
 				throw new UncheckedIOException(e);
 			} catch (InterruptedException e) {
 				throw new RuntimeException(e);
