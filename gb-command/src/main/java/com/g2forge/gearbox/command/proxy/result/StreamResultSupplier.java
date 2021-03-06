@@ -86,13 +86,13 @@ public class StreamResultSupplier implements IResultSupplier<Stream<String>>, IS
 					line = queue.poll();
 					if (line != null) break;
 
-					// There wasn't anything so clear up the set of threads we might be waiting for
+					// There wasn't anything so update the set of threads we might want to wait for
 					threads.removeAll(threads.stream().filter(t -> !t.isOpen()).collect(Collectors.toList()));
 					if (threads.isEmpty()) {
 						close();
 						break;
 					}
-					// There's still a thread, so wait for it
+					// There's still a thread, so wait for someone to wake us up (but don't wait for forever)
 					synchronized (queue) {
 						try {
 							queue.wait(1000);
@@ -105,7 +105,7 @@ public class StreamResultSupplier implements IResultSupplier<Stream<String>>, IS
 					synchronized (queue) {
 						queue.notifyAll();
 					}
-					// Save the line
+					// Record the line for potential error reporting 
 					buffer.add(line);
 				}
 			}
@@ -179,7 +179,7 @@ public class StreamResultSupplier implements IResultSupplier<Stream<String>>, IS
 			} catch (IOException e) {
 				throw new UncheckedIOException(e);
 			}
-
+			// Make sure no reader can get stuck waiting for lines that will never come
 			synchronized (queue) {
 				queue.notifyAll();
 			}
