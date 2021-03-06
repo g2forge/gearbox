@@ -10,6 +10,7 @@ import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.gearbox.command.converter.IMethodArgument;
 import com.g2forge.gearbox.command.converter.dumb.ArgumentRenderer;
 import com.g2forge.gearbox.command.converter.dumb.Command;
+import com.g2forge.gearbox.command.converter.dumb.HDumbCommandConverter;
 import com.g2forge.gearbox.command.converter.dumb.IArgumentRenderer;
 import com.g2forge.gearbox.command.converter.dumb.Named;
 import com.g2forge.gearbox.command.converter.dumb.Working;
@@ -21,8 +22,7 @@ public interface IMaven extends ICommandInterface {
 		@Override
 		public List<String> render(IMethodArgument<MavenCoordinates> argument) {
 			final String coordinates = argument.get().toString();
-			final Named named = argument.getMetadata().get(Named.class);
-			return HCollection.asList((named == null ? "" : named.value()) + coordinates);
+			return HDumbCommandConverter.computeString(argument, coordinates);
 		}
 	}
 

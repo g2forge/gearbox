@@ -14,4 +14,6 @@ import java.lang.annotation.Target;
 @Documented
 public @interface Named {
 	public String value();
+	
+	public boolean joined() default true;
 }
