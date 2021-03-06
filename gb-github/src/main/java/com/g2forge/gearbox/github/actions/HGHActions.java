@@ -48,7 +48,6 @@ public class HGHActions {
 		}
 		workflow.job("build", build.build());
 
-		final GHActionWorkflow maven = workflow.build();
-		return maven;
+		return workflow.build();
 	}
 }
