@@ -81,25 +81,32 @@ public class StreamResultSupplier implements IResultSupplier<Stream<String>>, IS
 
 			if (threads.isEmpty()) close();
 			else if (line == null) {
-				threads.removeAll(threads.stream().filter(t -> !t.isOpen()).collect(Collectors.toList()));
-				if (threads.isEmpty()) close();
-				else {
-					// Wait until there's something in the queue
-					while (line == null) {
-						line = queue.poll();
-						if (line != null) break;
-						// There wasn't anything so wait for someone to wake us up
-						synchronized (queue) {
-							try {
-								queue.wait();
-							} catch (InterruptedException e) {}
-						}
+				// Wait until there's something in the queue
+				while (line == null) {
+					line = queue.poll();
+					if (line != null) break;
+
+					// There wasn't anything so clear up the set of threads we might be waiting for
+					threads.removeAll(threads.stream().filter(t -> !t.isOpen()).collect(Collectors.toList()));
+					if (threads.isEmpty()) {
+						close();
+						break;
 					}
+					// There's still a thread, so wait for it
+					synchronized (queue) {
+						try {
+							queue.wait(1000);
+						} catch (InterruptedException e) {}
+					}
+				}
+
+				if (line != null) {
 					// Notify all the writers that there might be space in the queue
 					synchronized (queue) {
 						queue.notifyAll();
 					}
-					if (line != null) buffer.add(line);
+					// Save the line
+					buffer.add(line);
 				}
 			}
 
@@ -158,6 +165,7 @@ public class StreamResultSupplier implements IResultSupplier<Stream<String>>, IS
 					line = reader.readLine();
 				}
 			} catch (IOException e) {
+				if ("Stream closed".equals(e.getMessage())) return;
 				throw new UncheckedIOException(e);
 			} catch (InterruptedException e) {
 				throw new RuntimeException(e);
@@ -170,6 +178,10 @@ public class StreamResultSupplier implements IResultSupplier<Stream<String>>, IS
 				reader.close();
 			} catch (IOException e) {
 				throw new UncheckedIOException(e);
+			}
+
+			synchronized (queue) {
+				queue.notifyAll();
 			}
 		}
 	}
