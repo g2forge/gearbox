@@ -12,10 +12,6 @@ import com.g2forge.alexandria.java.core.error.UnreachableCodeError;
 import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.java.function.IConsumer1;
 import com.g2forge.alexandria.test.HAssert;
-import com.g2forge.gearbox.command.converter.dumb.DumbCommandConverter;
-import com.g2forge.gearbox.command.converter.dumb.Flag;
-import com.g2forge.gearbox.command.converter.dumb.Named;
-import com.g2forge.gearbox.command.converter.dumb.Working;
 import com.g2forge.gearbox.command.process.redirect.IRedirect;
 import com.g2forge.gearbox.command.proxy.ProxyInvocationHandler;
 import com.g2forge.gearbox.command.proxy.method.ITestCommandInterface;
@@ -71,9 +67,13 @@ public class TestDumbCommandConverter {
 	public interface IStringArrayValue extends ITestCommandInterface {
 		public Stream<String> method(String... argument);
 	}
-	
+
 	public interface IStringNamed extends ITestCommandInterface {
 		public String method(@Named("name=") String argument);
+	}
+
+	public interface IStringNamedNonJoined extends ITestCommandInterface {
+		public String method(@Named(value = "name", joined = false) String argument);
 	}
 
 	public interface IStringValue extends ITestCommandInterface {
@@ -81,7 +81,7 @@ public class TestDumbCommandConverter {
 	}
 
 	@Getter(lazy = true)
-	private static final ProxyInvocationHandler handler = new ProxyInvocationHandler(new MethodToCommandInvocationTransformer(DumbCommandConverter.create()), null);
+	private static final ProxyInvocationHandler handler = computeHandler();
 
 	public static <T> void assertCommand(Class<T> type, IConsumer1<? super T> invoke, Class<? extends IResultSupplier<?>> expectedResultSupplierType, Path expectedWorking, String... expectedArguments) {
 		@SuppressWarnings("unchecked")
@@ -98,6 +98,10 @@ public class TestDumbCommandConverter {
 
 			HAssert.assertEquals(expectedResultSupplierType, processInvocation.getResultSupplier().getClass());
 		}
+	}
+
+	protected static ProxyInvocationHandler computeHandler() {
+		return new ProxyInvocationHandler(new MethodToCommandInvocationTransformer(DumbCommandConverter.create()), null);
 	}
 
 	@Test
@@ -152,10 +156,15 @@ public class TestDumbCommandConverter {
 		assertCommand(IStringArrayValue.class, x -> x.method("A"), StreamResultSupplier.class, null, "method", "A");
 		assertCommand(IStringArrayValue.class, x -> x.method("A", "B"), StreamResultSupplier.class, null, "method", "A", "B");
 	}
-	
+
 	@Test
 	public void stringNamed() {
 		assertCommand(IStringNamed.class, x -> x.method("A"), StringResultSupplier.class, null, "method", "name=A");
+	}
+
+	@Test
+	public void stringNamedNonJoined() {
+		assertCommand(IStringNamedNonJoined.class, x -> x.method("A"), StringResultSupplier.class, null, "method", "name", "A");
 	}
 
 	@Test

@@ -59,37 +59,26 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 			}
 		});
 		builder.add(ArgumentContext.class, String.class, (c, v) -> {
-			final Named named = c.getArgument().getMetadata().get(Named.class);
-			c.getCommand().argument(named != null ? named.value() + v : v);
+			c.getCommand().arguments(HDumbCommandConverter.computeString(c.getArgument(), v));
 		});
 		builder.add(ArgumentContext.class, Integer.class, (c, v) -> {
-			final Named named = c.getArgument().getMetadata().get(Named.class);
-			final String string = Integer.toString(v);
-			c.getCommand().argument(named != null ? named.value() + string : string);
+			c.getCommand().arguments(HDumbCommandConverter.computeString(c.getArgument(), Integer.toString(v)));
 		});
 		builder.add(ArgumentContext.class, Path.class, (c, v) -> {
 			final Working working = c.getArgument().getMetadata().get(Working.class);
 			if (working != null) {
 				if (c.getArgument().getMetadata().isPresent(Named.class)) throw new IllegalArgumentException("Working directory arguments cannot also be named!");
 				c.getCommand().working(v);
-			} else {
-				final Named named = c.getArgument().getMetadata().get(Named.class);
-				final String string = v.toString();
-				c.getCommand().argument(named != null ? named.value() + string : string);
-			}
+			} else c.getCommand().arguments(HDumbCommandConverter.computeString(c.getArgument(), v.toString()));
 		});
 
 		final IConsumer2<? super ArgumentContext, ? super Boolean> bool = (c, v) -> {
 			final Flag flag = c.getArgument().getMetadata().get(Flag.class);
-			final Named named = c.getArgument().getMetadata().get(Named.class);
 			if (flag != null) {
-				if (named != null) throw new IllegalArgumentException("Flags cannot also be named!");
+				if (c.getArgument().getMetadata().isPresent(Named.class)) throw new IllegalArgumentException("Flags cannot also be named!");
 				if (v) c.getCommand().argument(flag.value());
 				return;
-			} else {
-				final String string = Boolean.toString(v);
-				c.getCommand().argument(named != null ? named.value() + string : string);
-			}
+			} else c.getCommand().arguments(HDumbCommandConverter.computeString(c.getArgument(), Boolean.toString(v)));
 		};
 		builder.add(ArgumentContext.class, Boolean.class, bool);
 		builder.add(ArgumentContext.class, Boolean.TYPE, bool);
