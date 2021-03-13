@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ProcessBuilder.Redirect;
+import java.util.Map;
 
 import com.g2forge.alexandria.command.invocation.CommandInvocation;
 import com.g2forge.alexandria.command.invocation.runner.ICommandRunner;
@@ -20,6 +21,8 @@ import com.g2forge.gearbox.command.process.redirect.FileRedirect;
 import com.g2forge.gearbox.command.process.redirect.IRedirect;
 import com.g2forge.gearbox.command.process.redirect.InheritRedirect;
 import com.g2forge.gearbox.command.process.redirect.PipeRedirect;
+import com.g2forge.gearbox.command.proxy.process.ProcessInvocation;
+import com.g2forge.gearbox.command.proxy.process.environment.IEnvironmentValue;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -45,7 +48,9 @@ public class ProcessBuilderRunner implements IRunner {
 	}
 
 	@Override
-	public IProcess apply(CommandInvocation<IRedirect, IRedirect> commandInvocation) {
+	public IProcess apply(ProcessInvocation<?> processInvocation) {
+		final CommandInvocation<IRedirect, IRedirect> commandInvocation = processInvocation.getCommandInvocation();
+		if (commandInvocation == null) return null;
 		final CommandInvocation<IRedirect, IRedirect> wrapped = getCommandRunner().wrap(commandInvocation);
 
 		final CommandInvocation<ProcessBuilder.Redirect, ProcessBuilder.Redirect> translated;
@@ -55,7 +60,7 @@ public class ProcessBuilderRunner implements IRunner {
 			invocationBuilder.working(wrapped.getWorking());
 			invocationBuilder.arguments(wrapped.getArguments());
 
-			final IStandardIO<IRedirect, IRedirect> redirects = commandInvocation.getIo();
+			final IStandardIO<IRedirect, IRedirect> redirects = wrapped.getIo();
 			if (redirects != null) {
 				final StandardIOBuilder<Redirect, Redirect> stdioBuilder = StandardIO.<ProcessBuilder.Redirect, ProcessBuilder.Redirect>builder();
 				final IRedirect standardInput = redirects.getStandardInput();
@@ -72,6 +77,20 @@ public class ProcessBuilderRunner implements IRunner {
 
 		// Create the process builder
 		final ProcessBuilder builder = HProcess.createProcessBuilder(translated);
+
+		// Setup the environment variables
+		if (processInvocation.getEnvironmentVariables() != null) {
+			final Map<String, String> environment = builder.environment();
+			for (Map.Entry<String, IEnvironmentValue> entry : processInvocation.getEnvironmentVariables().entrySet()) {
+				final String name = entry.getKey();
+
+				final String parent = environment.get(name);
+				final String child = entry.getValue().modify(parent);
+				if (child == null) environment.remove(name);
+				else environment.put(name, child);
+			}
+		}
+
 		// Start the process
 		final Process process;
 		try {

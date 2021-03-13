@@ -12,9 +12,11 @@ import com.g2forge.alexandria.annotations.note.NoteType;
 import com.g2forge.alexandria.command.invocation.CommandInvocation;
 import com.g2forge.alexandria.command.invocation.format.ICommandFormat;
 import com.g2forge.alexandria.command.stdio.StandardIO;
+import com.g2forge.alexandria.java.core.enums.EnumException;
 import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.java.core.marker.ISingleton;
 import com.g2forge.alexandria.java.function.IConsumer2;
+import com.g2forge.alexandria.java.platform.HPlatform;
 import com.g2forge.alexandria.java.type.function.TypeSwitch2;
 import com.g2forge.alexandria.java.type.ref.ATypeRef;
 import com.g2forge.alexandria.java.type.ref.ATypeRefIdentity;
@@ -46,6 +48,8 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 	protected static class ArgumentContext {
 		protected final CommandInvocation.CommandInvocationBuilder<IRedirect, IRedirect> command;
 
+		protected final ProcessInvocation.ProcessInvocationBuilder<?> process;
+
 		protected final IMethodArgument<Object> argument;
 	}
 
@@ -65,11 +69,34 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 			c.getCommand().arguments(HDumbCommandConverter.computeString(c.getArgument(), Integer.toString(v)));
 		});
 		builder.add(ArgumentContext.class, Path.class, (c, v) -> {
+			boolean isArgument = true;
+
 			final Working working = c.getArgument().getMetadata().get(Working.class);
 			if (working != null) {
-				if (c.getArgument().getMetadata().isPresent(Named.class)) throw new IllegalArgumentException("Working directory arguments cannot also be named!");
 				c.getCommand().working(v);
-			} else c.getCommand().arguments(HDumbCommandConverter.computeString(c.getArgument(), v.toString()));
+				isArgument = false;
+			}
+
+			final EnvPath envPath = c.getArgument().getMetadata().get(EnvPath.class);
+			if (envPath != null) {
+				c.getProcess().environmentVariable("PATH", parent -> {
+					final String pathSeparator = HPlatform.getPlatform().getPathSpec().getPathSeparator();
+					switch (envPath.usage()) {
+						case AddFirst:
+							return v.toString() + pathSeparator + parent;
+						case Replace:
+							return v.toString();
+						case AddLast:
+							return parent + pathSeparator + v.toString();
+						default:
+							throw new EnumException(EnvPath.Usage.class, envPath.usage());
+					}
+				});
+				isArgument = false;
+			}
+
+			if (isArgument) c.getCommand().arguments(HDumbCommandConverter.computeString(c.getArgument(), v.toString()));
+			else if (c.getArgument().getMetadata().isPresent(Named.class)) throw new IllegalArgumentException("Paths used as non-arguments cannot also be named!");
 		});
 
 		final IConsumer2<? super ArgumentContext, ? super Boolean> bool = (c, v) -> {
@@ -151,7 +178,7 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 				final List<String> arguments = argumentRenderer.render((IMethodArgument) methodArgument);
 				commandInvocationBuilder.arguments(arguments);
 			} else {
-				final ArgumentContext argumentContext = new ArgumentContext(commandInvocationBuilder, methodArgument);
+				final ArgumentContext argumentContext = new ArgumentContext(commandInvocationBuilder, processInvocationBuilder, methodArgument);
 				ARGUMENT_BUILDER.accept(argumentContext, value);
 			}
 

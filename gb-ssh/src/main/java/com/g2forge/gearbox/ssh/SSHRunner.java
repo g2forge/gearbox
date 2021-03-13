@@ -16,10 +16,12 @@ import com.g2forge.alexandria.annotations.note.Note;
 import com.g2forge.alexandria.annotations.note.NoteType;
 import com.g2forge.alexandria.command.invocation.CommandInvocation;
 import com.g2forge.alexandria.java.close.ICloseable;
+import com.g2forge.alexandria.java.core.error.NotYetImplementedError;
 import com.g2forge.alexandria.java.io.RuntimeIOException;
 import com.g2forge.gearbox.command.process.IProcess;
 import com.g2forge.gearbox.command.process.IRunner;
 import com.g2forge.gearbox.command.process.redirect.IRedirect;
+import com.g2forge.gearbox.command.proxy.process.ProcessInvocation;
 
 public class SSHRunner implements IRunner, ICloseable {
 	protected final SshClient client;
@@ -66,17 +68,22 @@ public class SSHRunner implements IRunner, ICloseable {
 	}
 
 	@Note(type = NoteType.TODO, value = "IO redirection and working directories")
+	@Note(type = NoteType.TODO, value = "Environment variables")
 	@Override
-	public IProcess apply(CommandInvocation<IRedirect, IRedirect> invocation) {
+	public IProcess apply(ProcessInvocation<?> processInvocation) {
+		if ((processInvocation.getEnvironmentVariables() != null) && !processInvocation.getEnvironmentVariables().isEmpty()) throw new NotYetImplementedError("SSH does not yet support environment variable modifications at the process level!");
+		final CommandInvocation<IRedirect, IRedirect> commandInvocation = processInvocation.getCommandInvocation();
+
 		ensureOpen();
 		final ChannelExec channel;
 		try {
-			final String command = invocation.getArguments().stream().collect(Collectors.joining(" "));
+			final String command = commandInvocation.getArguments().stream().collect(Collectors.joining(" "));
 			channel = session.createExecChannel(command);
 			if (!channel.open().await()) throw new RuntimeIOException();
 		} catch (IOException exception) {
 			throw new RuntimeIOException(exception);
 		}
+
 		return new IProcess() {
 			@Override
 			public void close() {

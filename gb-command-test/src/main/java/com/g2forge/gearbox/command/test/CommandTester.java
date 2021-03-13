@@ -11,6 +11,7 @@ import com.g2forge.gearbox.command.process.IProcess;
 import com.g2forge.gearbox.command.process.IRunner;
 import com.g2forge.gearbox.command.process.redirect.IRedirect;
 import com.g2forge.gearbox.command.proxy.CommandProxyFactory;
+import com.g2forge.gearbox.command.proxy.process.ProcessInvocation;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -27,8 +28,8 @@ public class CommandTester<Command> {
 
 	protected class ThrowingRunner implements IRunner {
 		@Override
-		public IProcess apply(CommandInvocation<IRedirect, IRedirect> commandInvocation) {
-			throw new CommandException(commandInvocation);
+		public IProcess apply(ProcessInvocation<?> processInvocation) {
+			throw new CommandException(processInvocation.getCommandInvocation());
 		}
 	}
 

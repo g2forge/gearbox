@@ -27,7 +27,7 @@ public class TestMetadataDispatchInvocationTransformer {
 	public static class MyOverrideInvocationTransformer implements IInvocationTransformer {
 		@Override
 		public ProcessInvocation<?> apply(MethodInvocation methodInvocation) {
-			return new ProcessInvocation<>(null, process -> 4);
+			return new ProcessInvocation<>(null, process -> 4, null);
 		}
 	}
 

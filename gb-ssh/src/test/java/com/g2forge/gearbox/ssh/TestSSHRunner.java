@@ -13,7 +13,6 @@ import java.util.concurrent.TimeoutException;
 import org.junit.After;
 import org.junit.Test;
 
-import com.g2forge.alexandria.command.invocation.CommandInvocation;
 import com.g2forge.alexandria.java.close.ICloseable;
 import com.g2forge.alexandria.java.function.IFunction1;
 import com.g2forge.alexandria.test.HAssert;
@@ -25,7 +24,7 @@ import com.g2forge.alexandria.wizard.UserStringInput;
 import com.g2forge.gearbox.command.converter.ICommandConverterR_;
 import com.g2forge.gearbox.command.converter.dumb.DumbCommandConverter;
 import com.g2forge.gearbox.command.process.IProcess;
-import com.g2forge.gearbox.command.process.redirect.IRedirect;
+import com.g2forge.gearbox.command.proxy.process.ProcessInvocation;
 import com.g2forge.gearbox.command.test.ATestCommand;
 import com.g2forge.gearbox.ssh.SSHServer.SSHServerBuilder;
 
@@ -79,7 +78,7 @@ public class TestSSHRunner extends ATestCommand {
 	}
 
 	@Override
-	protected IFunction1<CommandInvocation<IRedirect, IRedirect>, IProcess> createRunner() {
+	protected IFunction1<ProcessInvocation<?>, IProcess> createRunner() {
 		return new SSHRunner(getServer());
 	}
 

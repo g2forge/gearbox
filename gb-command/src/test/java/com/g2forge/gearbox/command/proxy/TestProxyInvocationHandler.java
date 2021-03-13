@@ -25,7 +25,7 @@ public class TestProxyInvocationHandler {
 			HAssert.assertSame(object[0], methodInvocation.getObject());
 			HAssert.assertEquals(HCollection.asList(1), methodInvocation.getArguments());
 
-			final ProcessInvocation<Object> retVal = new ProcessInvocation<>(null, null);
+			final ProcessInvocation<Object> retVal = new ProcessInvocation<>(null, null,null);
 			processInvocation[0] = retVal;
 			return retVal;
 		}, null));
