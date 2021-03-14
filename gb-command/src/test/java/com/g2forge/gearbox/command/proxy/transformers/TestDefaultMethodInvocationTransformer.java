@@ -19,7 +19,7 @@ import com.g2forge.gearbox.command.proxy.process.ProcessInvocation;
 public class TestDefaultMethodInvocationTransformer {
 	public interface IDefaultModify extends ITestCommandInterface {
 		public default int method() {
-			throw new ModifyProcessInvocationException(processInvocation -> new ProcessInvocation<>(processInvocation.getCommandInvocation(), process -> 3, processInvocation.getEnvironmentVariables()));
+			throw new ModifyProcessInvocationException(processInvocation -> new ProcessInvocation<>(processInvocation.getCommandInvocation(), process -> 3));
 		}
 	}
 

@@ -2,6 +2,7 @@ package com.g2forge.gearbox.command.test;
 
 import org.junit.Test;
 
+import com.g2forge.alexandria.command.invocation.CommandInvocation;
 import com.g2forge.alexandria.command.invocation.runner.IdentityCommandRunner;
 import com.g2forge.alexandria.java.function.IFunction1;
 import com.g2forge.alexandria.test.HAssert;
@@ -10,9 +11,9 @@ import com.g2forge.gearbox.command.IUtils;
 import com.g2forge.gearbox.command.converter.ICommandConverterR_;
 import com.g2forge.gearbox.command.process.IProcess;
 import com.g2forge.gearbox.command.process.ProcessBuilderRunner;
+import com.g2forge.gearbox.command.process.redirect.IRedirect;
 import com.g2forge.gearbox.command.proxy.CommandProxyFactory;
 import com.g2forge.gearbox.command.proxy.ICommandProxyFactory;
-import com.g2forge.gearbox.command.proxy.process.ProcessInvocation;
 
 import lombok.Getter;
 
@@ -21,7 +22,7 @@ public abstract class ATestCommand {
 	private final ICommandProxyFactory factory = computeFactory();
 
 	@Getter(lazy = true)
-	private final IFunction1<ProcessInvocation<?>, IProcess> runner = createRunner();
+	private final IFunction1<CommandInvocation<IRedirect, IRedirect>, IProcess> runner = createRunner();
 
 	@Getter(lazy = true)
 	private final IUtils utils = getFactory().apply(IUtils.class);
@@ -34,7 +35,7 @@ public abstract class ATestCommand {
 		return null;
 	}
 
-	protected IFunction1<ProcessInvocation<?>, IProcess> createRunner() {
+	protected IFunction1<CommandInvocation<IRedirect, IRedirect>, IProcess> createRunner() {
 		return new ProcessBuilderRunner(IdentityCommandRunner.create());
 	}
 

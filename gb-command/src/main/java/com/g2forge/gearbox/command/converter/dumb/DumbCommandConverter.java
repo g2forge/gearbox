@@ -10,6 +10,8 @@ import java.util.stream.Stream;
 import com.g2forge.alexandria.annotations.note.Note;
 import com.g2forge.alexandria.annotations.note.NoteType;
 import com.g2forge.alexandria.command.invocation.CommandInvocation;
+import com.g2forge.alexandria.command.invocation.environment.SystemEnvironment;
+import com.g2forge.alexandria.command.invocation.environment.modified.ModifiedEnvironment;
 import com.g2forge.alexandria.command.invocation.format.ICommandFormat;
 import com.g2forge.alexandria.command.stdio.StandardIO;
 import com.g2forge.alexandria.java.core.enums.EnumException;
@@ -48,7 +50,7 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 	protected static class ArgumentContext {
 		protected final CommandInvocation.CommandInvocationBuilder<IRedirect, IRedirect> command;
 
-		protected final ProcessInvocation.ProcessInvocationBuilder<?> process;
+		protected final ModifiedEnvironment.ModifiedEnvironmentBuilder environment;
 
 		protected final IMethodArgument<Object> argument;
 	}
@@ -79,7 +81,7 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 
 			final EnvPath envPath = c.getArgument().getMetadata().get(EnvPath.class);
 			if (envPath != null) {
-				c.getProcess().environmentVariable("PATH", parent -> {
+				c.getEnvironment().modifier(HPlatform.PATH, parent -> {
 					final String pathSeparator = HPlatform.getPlatform().getPathSpec().getPathSeparator();
 					switch (envPath.usage()) {
 						case AddFirst:
@@ -146,8 +148,17 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 	@Override
 	public <T> ProcessInvocation<T> apply(ProcessInvocation<T> processInvocation, MethodInvocation methodInvocation) {
 		final ProcessInvocationBuilder<T> processInvocationBuilder = processInvocation.toBuilder();
-		final CommandInvocation.CommandInvocationBuilder<IRedirect, IRedirect> commandInvocationBuilder = processInvocation.getCommandInvocation() != null ? processInvocation.getCommandInvocation().toBuilder() : CommandInvocation.<IRedirect, IRedirect>builder().format(ICommandFormat.getDefault());
 		final ITypeRef<T> returnTypeRef = computeReturnTypeRef(methodInvocation.getMethod());
+
+		final CommandInvocation.CommandInvocationBuilder<IRedirect, IRedirect> commandInvocationBuilder;
+		final ModifiedEnvironment.ModifiedEnvironmentBuilder environmentBuilder = ModifiedEnvironment.builder();
+		if (processInvocation.getCommandInvocation() != null) {
+			commandInvocationBuilder = processInvocation.getCommandInvocation().toBuilder();
+			environmentBuilder.base(processInvocation.getCommandInvocation().getEnvironment());
+		} else {
+			commandInvocationBuilder = CommandInvocation.<IRedirect, IRedirect>builder().format(ICommandFormat.getDefault());
+			environmentBuilder.base(SystemEnvironment.create());
+		}
 
 		// Compute the IO redirection
 		if ((processInvocation.getCommandInvocation() == null) || (processInvocation.getCommandInvocation().getIo() == null)) {
@@ -166,7 +177,7 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 			processInvocationBuilder.resultSupplier(standard);
 		}
 
-		// Sort out all the arguments
+		// Generate the command & environment from the method arguments
 		final Parameter[] parameters = methodInvocation.getMethod().getParameters();
 		for (int i = 0; i < parameters.length; i++) {
 			final Object value = methodInvocation.getArguments().get(i);
@@ -178,7 +189,7 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 				final List<String> arguments = argumentRenderer.render((IMethodArgument) methodArgument);
 				commandInvocationBuilder.arguments(arguments);
 			} else {
-				final ArgumentContext argumentContext = new ArgumentContext(commandInvocationBuilder, processInvocationBuilder, methodArgument);
+				final ArgumentContext argumentContext = new ArgumentContext(commandInvocationBuilder, environmentBuilder, methodArgument);
 				ARGUMENT_BUILDER.accept(argumentContext, value);
 			}
 
@@ -186,7 +197,7 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 			if ((constant != null) && (constant.value() != null)) commandInvocationBuilder.arguments(HCollection.asList(constant.value()));
 		}
 
-		processInvocationBuilder.commandInvocation(commandInvocationBuilder.build());
+		processInvocationBuilder.commandInvocation(commandInvocationBuilder.environment(environmentBuilder.build()).build());
 		return processInvocationBuilder.build();
 	}
 }
