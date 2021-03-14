@@ -19,7 +19,7 @@ public class ProcessInvocation<O> {
 	protected final CommandInvocation<IRedirect, IRedirect> commandInvocation;
 
 	protected final IResultSupplier<? extends O> resultSupplier;
-	
+
 	public IResultSupplier<? extends O> getResultSupplier() {
 		return this.resultSupplier;
 	}

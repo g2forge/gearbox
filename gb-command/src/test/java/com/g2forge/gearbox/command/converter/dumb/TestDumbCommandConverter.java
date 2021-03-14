@@ -11,6 +11,7 @@ import com.g2forge.alexandria.command.invocation.CommandInvocation;
 import com.g2forge.alexandria.java.core.error.UnreachableCodeError;
 import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.java.function.IConsumer1;
+import com.g2forge.alexandria.java.platform.HPlatform;
 import com.g2forge.alexandria.test.HAssert;
 import com.g2forge.gearbox.command.process.redirect.IRedirect;
 import com.g2forge.gearbox.command.proxy.ProxyInvocationHandler;
@@ -38,6 +39,10 @@ public class TestDumbCommandConverter {
 
 	public interface IBooleanValue extends ITestCommandInterface {
 		public Boolean method(Boolean argument);
+	}
+
+	public interface IEnvironment extends ITestCommandInterface {
+		public void method(@EnvPath(usage = EnvPath.Usage.Replace) Path path);
 	}
 
 	public interface IIntegerNamed extends ITestCommandInterface {
@@ -83,7 +88,7 @@ public class TestDumbCommandConverter {
 	@Getter(lazy = true)
 	private static final ProxyInvocationHandler handler = computeHandler();
 
-	public static <T> void assertCommand(Class<T> type, IConsumer1<? super T> invoke, Class<? extends IResultSupplier<?>> expectedResultSupplierType, Path expectedWorking, String... expectedArguments) {
+	public static <T> CommandInvocation<IRedirect, IRedirect> assertCommand(Class<T> type, IConsumer1<? super T> invoke, Class<? extends IResultSupplier<?>> expectedResultSupplierType, Path expectedWorking, String... expectedArguments) {
 		@SuppressWarnings("unchecked")
 		final T proxy = (T) Proxy.newProxyInstance(type.getClassLoader(), new Class<?>[] { type }, getHandler());
 		try {
@@ -95,8 +100,8 @@ public class TestDumbCommandConverter {
 			final CommandInvocation<IRedirect, IRedirect> commandInvocation = processInvocation.getCommandInvocation();
 			HAssert.assertEquals(expectedWorking, commandInvocation.getWorking());
 			HAssert.assertEquals(HCollection.asList(expectedArguments), commandInvocation.getArguments());
-
 			HAssert.assertEquals(expectedResultSupplierType, processInvocation.getResultSupplier().getClass());
+			return commandInvocation;
 		}
 	}
 
@@ -118,6 +123,13 @@ public class TestDumbCommandConverter {
 	@Test
 	public void booleanValue() {
 		assertCommand(IBooleanValue.class, x -> x.method(false), BooleanResultSupplier.class, null, "method", "false");
+	}
+
+	@Test
+	public void environment() {
+		final String value = "path";
+		final CommandInvocation<IRedirect, IRedirect> command = assertCommand(IEnvironment.class, x -> x.method(Paths.get(value)), VoidResultSupplier.class, null, "method");
+		HAssert.assertEquals(value, command.getEnvironment().apply(HPlatform.PATH));
 	}
 
 	@Test

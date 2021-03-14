@@ -46,32 +46,13 @@ public class ProcessBuilderRunner implements IRunner {
 
 	@Override
 	public IProcess apply(CommandInvocation<IRedirect, IRedirect> commandInvocation) {
+		// Wrap the command
 		final CommandInvocation<IRedirect, IRedirect> wrapped = getCommandRunner().wrap(commandInvocation);
-
-		final CommandInvocation<ProcessBuilder.Redirect, ProcessBuilder.Redirect> translated;
-		{ // Translate the redirects
-			final CommandInvocation.CommandInvocationBuilder<ProcessBuilder.Redirect, ProcessBuilder.Redirect> invocationBuilder = CommandInvocation.builder();
-			invocationBuilder.format(wrapped.getFormat());
-			invocationBuilder.working(wrapped.getWorking());
-			invocationBuilder.arguments(wrapped.getArguments());
-
-			final IStandardIO<IRedirect, IRedirect> redirects = commandInvocation.getIo();
-			if (redirects != null) {
-				final StandardIOBuilder<Redirect, Redirect> stdioBuilder = StandardIO.<ProcessBuilder.Redirect, ProcessBuilder.Redirect>builder();
-				final IRedirect standardInput = redirects.getStandardInput();
-				if (standardInput != null) stdioBuilder.standardInput(redirectTranslater.apply(standardInput, false));
-				final IRedirect standardOutput = redirects.getStandardOutput();
-				if (standardOutput != null) stdioBuilder.standardOutput(redirectTranslater.apply(standardOutput, true));
-				final IRedirect standardError = redirects.getStandardError();
-				if (standardError != null) stdioBuilder.standardError(redirectTranslater.apply(standardError, true));
-				invocationBuilder.io(stdioBuilder.build());
-			}
-
-			translated = invocationBuilder.build();
-		}
-
+		// Translate the redirects to process builder format
+		final CommandInvocation<ProcessBuilder.Redirect, ProcessBuilder.Redirect> translated = translateRedirects(wrapped);
 		// Create the process builder
 		final ProcessBuilder builder = HProcess.createProcessBuilder(translated);
+
 		// Start the process
 		final Process process;
 		try {
@@ -120,5 +101,31 @@ public class ProcessBuilderRunner implements IRunner {
 				return process.isAlive();
 			}
 		};
+	}
+
+	protected CommandInvocation<ProcessBuilder.Redirect, ProcessBuilder.Redirect> translateRedirects(final CommandInvocation<IRedirect, IRedirect> wrapped) {
+		final CommandInvocation<ProcessBuilder.Redirect, ProcessBuilder.Redirect> translated;
+		{ // Translate the redirects
+			final CommandInvocation.CommandInvocationBuilder<ProcessBuilder.Redirect, ProcessBuilder.Redirect> invocationBuilder = CommandInvocation.builder();
+			invocationBuilder.format(wrapped.getFormat());
+			invocationBuilder.working(wrapped.getWorking());
+			invocationBuilder.arguments(wrapped.getArguments());
+			invocationBuilder.environment(wrapped.getEnvironment());
+
+			final IStandardIO<IRedirect, IRedirect> redirects = wrapped.getIo();
+			if (redirects != null) {
+				final StandardIOBuilder<Redirect, Redirect> stdioBuilder = StandardIO.<ProcessBuilder.Redirect, ProcessBuilder.Redirect>builder();
+				final IRedirect standardInput = redirects.getStandardInput();
+				if (standardInput != null) stdioBuilder.standardInput(redirectTranslater.apply(standardInput, false));
+				final IRedirect standardOutput = redirects.getStandardOutput();
+				if (standardOutput != null) stdioBuilder.standardOutput(redirectTranslater.apply(standardOutput, true));
+				final IRedirect standardError = redirects.getStandardError();
+				if (standardError != null) stdioBuilder.standardError(redirectTranslater.apply(standardError, true));
+				invocationBuilder.io(stdioBuilder.build());
+			}
+
+			translated = invocationBuilder.build();
+		}
+		return translated;
 	}
 }

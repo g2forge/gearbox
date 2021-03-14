@@ -38,7 +38,7 @@ public class TestCommand extends ATestCommand {
 		final String actual = getUtils().echo(true, args);
 		Assert.assertEquals(expected, actual);
 	}
-	
+
 	@Test
 	public void echoSimple() {
 		final String string = "Hello, World!";

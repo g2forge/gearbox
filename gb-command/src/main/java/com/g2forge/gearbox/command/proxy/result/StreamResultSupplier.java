@@ -24,6 +24,7 @@ import com.g2forge.alexandria.command.stdio.StandardIO;
 import com.g2forge.alexandria.java.close.ICloseable;
 import com.g2forge.alexandria.java.concurrent.AThreadActor;
 import com.g2forge.alexandria.java.core.marker.ISingleton;
+import com.g2forge.alexandria.java.io.HIO;
 import com.g2forge.alexandria.java.io.HTextIO;
 import com.g2forge.gearbox.command.process.IProcess;
 
@@ -195,10 +196,16 @@ public class StreamResultSupplier implements IResultSupplier<Stream<String>>, IS
 	@Override
 	public Stream<String> apply(IProcess process) {
 		final List<Stream2Queue> threads = new ArrayList<>(2);
-		final ConcurrentLinkedQueue<String> queue = new ConcurrentLinkedQueue<>();
-		if (getInclude().getStandardOutput()) threads.add(new Stream2Queue(process.getStandardOutput(), 50, queue).open());
-		if (getInclude().getStandardError()) threads.add(new Stream2Queue(process.getStandardError(), 50, queue).open());
-		final IOIterator iterator = new IOIterator(threads, queue, process);
-		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED | Spliterator.NONNULL), false).onClose(iterator::close);
+		try {
+			final ConcurrentLinkedQueue<String> queue = new ConcurrentLinkedQueue<>();
+			if (getInclude().getStandardOutput()) threads.add(new Stream2Queue(process.getStandardOutput(), 50, queue));
+			if (getInclude().getStandardError()) threads.add(new Stream2Queue(process.getStandardError(), 50, queue));
+			threads.forEach(Stream2Queue::open);
+			final IOIterator iterator = new IOIterator(threads, queue, process);
+			return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED | Spliterator.NONNULL), false).onClose(iterator::close);
+		} catch (Throwable throwable) {
+			HIO.closeAll(threads);
+			throw throwable;
+		}
 	}
 }
