@@ -3,13 +3,14 @@ package com.g2forge.gearbox.command.test;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.junit.Assert;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import com.g2forge.alexandria.command.invocation.CommandInvocation;
 import com.g2forge.alexandria.command.invocation.runner.ICommandRunner;
 import com.g2forge.alexandria.java.function.IFunction1;
 import com.g2forge.alexandria.java.platform.HPlatform;
+import com.g2forge.alexandria.test.HAssert;
 import com.g2forge.gearbox.command.converter.ICommandConverterR_;
 import com.g2forge.gearbox.command.converter.dumb.DumbCommandConverter;
 import com.g2forge.gearbox.command.converter.dumb.EnvPath;
@@ -34,14 +35,18 @@ public class TestEnvironment extends ATestCommand {
 
 	@Test
 	public void custom() {
-		final String path = "Hello World!";
+		final String expected = "Hello World!";
 		final ICustomCommand custom = getFactory().apply(ICustomCommand.class);
-		Assert.assertEquals(path, custom.echo(Paths.get(path), HPlatform.getPlatform().getShell().getVariable().createString(false, HPlatform.PATH)).trim());
+		// The process builder & shell will append paths
+		final String actual = custom.echo(Paths.get(expected), HPlatform.getPlatform().getShell().getVariable().createString(false, HPlatform.PATH)).trim();
+		HAssert.assertThat(actual, Matchers.startsWith(expected));
 	}
 
 	@Test
 	public void path() {
-		final String path = System.getenv(HPlatform.PATH);
-		Assert.assertEquals(path, getUtils().echo(false, HPlatform.getPlatform().getShell().getVariable().createString(false, HPlatform.PATH)).trim());
+		final String expected = System.getenv(HPlatform.PATH);
+		// The process builder & shell will append paths
+		final String actual = getUtils().echo(false, HPlatform.getPlatform().getShell().getVariable().createString(false, HPlatform.PATH)).trim();
+		HAssert.assertThat(actual, Matchers.startsWith(expected));
 	}
 }
