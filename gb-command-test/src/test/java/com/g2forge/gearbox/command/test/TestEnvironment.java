@@ -36,12 +36,14 @@ public class TestEnvironment extends ATestCommand {
 	public void custom() {
 		final String path = "Hello World!";
 		final ICustomCommand custom = getFactory().apply(ICustomCommand.class);
-		Assert.assertEquals(path, custom.echo(Paths.get(path), HPlatform.getPlatform().getShell().getVariable().createString(false, HPlatform.PATH)).trim());
+		// The process builder & shell will append paths
+		Assert.assertTrue(path.startsWith(custom.echo(Paths.get(path), HPlatform.getPlatform().getShell().getVariable().createString(false, HPlatform.PATH)).trim()));
 	}
 
 	@Test
 	public void path() {
 		final String path = System.getenv(HPlatform.PATH);
-		Assert.assertEquals(path, getUtils().echo(false, HPlatform.getPlatform().getShell().getVariable().createString(false, HPlatform.PATH)).trim());
+		// The process builder & shell will append paths
+		Assert.assertTrue(path.startsWith(getUtils().echo(false, HPlatform.getPlatform().getShell().getVariable().createString(false, HPlatform.PATH)).trim()));
 	}
 }
