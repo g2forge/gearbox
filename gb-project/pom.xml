@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.g2forge.gearbox</groupId>
 	<artifactId>gb-project</artifactId>
-	<version>0.0.9-SNAPSHOT</version>
+	<version>0.0.9</version>
 	<packaging>pom</packaging>
 
 	<parent>
@@ -43,7 +43,8 @@
 		<connection>scm:git:git://github.com/${gearbox.organization}/${gearbox.repository}.git</connection>
 		<developerConnection>scm:git:ssh://github.com:${gearbox.organization}/${gearbox.repository}.git</developerConnection>
 		<url>http://github.com/${gearbox.organization}/${gearbox.repository}/tree/${project.version}</url>
-	</scm>
+	  <tag>0.0.9</tag>
+  </scm>
 
 	<build>
 		<plugins>

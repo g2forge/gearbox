@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>com.g2forge.gearbox</groupId>
 		<artifactId>gb-project</artifactId>
-		<version>0.0.9-SNAPSHOT</version>
+		<version>0.0.9</version>
 		<relativePath>gb-project/pom.xml</relativePath>
 	</parent>
 
@@ -29,4 +29,8 @@
 		<module>gb-maven</module>
 		<module>gb-image</module>
 	</modules>
+
+  <scm>
+    <tag>0.0.9</tag>
+  </scm>
 </project>
