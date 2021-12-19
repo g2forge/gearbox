@@ -19,32 +19,45 @@ import lombok.experimental.UtilityClass;
 @Helpers
 public class HGHActions {
 	@Getter(lazy = true)
-	private static final ObjectMapper mapper = new ObjectMapper(new YAMLFactory().enable(Feature.MINIMIZE_QUOTES).disable(Feature.WRITE_DOC_START_MARKER));
+	private static final ObjectMapper mapper = new ObjectMapper(new YAMLFactory().enable(Feature.MINIMIZE_QUOTES).disable(Feature.WRITE_DOC_START_MARKER).disable(Feature.SPLIT_LINES));
 
 	@Note(type = NoteType.TODO, value = "Use gb-command to render command lines")
-	public static GHActionWorkflow createMavenWorkflow(String name, Set<String> dependencies) {
-		if ((name == null) && (dependencies != null) && (dependencies.size() > 0)) throw new IllegalArgumentException("You must provide a name for this repository (subdirectory, logging, etc) if you want to build dependencies!");
+	public static GHActionWorkflow createMavenWorkflow(String name, String branch, Set<String> dependencies) {
+		final boolean hasDependencies = (dependencies != null) && (dependencies.size() > 0);
+		if ((name == null) && hasDependencies) throw new IllegalArgumentException("You must provide a name for this repository (subdirectory, logging, etc) if you want to build dependencies!");
 
 		final GHActionWorkflowBuilder workflow = GHActionWorkflow.builder().name("Java CI with Maven");
 
-		workflow.on(GHActionEvent.Push, GHActionEventConfiguration.builder().branch("master").build());
-		workflow.on(GHActionEvent.PullRequest, GHActionEventConfiguration.builder().branch("master").build());
+		workflow.on(GHActionEvent.Push, GHActionEventConfiguration.builder().branch(branch).build());
+		workflow.on(GHActionEvent.PullRequest, GHActionEventConfiguration.builder().branch(branch).build());
+		workflow.on(GHActionEvent.WorkflowDispatch, GHActionEventConfiguration.builder().build());
 
-		final GHActionJobBuilder build = GHActionJob.builder().runsOn("ubuntu-latest");
-		final String JAVA_VERSION = "11";
-		build.step(GHActionStep.builder().name("Set up JDK " + JAVA_VERSION).uses("actions/setup-java@v1").with("java-version", JAVA_VERSION).build());
-		if (dependencies != null) for (String dependency : dependencies) {
-			final String repo = dependency.substring(dependency.indexOf('/') + 1);
-			build.step(GHActionStep.builder().name("Checkout " + repo).uses("actions/checkout@v2").with("repository", dependency).with("path", repo).build());
-			build.step(GHActionStep.builder().name("Build " + repo).workingDirectory("./" + repo).run("mvn -B install --file pom.xml -P release -Dgpg.skip -DskipTests").build());
-		}
-		{
+		final GHActionJobBuilder build = GHActionJob.builder().runsOn("ubuntu-latest").concurrency("${{ github.workflow }}-${{ github.ref }}");
+
+		{ // Checkout
+			if (hasDependencies) for (String dependency : dependencies) {
+				final String repo = dependency.substring(dependency.indexOf('/') + 1);
+				build.step(GHActionStep.builder().name("Checkout " + repo).uses("actions/checkout@v2").with("repository", dependency).with("path", repo).build());
+			}
+
 			final GHActionStepBuilder checkout = GHActionStep.builder().name("Checkout").uses("actions/checkout@v2");
-			if (name != null) checkout.with("path", name);
+			if (hasDependencies && (name != null)) checkout.with("path", name);
 			build.step(checkout.build());
-			final GHActionStepBuilder maven = GHActionStep.builder().name("Build with Maven");
-			if (name != null) maven.workingDirectory("./" + name);
-			build.step(maven.run("mvn -B package --file pom.xml -P release -Dgpg.skip").build());
+		}
+
+		final String JAVA_VERSION = "11";
+		build.step(GHActionStep.builder().uses("actions/setup-java@v2").with("distribution", "adopt").with("java-version", JAVA_VERSION).with("cache", "maven").build());
+
+		{
+			if (hasDependencies) for (String dependency : dependencies) {
+				final String repo = dependency.substring(dependency.indexOf('/') + 1);
+				build.step(GHActionStep.builder().name("Build " + repo).workingDirectory("./" + repo).run("mvn -B install --file pom.xml -Prelease,release-snapshot -DskipTests").env("GITHUB_TOKEN", "${{ github.token }}").build());
+			}
+
+			final GHActionStepBuilder maven = GHActionStep.builder().name("Build");
+			if (hasDependencies && (name != null)) maven.workingDirectory("./" + name);
+			final String mavenGoal = hasDependencies ? "package" : "${{ (((github.event_name == 'push') || (github.event_name == 'workflow_dispatch')) && (github.ref == 'refs/heads/master')) && 'deploy' || 'package' }}";
+			build.step(maven.run("mvn -B " + mavenGoal + " --file pom.xml -Prelease,release-snapshot").env("GITHUB_TOKEN", "${{ github.token }}").build());
 		}
 		workflow.job("build", build.build());
 

@@ -27,4 +27,7 @@ public class GHActionStep {
 
 	@Singular("with")
 	protected final Map<String, String> with;
+
+	@Singular("env")
+	protected final Map<String, String> env;
 }

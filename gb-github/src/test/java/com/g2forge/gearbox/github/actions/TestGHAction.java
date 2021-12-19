@@ -16,7 +16,7 @@ public class TestGHAction {
 	public void readDependencies() throws JsonParseException, JsonMappingException, IOException {
 		final GHActionWorkflow maven = HGHActions.getMapper().readValue(HResource.getResourceAsStream(getClass(), "maven-dependencies.yaml", true), GHActionWorkflow.class);
 		HAssert.assertEquals("Java CI with Maven", maven.getName());
-		HAssert.assertEquals(2, maven.getOn().size());
+		HAssert.assertEquals(3, maven.getOn().size());
 	}
 
 	@Test
