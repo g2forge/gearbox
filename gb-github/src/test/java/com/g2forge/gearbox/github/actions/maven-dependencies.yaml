@@ -1,0 +1,38 @@
+name: Java CI with Maven
+"on":
+  push:
+    branches:
+    - master
+  pull_request:
+    branches:
+    - master
+  workflow_dispatch: {}
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    concurrency: "${{ github.workflow }}-${{ github.ref }}"
+    steps:
+    - name: Checkout repo1
+      uses: actions/checkout@v2
+      with:
+        repository: repo1
+        path: repo1
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        path: repo2
+    - uses: actions/setup-java@v2
+      with:
+        distribution: adopt
+        java-version: 11
+        cache: maven
+    - name: Build repo1
+      working-directory: ./repo1
+      run: "mvn -B install --file pom.xml -Prelease,release-snapshot -DskipTests"
+      env:
+        GITHUB_TOKEN: "${{ github.token }}"
+    - name: Build
+      working-directory: ./repo2
+      run: "mvn -B package --file pom.xml -Prelease,release-snapshot"
+      env:
+        GITHUB_TOKEN: "${{ github.token }}"

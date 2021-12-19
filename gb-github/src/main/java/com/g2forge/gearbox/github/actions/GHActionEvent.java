@@ -7,7 +7,8 @@ import com.g2forge.alexandria.java.text.casing.SnakeCase;
 
 public enum GHActionEvent {
 	Push,
-	PullRequest;
+	PullRequest,
+	WorkflowDispatch;
 
 	@JsonCreator
 	public static GHActionEvent parse(String string) {

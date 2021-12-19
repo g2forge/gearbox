@@ -21,6 +21,8 @@ public class GHActionJob {
 	@JsonProperty("runs-on")
 	protected final String runsOn;
 
+	protected final String concurrency;
+
 	@Singular
 	protected final List<GHActionStep> steps;
 }
