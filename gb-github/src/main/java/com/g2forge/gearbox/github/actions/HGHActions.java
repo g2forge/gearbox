@@ -21,12 +21,8 @@ public class HGHActions {
 	@Getter(lazy = true)
 	private static final ObjectMapper mapper = new ObjectMapper(new YAMLFactory().enable(Feature.MINIMIZE_QUOTES).disable(Feature.WRITE_DOC_START_MARKER).disable(Feature.SPLIT_LINES));
 
-	public static final String PACKAGESREAD_USERNAME = "PACKAGESREAD_USERNAME";
-
-	public static final String PACKAGESREAD_TOKEN = "PACKAGESREAD_TOKEN";
-
 	@Note(type = NoteType.TODO, value = "Use gb-command to render command lines")
-	public static GHActionWorkflow createMavenWorkflow(String name, String branch, String mavenSettingsXML, Set<String> dependencies) {
+	public static GHActionWorkflow createMavenWorkflow(String name, String branch, String mavenSettingsXML, Set<String> dependencies, Set<String> mavenEnvSecrets) {
 		final boolean hasDependencies = (dependencies != null) && (dependencies.size() > 0);
 		if ((name == null) && hasDependencies) throw new IllegalArgumentException("You must provide a name for this repository (subdirectory, logging, etc) if you want to build dependencies!");
 
@@ -63,9 +59,8 @@ public class HGHActions {
 			final String mavenGoal = hasDependencies ? "package" : "${{ (((github.event_name == 'push') || (github.event_name == 'workflow_dispatch')) && (github.ref == 'refs/heads/master')) && 'deploy' || 'package' }}";
 			maven.run("mvn" + (mavenSettingsXML == null ? "" : " -s \"" + mavenSettingsXML + "\"") + " -B " + mavenGoal + " --file pom.xml -Prelease,release-snapshot");
 			maven.env("GITHUB_TOKEN", "${{ github.token }}");
-			if (mavenSettingsXML != null) {
-				maven.env(PACKAGESREAD_USERNAME, "${{ secrets." + PACKAGESREAD_USERNAME + " }}");
-				maven.env(PACKAGESREAD_TOKEN, "${{ secrets." + PACKAGESREAD_TOKEN + " }}");
+			if (mavenEnvSecrets != null) for (String secret : mavenEnvSecrets) {
+				maven.env(secret, "${{ secrets." + secret + " }}");
 			}
 			build.step(maven.build());
 		}

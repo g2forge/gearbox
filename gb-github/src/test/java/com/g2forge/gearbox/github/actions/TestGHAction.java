@@ -21,13 +21,13 @@ public class TestGHAction {
 
 	@Test
 	public void writeDependencies() throws JsonParseException, JsonMappingException, IOException {
-		final GHActionWorkflow maven = HGHActions.createMavenWorkflow("repo2", "master", null, HCollection.asSet("repo1"));
+		final GHActionWorkflow maven = HGHActions.createMavenWorkflow("repo2", "master", null, HCollection.asSet("repo1"), null);
 		HAssert.assertEquals(new Resource(getClass(), "maven-dependencies.yaml"), HGHActions.getMapper().writeValueAsString(maven).trim());
 	}
 
 	@Test
 	public void writeSimple() throws JsonParseException, JsonMappingException, IOException {
-		final GHActionWorkflow maven = HGHActions.createMavenWorkflow(null, "master", null, null);
+		final GHActionWorkflow maven = HGHActions.createMavenWorkflow(null, "master", null, null, null);
 		HAssert.assertEquals(new Resource(getClass(), "maven-simple.yaml"), HGHActions.getMapper().writeValueAsString(maven).trim());
 	}
 }
