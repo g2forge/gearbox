@@ -21,12 +21,14 @@ public interface IProcess extends ICloseable, IStandardIO<OutputStream, InputStr
 			try {
 				HTextIO.readAll(getStandardOutput(), consumer);
 			} catch (Throwable throwable) {
+				consumer.accept("[FAILED TO READ STDOUT]");
 				throwables.add(throwable);
 			}
 			builder.append("Standard error:\n");
 			try {
 				HTextIO.readAll(getStandardError(), consumer);
 			} catch (Throwable throwable) {
+				consumer.accept("[FAILED TO READ STDERR]");
 				throwables.add(throwable);
 			}
 			throw HError.withSuppressed(new RuntimeException(builder.toString()), throwables);
