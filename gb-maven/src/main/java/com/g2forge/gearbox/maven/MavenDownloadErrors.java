@@ -31,7 +31,7 @@ public enum MavenDownloadErrors {
 		}
 	};
 
-	public static final Pattern PATTERN_MISSINGARTIFACT = Pattern.compile("Failed to execute goal org\\.apache\\.maven\\.plugins:maven-dependency-plugin:([0-9]+(\\.[0-9]+)*):copy \\(default-cli\\) on project standalone-pom: Unable to find artifact\\.:");
+	public static final Pattern PATTERN_MISSINGARTIFACT = Pattern.compile("Failed to execute goal org\\.apache\\.maven\\.plugins:maven-dependency-plugin:([0-9]+(\\.[0-9]+)*):copy \\(default-cli\\) on project standalone-pom: Unable to find artifact\\.");
 
 	public static Set<MavenDownloadErrors> process(Logger log, IProcess process) {
 		return new ProcessOutputHandler<>(log, EnumSet.allOf(MavenDownloadErrors.class), MavenDownloadErrors::createMatcher).handle(process);
