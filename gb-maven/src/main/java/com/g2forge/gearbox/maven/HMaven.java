@@ -5,6 +5,7 @@ import com.g2forge.alexandria.java.core.marker.Helpers;
 import com.g2forge.gearbox.command.converter.dumb.DumbCommandConverter;
 import com.g2forge.gearbox.command.process.ProcessBuilderRunner;
 import com.g2forge.gearbox.command.proxy.CommandProxyFactory;
+import com.g2forge.gearbox.command.proxy.ICommandProxyFactory;
 
 import lombok.Getter;
 import lombok.experimental.UtilityClass;
@@ -13,5 +14,10 @@ import lombok.experimental.UtilityClass;
 @Helpers
 public class HMaven {
 	@Getter(lazy = true)
-	private final IMaven maven = new CommandProxyFactory(DumbCommandConverter.create(), new ProcessBuilderRunner(IdentityCommandRunner.create())).apply(IMaven.class);
+	private static final IMaven maven = computeMaven();
+
+	protected static IMaven computeMaven() {
+		final ICommandProxyFactory factory = new CommandProxyFactory(DumbCommandConverter.create(), new ProcessBuilderRunner(IdentityCommandRunner.create()));
+		return factory.apply(IMaven.class);
+	}
 }
