@@ -197,7 +197,7 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 			if ((constant != null) && (constant.value() != null)) commandInvocationBuilder.arguments(HCollection.asList(constant.value()));
 		}
 
-		processInvocationBuilder.commandInvocation(commandInvocationBuilder.environment(environmentBuilder.build()).build());
+		processInvocationBuilder.commandInvocation(commandInvocationBuilder.environment(environmentBuilder.build().simplify()).build());
 		return processInvocationBuilder.build();
 	}
 }
