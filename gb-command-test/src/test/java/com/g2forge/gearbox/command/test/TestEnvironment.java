@@ -30,7 +30,7 @@ public class TestEnvironment extends ATestCommand {
 
 	@Override
 	protected IFunction1<CommandInvocation<IRedirect, IRedirect>, IProcess> createRunner() {
-		return new ProcessBuilderRunner(ICommandRunner.create(HPlatform.getPlatform().getShell()));
+		return new ProcessBuilderRunner(ICommandRunner.create(null));
 	}
 
 	@Test

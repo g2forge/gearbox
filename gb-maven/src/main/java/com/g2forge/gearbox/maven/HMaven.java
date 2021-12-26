@@ -1,6 +1,5 @@
 package com.g2forge.gearbox.maven;
 
-import com.g2forge.alexandria.command.invocation.runner.IdentityCommandRunner;
 import com.g2forge.alexandria.java.core.marker.Helpers;
 import com.g2forge.gearbox.command.converter.dumb.DumbCommandConverter;
 import com.g2forge.gearbox.command.process.ProcessBuilderRunner;
@@ -17,7 +16,7 @@ public class HMaven {
 	private static final IMaven maven = computeMaven();
 
 	protected static IMaven computeMaven() {
-		final ICommandProxyFactory factory = new CommandProxyFactory(DumbCommandConverter.create(), new ProcessBuilderRunner(IdentityCommandRunner.create()));
+		final ICommandProxyFactory factory = new CommandProxyFactory(DumbCommandConverter.create(), new ProcessBuilderRunner());
 		return factory.apply(IMaven.class);
 	}
 }
