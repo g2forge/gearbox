@@ -1,11 +1,10 @@
 package com.g2forge.gearbox.git;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.GeneralSecurityException;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -37,23 +36,19 @@ import org.eclipse.jgit.lib.ReflogEntry;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
-import org.eclipse.jgit.transport.JschConfigSessionFactory;
-import org.eclipse.jgit.transport.OpenSshConfig;
-import org.eclipse.jgit.transport.OpenSshConfig.Host;
 import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.RemoteConfig;
-import org.eclipse.jgit.transport.SshSessionFactory;
 import org.eclipse.jgit.transport.SshTransport;
 import org.eclipse.jgit.transport.Transport;
+import org.eclipse.jgit.transport.URIish;
+import org.eclipse.jgit.transport.sshd.KeyPasswordProvider;
+import org.eclipse.jgit.transport.sshd.SshdSessionFactory;
+import org.eclipse.jgit.transport.sshd.SshdSessionFactoryBuilder;
 import org.eclipse.jgit.util.FS;
 
 import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.java.core.marker.Helpers;
 import com.g2forge.alexandria.java.io.RuntimeIOException;
-import com.g2forge.gearbox.git.ssh.PasswordSSHUserInfo;
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -64,36 +59,27 @@ import lombok.experimental.UtilityClass;
 public class HGit {
 	public static final String REFSPEC_SEPARATOR = ":";
 
-	protected static void knownHosts(final JSch jsch, FS fs) throws JSchException {
-		final File home = fs.userHome();
-		if (home == null) return;
-
-		final Path knownHosts = home.toPath().resolve(HSSH.SSHDIR).resolve(HSSH.KNOWN_HOSTS);
-		try {
-			try (final InputStream in = Files.newInputStream(knownHosts)) {
-				jsch.setKnownHosts(in);
-			}
-		} catch (IOException exception) {
-			// No known hosts file, no real problem
-		}
-	}
-
 	public static TransportConfigCallback createTransportConfig(String key, String password) {
-		final SshSessionFactory sessionFactory = new JschConfigSessionFactory() {
+		final SshdSessionFactoryBuilder sessionFactoryBuilder = new SshdSessionFactoryBuilder();
+		sessionFactoryBuilder.setHomeDirectory(FS.DETECTED.userHome());
+		sessionFactoryBuilder.setSshDirectory(FS.DETECTED.userHome().toPath().resolve(HSSH.SSHDIR).toFile());
+		sessionFactoryBuilder.setDefaultIdentities(unused -> HCollection.asList(Paths.get(key)));
+		sessionFactoryBuilder.setKeyPasswordProvider(unused -> new KeyPasswordProvider() {
 			@Override
-			protected void configure(Host hc, Session session) {
-				session.setUserInfo(new PasswordSSHUserInfo(password));
+			public char[] getPassphrase(URIish uri, int attempt) throws IOException {
+				return password.toCharArray();
 			}
 
 			@Override
-			protected JSch getJSch(final OpenSshConfig.Host hc, FS fs) throws JSchException {
-				final JSch retVal = new JSch();
-				knownHosts(retVal, fs);
-				retVal.addIdentity(key);
-				return retVal;
+			public boolean keyLoaded(URIish uri, int attempt, Exception error) throws IOException, GeneralSecurityException {
+				return false;
 			}
-		};
 
+			@Override
+			public void setAttempts(int maxNumberOfAttempts) {}
+		});
+
+		final SshdSessionFactory sessionFactory = sessionFactoryBuilder.build(null);
 		return new TransportConfigCallback() {
 			@Override
 			public void configure(Transport transport) {
