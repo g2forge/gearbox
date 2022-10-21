@@ -27,6 +27,47 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
+/**
+ * An abstraction of a Jira server, allowing the caller to get access to the servers ReST API. When instantiated, this class will connect to the server based
+ * either on values from the user, or those provided through Java properties.
+ * 
+ * <table>
+ * <caption>JIRAServer properties and their descriptions</caption>
+ * <thead>
+ * <tr>
+ * <th>Property</th>
+ * <th>Default Value</th>
+ * <th>Description</th>
+ * </tr>
+ * </thead> <tbody>
+ * <tr>
+ * <td>jira.protocol</td>
+ * <td>https</td>
+ * <td>The HTTP or HTTPS protocol to use when connecting to the Jira server</td>
+ * </tr>
+ * <tr>
+ * <td>jira.host</td>
+ * <td>None/User Prompt</td>
+ * <td>The DNS name of the Jira server.</td>
+ * </tr>
+ * <tr>
+ * <td>jira.port</td>
+ * <td>0</td>
+ * <td>The TCP port to use when connecting to the Jira server.&nbsp;&nbsp;0 indicates the default port based on the protocol (e.g. 80 or 443)</td>
+ * </tr>
+ * <tr>
+ * <td>jira.username</td>
+ * <td>None/User Prompt</td>
+ * <td>The username to use when connecting the Jira server.</td>
+ * </tr>
+ * <tr>
+ * <td>jira.password</td>
+ * <td>None/User Prompt</td>
+ * <td>The password to use with the above username.</td>
+ * </tr>
+ * </tbody>
+ * </table>
+ */
 @Data
 @Builder
 @AllArgsConstructor
@@ -118,10 +159,10 @@ public class JIRAServer {
 	public static JIRAServer load() {
 		final JIRAServerBuilder builder = JIRAServer.builder();
 		builder.protocol(new PropertyStringInput("jira.protocol").fallback(NullableOptional.of("https")).get());
-		builder.host(new PropertyStringInput("jira.host").fallback(new UserStringInput("Host", true)).get());
+		builder.host(new PropertyStringInput("jira.host").fallback(new UserStringInput("Jira Host", true)).get());
 		builder.port(Integer.valueOf(new PropertyStringInput("jira.port").fallback(NullableOptional.of("0")).get()));
-		builder.username(new PropertyStringInput("jira.username").fallback(new UserStringInput("Username", true)).get());
-		builder.password(new PropertyStringInput("jira.password").fallback(new UserPasswordInput(String.format("Password for %1$s", builder.username))).get());
+		builder.username(new PropertyStringInput("jira.username").fallback(new UserStringInput("Jira Username", true)).get());
+		builder.password(new PropertyStringInput("jira.password").fallback(new UserPasswordInput(String.format("Jira Password for %1$s", builder.username))).get());
 		return builder.build();
 	}
 
