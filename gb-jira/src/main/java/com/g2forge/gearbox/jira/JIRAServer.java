@@ -31,7 +31,8 @@ import lombok.Data;
  * An abstraction of a Jira server, allowing the caller to get access to the servers ReST API. When instantiated, this class will connect to the server based
  * either on values from the user, or those provided through Java properties.
  * 
- * <table summary="JIRAServer properties and their descriptions">
+ * <table>
+ * <caption>JIRAServer properties and their descriptions</caption>
  * <thead>
  * <tr>
  * <th>Property</th>
