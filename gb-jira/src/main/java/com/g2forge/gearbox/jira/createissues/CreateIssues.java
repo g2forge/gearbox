@@ -54,7 +54,7 @@ import com.g2forge.gearbox.jira.JIRAServer;
  * Said configured defaults will only be used in the event that specific issues do not have a value for that field. In addition, please see {@link JIRAServer}
  * for information on specifying the Jira server and user account.
  * 
- * <table>
+ * <table summary="Create issues issue properties and their descriptions">
  * <thead>
  * <tr>
  * <th>Field</th>
