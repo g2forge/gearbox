@@ -30,6 +30,9 @@ public class CreateIssue implements ICreateConfig {
 	protected final String description;
 
 	@Singular
+	protected final Set<String> components;
+
+	@Singular
 	protected final Set<String> labels;
 
 	@Singular
@@ -41,6 +44,7 @@ public class CreateIssue implements ICreateConfig {
 		retVal.project(IFunction1.create(ICreateConfig::getProject).applyWithFallback(this, config));
 		retVal.type(IFunction1.create(ICreateConfig::getType).applyWithFallback(this, config));
 		retVal.epic(IFunction1.create(ICreateConfig::getEpic).applyWithFallback(this, config));
+		retVal.components(Stream.of(this, config).map(ICreateConfig::getComponents).flatMap(l -> l == null ? Stream.empty() : l.stream()).collect(Collectors.toSet()));
 		retVal.labels(Stream.of(this, config).map(ICreateConfig::getLabels).flatMap(l -> l == null ? Stream.empty() : l.stream()).collect(Collectors.toSet()));
 
 		retVal.securityLevel(getSecurityLevel());
