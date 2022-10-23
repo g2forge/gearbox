@@ -1,5 +1,6 @@
 package com.g2forge.gearbox.jira.createissues;
 
+import java.util.List;
 import java.util.Set;
 
 import lombok.AllArgsConstructor;
@@ -19,9 +20,14 @@ public class CreateConfig implements ICreateConfig {
 
 	protected final String securityLevel;
 
+	protected final String assignee;
+
 	@Singular
 	protected final Set<String> components;
 
 	@Singular
 	protected final Set<String> labels;
+
+	@Singular
+	protected final List<CreateIssue> issues;
 }
