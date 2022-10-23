@@ -16,8 +16,11 @@ public class CreateConfig implements ICreateConfig {
 	protected final String type;
 
 	protected final String epic;
-	
+
 	protected final String securityLevel;
+
+	@Singular
+	protected final Set<String> components;
 
 	@Singular
 	protected final Set<String> labels;

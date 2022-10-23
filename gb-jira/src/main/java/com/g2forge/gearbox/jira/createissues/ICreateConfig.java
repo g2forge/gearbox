@@ -11,5 +11,7 @@ public interface ICreateConfig {
 
 	public String getSecurityLevel();
 
+	public Set<String> getComponents();
+
 	public Set<String> getLabels();
 }

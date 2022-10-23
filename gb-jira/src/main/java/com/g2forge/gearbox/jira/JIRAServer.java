@@ -3,16 +3,16 @@ package com.g2forge.gearbox.jira;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
 import java.util.Date;
+import java.util.Optional;
 
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.httpclient.apache.httpcomponents.DefaultHttpClientFactory;
 import com.atlassian.httpclient.api.HttpClient;
 import com.atlassian.httpclient.api.factory.HttpClientOptions;
 import com.atlassian.jira.rest.client.api.AuthenticationHandler;
-import com.atlassian.jira.rest.client.api.JiraRestClient;
 import com.atlassian.jira.rest.client.auth.BasicHttpAuthenticationHandler;
-import com.atlassian.jira.rest.client.internal.async.AsynchronousJiraRestClientFactory;
 import com.atlassian.jira.rest.client.internal.async.AtlassianHttpClientDecorator;
 import com.atlassian.jira.rest.client.internal.async.DisposableHttpClient;
 import com.atlassian.sal.api.ApplicationProperties;
@@ -32,8 +32,7 @@ import lombok.Data;
  * either on values from the user, or those provided through Java properties.
  * 
  * <table>
- * <caption>JIRAServer properties and their descriptions</caption>
- * <thead>
+ * <caption>JIRAServer properties and their descriptions</caption> <thead>
  * <tr>
  * <th>Property</th>
  * <th>Default Value</th>
@@ -88,6 +87,11 @@ public class JIRAServer {
 		};
 		final ApplicationProperties applicationProperties = new ApplicationProperties() {
 			@Override
+			public String getApplicationFileEncoding() {
+				throw new UnsupportedOperationException();
+			}
+
+			@Override
 			public String getBaseUrl() {
 				return uri.getPath();
 			}
@@ -118,6 +122,11 @@ public class JIRAServer {
 			}
 
 			@Override
+			public Optional<Path> getLocalHomeDirectory() {
+				throw new UnsupportedOperationException();
+			}
+
+			@Override
 			public String getPlatformId() {
 				throw new UnsupportedOperationException();
 			}
@@ -128,12 +137,16 @@ public class JIRAServer {
 			}
 
 			@Override
+			public Optional<Path> getSharedHomeDirectory() {
+				throw new UnsupportedOperationException();
+			}
+
+			@Override
 			public String getVersion() {
 				return null;
 			}
 		};
-		@SuppressWarnings("rawtypes")
-		final ThreadLocalContextManager threadLocalContextManager = new ThreadLocalContextManager() {
+		final ThreadLocalContextManager<Object> threadLocalContextManager = new ThreadLocalContextManager<Object>() {
 			@Override
 			public void clearThreadLocalContext() {}
 
@@ -146,7 +159,7 @@ public class JIRAServer {
 			public void setThreadLocalContext(Object context) {}
 		};
 
-		final DefaultHttpClientFactory defaultHttpClientFactory = new DefaultHttpClientFactory(eventPublisher, applicationProperties, threadLocalContextManager);
+		final DefaultHttpClientFactory<?> defaultHttpClientFactory = new DefaultHttpClientFactory<>(eventPublisher, applicationProperties, threadLocalContextManager);
 		final HttpClient httpClient = defaultHttpClientFactory.create(options);
 		return new AtlassianHttpClientDecorator(httpClient, authenticationHandler) {
 			@Override
@@ -176,7 +189,7 @@ public class JIRAServer {
 
 	protected final String password;
 
-	public JiraRestClient connect(boolean acceptSelfSignedCertificates) throws URISyntaxException {
+	public ExtendedJiraRestClient connect(boolean acceptSelfSignedCertificates) throws URISyntaxException {
 		final String protocol = getProtocol();
 		final int port = getPort();
 		final URI uri = new URI(String.format("%1$s://%2$s", (protocol == null) ? "https" : protocol, getHost()) + ((port == 0) ? "" : ":" + port));
@@ -184,6 +197,6 @@ public class JIRAServer {
 		final HttpClientOptions options = new HttpClientOptions();
 		options.setTrustSelfSignedCertificates(acceptSelfSignedCertificates);
 		final String username = getUsername();
-		return new AsynchronousJiraRestClientFactory().create(uri, createClient(uri, (username == null) ? null : new BasicHttpAuthenticationHandler(username, getPassword()), options));
+		return new ExtendedAsynchronousJiraRestClient(uri, createClient(uri, (username == null) ? null : new BasicHttpAuthenticationHandler(username, getPassword()), options));
 	}
 }

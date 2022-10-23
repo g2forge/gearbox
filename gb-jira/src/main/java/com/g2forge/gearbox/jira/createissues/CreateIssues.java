@@ -20,14 +20,13 @@ import java.util.stream.Stream;
 import org.slf4j.event.Level;
 
 import com.atlassian.jira.rest.client.api.IssueRestClient;
-import com.atlassian.jira.rest.client.api.JiraRestClient;
+import com.atlassian.jira.rest.client.api.domain.BasicComponent;
 import com.atlassian.jira.rest.client.api.domain.BasicIssue;
 import com.atlassian.jira.rest.client.api.domain.IssueFieldId;
 import com.atlassian.jira.rest.client.api.domain.input.ComplexIssueInputFieldValue;
 import com.atlassian.jira.rest.client.api.domain.input.FieldInput;
 import com.atlassian.jira.rest.client.api.domain.input.IssueInputBuilder;
 import com.atlassian.jira.rest.client.api.domain.input.LinkIssuesInput;
-import com.atlassian.util.concurrent.Promise;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -41,7 +40,10 @@ import com.g2forge.alexandria.java.function.IConsumer1;
 import com.g2forge.alexandria.log.HLog;
 import com.g2forge.alexandria.wizard.PropertyStringInput;
 import com.g2forge.alexandria.wizard.UserStringInput;
+import com.g2forge.gearbox.jira.ExtendedJiraRestClient;
 import com.g2forge.gearbox.jira.JIRAServer;
+
+import io.atlassian.util.concurrent.Promise;
 
 /**
  * A small CLI tool for creating Jira issues in bulk from a YAML file. This is particularly helpful when said issues need complex links between them (e.g.
@@ -55,8 +57,7 @@ import com.g2forge.gearbox.jira.JIRAServer;
  * for information on specifying the Jira server and user account.
  * 
  * <table>
- * <caption>Create issues issue properties and their descriptions</caption>
- * <thead>
+ * <caption>Create issues issue properties and their descriptions</caption> <thead>
  * <tr>
  * <th>Field</th>
  * <th>Required</th>
@@ -109,6 +110,14 @@ import com.g2forge.gearbox.jira.JIRAServer;
  * removed.</td>
  * </tr>
  * <tr>
+ * <td>components</td>
+ * <td>no</td>
+ * <td>yes</td>
+ * <td>Set&lt;String&gt;</td>
+ * <td>A set of names of the project components to add to this issue. If both the issue &amp; configuration have components, the union of the sets will be
+ * applied to the issue. Remember components are per-project, if you are creating issues across multiple projects.</td>
+ * </tr>
+ * <tr>
  * <td>labels</td>
  * <td>no</td>
  * <td>yes</td>
@@ -143,6 +152,8 @@ public class CreateIssues implements IStandardCommand {
 		if (value != null) consumer.accept(value);
 	}
 
+	protected final Map<String, Map<String, BasicComponent>> projectComponentsCache = new LinkedHashMap<>();
+
 	protected Changes convertToREST(CreateConfig config, List<CreateIssue> issues) {
 		final Changes.ChangesBuilder retVal = Changes.builder();
 		for (CreateIssue issue : issues) {
@@ -163,9 +174,26 @@ public class CreateIssues implements IStandardCommand {
 		return implementChanges(changes);
 	}
 
+	protected Map<String, BasicComponent> getProjectComponents(final ExtendedJiraRestClient client, final String projectKey) {
+		return projectComponentsCache.computeIfAbsent(projectKey, projectKey2 -> {
+			final Map<String, BasicComponent> retVal = new LinkedHashMap<>();
+			Iterable<BasicComponent> components;
+			try {
+				components = client.getProjectComponentsClient().getComponents(projectKey2).get();
+			} catch (InterruptedException | ExecutionException e) {
+				throw new RuntimeException(e);
+			}
+			for (BasicComponent component : components) {
+				retVal.put(component.getName(), component);
+			}
+			return retVal;
+		});
+
+	}
+
 	protected List<String> implementChanges(Changes changes) throws IOException, URISyntaxException, InterruptedException, ExecutionException {
 		HLog.getLogControl().setLogLevel(Level.INFO);
-		try (final JiraRestClient client = JIRAServer.load().connect(true)) {
+		try (final ExtendedJiraRestClient client = JIRAServer.load().connect(true)) {
 			final IssueRestClient issueClient = client.getIssueClient();
 
 			final Map<String, String> issues = new LinkedHashMap<>();
@@ -176,6 +204,10 @@ public class CreateIssues implements IStandardCommand {
 				if (issue.getSecurityLevel() != null) builder.setFieldInput(new FieldInput("security", ComplexIssueInputFieldValue.with("name", issue.getSecurityLevel())));
 				builder.setSummary(issue.getSummary());
 				builder.setDescription(issue.getDescription());
+				if ((issue.getComponents() != null) && !issue.getComponents().isEmpty()) {
+					final Map<String, BasicComponent> components = getProjectComponents(client, issue.getProject());
+					builder.setFieldInput(new FieldInput(IssueFieldId.COMPONENTS_FIELD, issue.getComponents().stream().map(name -> ComplexIssueInputFieldValue.with("id", components.get(name).getId())).collect(Collectors.toSet())));
+				}
 				if ((issue.getLabels() != null) && !issue.getLabels().isEmpty()) builder.setFieldInput(new FieldInput(IssueFieldId.LABELS_FIELD, issue.getLabels()));
 
 				final List<Throwable> throwables = new ArrayList<>();
@@ -228,6 +260,9 @@ public class CreateIssues implements IStandardCommand {
 		CreateIssues.promptUser(createConfigBuilder::project, getClass(), "Project");
 		CreateIssues.promptUser(createConfigBuilder::type, getClass(), "Type");
 		CreateIssues.promptUser(createConfigBuilder::epic, getClass(), "Epic");
+		CreateIssues.promptUser(s -> {
+			if (!s.isEmpty()) createConfigBuilder.components(Stream.of(s.split(",+")).map(String::trim).collect(Collectors.toSet()));
+		}, getClass(), "Components");
 		CreateIssues.promptUser(s -> {
 			if (!s.isEmpty()) createConfigBuilder.labels(Stream.of(s.split(",+")).map(String::trim).collect(Collectors.toSet()));
 		}, getClass(), "Labels");
