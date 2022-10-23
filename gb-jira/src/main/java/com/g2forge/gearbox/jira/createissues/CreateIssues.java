@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,7 +16,6 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.slf4j.event.Level;
 
@@ -51,10 +51,10 @@ import io.atlassian.util.concurrent.Promise;
  * 
  * Run <code>CreateIssues &lt;INPUTFILE&gt;</code>
  * 
- * The <code>INPUTFILE</code> must be a YAML file, which consists of a list of issues, specifying at least a <code>summary</code> for each issue, and optionally
- * more. The fields of the issues in the YAML file are documented below. The user will be prompted to fill in default values for fields marked "configurable".
- * Said configured defaults will only be used in the event that specific issues do not have a value for that field. In addition, please see {@link JIRAServer}
- * for information on specifying the Jira server and user account.
+ * The <code>INPUTFILE</code> must be a YAML file, which consists of a configuration one field of which is <code>issues</code>. The configuration must specify
+ * at least a <code>summary</code> for each issue, and optionally more. The fields of the issues in the YAML file are documented below. The configuration can
+ * also include, at the top level, an entry for any field marked "configurable" whose value will be used for any issue that does not specify a value explicitly.
+ * Please see {@link JIRAServer} for information on specifying the Jira server and user account.
  * 
  * <table>
  * <caption>Create issues issue properties and their descriptions</caption> <thead>
@@ -110,6 +110,13 @@ import io.atlassian.util.concurrent.Promise;
  * removed.</td>
  * </tr>
  * <tr>
+ * <td>assignee</td>
+ * <td>no</td>
+ * <td>yes</td>
+ * <td>String</td>
+ * <td>The username of the person to assign the issue(s) to.</td>
+ * </tr>
+ * <tr>
  * <td>components</td>
  * <td>no</td>
  * <td>yes</td>
@@ -139,6 +146,20 @@ import io.atlassian.util.concurrent.Promise;
 public class CreateIssues implements IStandardCommand {
 	protected static final Pattern PATTERN_KEY = Pattern.compile("([A-Z0-9]{2,4}-[0-9]+)(\\s.*)?");
 
+	protected static Changes computeChanges(CreateConfig config) {
+		final Changes.ChangesBuilder retVal = Changes.builder();
+		for (CreateIssue issue : config.getIssues()) {
+			final CreateIssue fallback = issue.fallback(config);
+			retVal.issue(fallback);
+			for (String relationship : fallback.getRelationships().keySet()) {
+				for (String target : fallback.getRelationships().get(relationship)) {
+					retVal.link(new LinkIssuesInput(fallback.getSummary(), target, relationship, null));
+				}
+			}
+		}
+		return retVal.build();
+	}
+
 	protected static boolean isKey(String keySummary) {
 		return PATTERN_KEY.matcher(keySummary).matches();
 	}
@@ -152,25 +173,28 @@ public class CreateIssues implements IStandardCommand {
 		if (value != null) consumer.accept(value);
 	}
 
-	protected final Map<String, Map<String, BasicComponent>> projectComponentsCache = new LinkedHashMap<>();
-
-	protected Changes convertToREST(CreateConfig config, List<CreateIssue> issues) {
-		final Changes.ChangesBuilder retVal = Changes.builder();
-		for (CreateIssue issue : issues) {
-			final CreateIssue fallback = issue.fallback(config);
-			retVal.issue(fallback);
-			for (String relationship : fallback.getRelationships().keySet()) {
-				for (String target : fallback.getRelationships().get(relationship)) {
-					retVal.link(new LinkIssuesInput(fallback.getSummary(), target, relationship, null));
-				}
+	protected static void verifyChanges(final Changes changes) {
+		{ // Verify all the links we can
+			final Set<String> summaries = changes.getIssues().stream().map(CreateIssue::getSummary).collect(Collectors.toSet());
+			final List<String> badLinks = new ArrayList<>();
+			for (LinkIssuesInput link : changes.getLinks()) {
+				final String target = link.getToIssueKey();
+				if (isKey(target)) continue;
+				if (!summaries.contains(target)) badLinks.add(String.format("Link target \"%1$s\" <[%2$s]- \"%3$s\" is not valid!", target, link.getLinkType(), link.getFromIssueKey()));
 			}
+			if (!badLinks.isEmpty()) throw new IllegalArgumentException("One or more bad links:\n" + badLinks.stream().collect(Collectors.joining("\n")));
 		}
-		return retVal.build();
 	}
 
+	protected final Map<String, Map<String, BasicComponent>> projectComponentsCache = new LinkedHashMap<>();
+
 	public List<String> createIssues(InputStream stream) throws JsonParseException, JsonMappingException, IOException, URISyntaxException, InterruptedException, ExecutionException {
-		final List<CreateIssue> issues = loadIssues(stream);
-		final Changes changes = planChanges(issues);
+		// Load the config, but if it's empty, don't bother
+		final CreateConfig config = load(stream);
+		if ((config.getIssues() == null) || config.getIssues().isEmpty()) return Collections.emptyList();
+
+		final Changes changes = computeChanges(config);
+		verifyChanges(changes);
 		return implementChanges(changes);
 	}
 
@@ -200,13 +224,14 @@ public class CreateIssues implements IStandardCommand {
 			for (CreateIssue issue : changes.getIssues()) {
 				final IssueInputBuilder builder = new IssueInputBuilder(issue.getProject(), 0l);
 				builder.setFieldInput(new FieldInput(IssueFieldId.ISSUE_TYPE_FIELD, ComplexIssueInputFieldValue.with("name", issue.getType())));
-				if (issue.getEpic() != null) builder.setFieldInput(new FieldInput("customfield_10600", issue.getEpic()));
+				if (issue.getEpic() != null) builder.setFieldInput(new FieldInput("customfield_10000", issue.getEpic()));
 				if (issue.getSecurityLevel() != null) builder.setFieldInput(new FieldInput("security", ComplexIssueInputFieldValue.with("name", issue.getSecurityLevel())));
 				builder.setSummary(issue.getSummary());
 				builder.setDescription(issue.getDescription());
+				if (issue.getAssignee() != null) builder.setAssigneeName(issue.getAssignee());
 				if ((issue.getComponents() != null) && !issue.getComponents().isEmpty()) {
 					final Map<String, BasicComponent> components = getProjectComponents(client, issue.getProject());
-					builder.setFieldInput(new FieldInput(IssueFieldId.COMPONENTS_FIELD, issue.getComponents().stream().map(name -> ComplexIssueInputFieldValue.with("id", components.get(name).getId())).collect(Collectors.toSet())));
+					builder.setFieldInput(new FieldInput(IssueFieldId.COMPONENTS_FIELD, issue.getComponents().stream().map(name -> ComplexIssueInputFieldValue.with("id", components.get(name).getId().toString())).collect(Collectors.toSet())));
 				}
 				if ((issue.getLabels() != null) && !issue.getLabels().isEmpty()) builder.setFieldInput(new FieldInput(IssueFieldId.LABELS_FIELD, issue.getLabels()));
 
@@ -250,34 +275,8 @@ public class CreateIssues implements IStandardCommand {
 		return IStandardCommand.SUCCESS;
 	}
 
-	protected List<CreateIssue> loadIssues(final InputStream stream) throws IOException, JsonParseException, JsonMappingException {
+	protected CreateConfig load(final InputStream stream) throws IOException, JsonParseException, JsonMappingException {
 		final ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-		return mapper.readValue(stream, new TypeReference<List<CreateIssue>>() {});
-	}
-
-	protected Changes planChanges(List<CreateIssue> issues) throws IOException, JsonParseException, JsonMappingException {
-		final CreateConfig.CreateConfigBuilder createConfigBuilder = CreateConfig.builder();
-		CreateIssues.promptUser(createConfigBuilder::project, getClass(), "Project");
-		CreateIssues.promptUser(createConfigBuilder::type, getClass(), "Type");
-		CreateIssues.promptUser(createConfigBuilder::epic, getClass(), "Epic");
-		CreateIssues.promptUser(s -> {
-			if (!s.isEmpty()) createConfigBuilder.components(Stream.of(s.split(",+")).map(String::trim).collect(Collectors.toSet()));
-		}, getClass(), "Components");
-		CreateIssues.promptUser(s -> {
-			if (!s.isEmpty()) createConfigBuilder.labels(Stream.of(s.split(",+")).map(String::trim).collect(Collectors.toSet()));
-		}, getClass(), "Labels");
-		final Changes changes = convertToREST(createConfigBuilder.build(), issues);
-
-		{ // Verify all the links we can
-			final Set<String> summaries = changes.getIssues().stream().map(CreateIssue::getSummary).collect(Collectors.toSet());
-			final List<String> badLinks = new ArrayList<>();
-			for (LinkIssuesInput link : changes.getLinks()) {
-				final String target = link.getToIssueKey();
-				if (isKey(target)) continue;
-				if (!summaries.contains(target)) badLinks.add(String.format("Link target \"%1$s\" <[%2$s]- \"%3$s\" is not valid!", target, link.getLinkType(), link.getFromIssueKey()));
-			}
-			if (!badLinks.isEmpty()) throw new IllegalArgumentException("One or more bad links:\n" + badLinks.stream().collect(Collectors.joining("\n")));
-		}
-		return changes;
+		return mapper.readValue(stream, new TypeReference<CreateConfig>() {});
 	}
 }
