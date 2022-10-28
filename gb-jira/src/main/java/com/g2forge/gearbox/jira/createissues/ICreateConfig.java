@@ -1,5 +1,6 @@
 package com.g2forge.gearbox.jira.createissues;
 
+import java.util.Map;
 import java.util.Set;
 
 public interface ICreateConfig {
@@ -16,4 +17,6 @@ public interface ICreateConfig {
 	public Set<String> getComponents();
 
 	public Set<String> getLabels();
+
+	public Map<String, Set<String>> getRelationships();
 }

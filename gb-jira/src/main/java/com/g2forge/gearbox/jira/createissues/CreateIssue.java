@@ -1,6 +1,7 @@
 package com.g2forge.gearbox.jira.createissues;
 
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -38,7 +39,7 @@ public class CreateIssue implements ICreateConfig {
 	protected final Set<String> labels;
 
 	@Singular
-	protected final Map<String, List<String>> relationships;
+	protected final Map<String, Set<String>> relationships;
 
 	public CreateIssue fallback(CreateConfig config) {
 		final CreateIssueBuilder retVal = builder();
@@ -51,6 +52,15 @@ public class CreateIssue implements ICreateConfig {
 		retVal.labels(Stream.of(this, config).map(ICreateConfig::getLabels).flatMap(l -> l == null ? Stream.empty() : l.stream()).collect(Collectors.toSet()));
 		retVal.securityLevel(IFunction1.create(ICreateConfig::getSecurityLevel).applyWithFallback(this, config));
 		retVal.assignee(IFunction1.create(ICreateConfig::getAssignee).applyWithFallback(this, config));
+		{ // Merge the relationships
+			final Map<String, Set<String>> relationships = new LinkedHashMap<>();
+			for (ICreateConfig createConfig : new ICreateConfig[] { this, config }) {
+				if (createConfig.getRelationships() != null) for (Map.Entry<String, Set<String>> entry : createConfig.getRelationships().entrySet()) {
+					if ((entry.getValue() != null) && !entry.getValue().isEmpty()) relationships.computeIfAbsent(entry.getKey(), k -> new LinkedHashSet<String>()).addAll(entry.getValue());
+				}
+			}
+			if (!relationships.isEmpty()) retVal.relationships(relationships);
+		}
 
 		// Per-issue fields
 		retVal.summary(getSummary());
