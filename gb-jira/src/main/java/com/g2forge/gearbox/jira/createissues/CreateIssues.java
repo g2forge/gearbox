@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +24,7 @@ import com.atlassian.jira.rest.client.api.IssueRestClient;
 import com.atlassian.jira.rest.client.api.domain.BasicComponent;
 import com.atlassian.jira.rest.client.api.domain.BasicIssue;
 import com.atlassian.jira.rest.client.api.domain.IssueFieldId;
+import com.atlassian.jira.rest.client.api.domain.IssuelinksType;
 import com.atlassian.jira.rest.client.api.domain.input.ComplexIssueInputFieldValue;
 import com.atlassian.jira.rest.client.api.domain.input.FieldInput;
 import com.atlassian.jira.rest.client.api.domain.input.IssueInputBuilder;
@@ -44,6 +46,9 @@ import com.g2forge.gearbox.jira.ExtendedJiraRestClient;
 import com.g2forge.gearbox.jira.JIRAServer;
 
 import io.atlassian.util.concurrent.Promise;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
 
 /**
  * A small CLI tool for creating Jira issues in bulk from a YAML file. This is particularly helpful when said issues need complex links between them (e.g.
@@ -135,8 +140,8 @@ import io.atlassian.util.concurrent.Promise;
  * <tr>
  * <td>relationships</td>
  * <td>no</td>
- * <td>no</td>
- * <td>Map&lt;String, List&lt;String&gt;&gt;</td>
+ * <td>yes</td>
+ * <td>Map&lt;String, Set&lt;String&gt;&gt;</td>
  * <td>A map from jira links types to the issues to link to this one.&nbsp;&nbsp;Linked issues may be specified by key if they're already in Jira, or by summary
  * if they are to be added by this file.</td>
  * </tr>
@@ -148,12 +153,15 @@ public class CreateIssues implements IStandardCommand {
 
 	protected static Changes computeChanges(CreateConfig config) {
 		final Changes.ChangesBuilder retVal = Changes.builder();
-		for (CreateIssue issue : config.getIssues()) {
-			final CreateIssue fallback = issue.fallback(config);
-			retVal.issue(fallback);
-			for (String relationship : fallback.getRelationships().keySet()) {
-				for (String target : fallback.getRelationships().get(relationship)) {
-					retVal.link(new LinkIssuesInput(fallback.getSummary(), target, relationship, null));
+		for (CreateIssue raw : config.getIssues()) {
+			// Integrate the configuration into the issue & record it 
+			final CreateIssue issue = raw.fallback(config);
+			retVal.issue(issue);
+
+			// Record all the links
+			for (String relationship : issue.getRelationships().keySet()) {
+				for (String target : issue.getRelationships().get(relationship)) {
+					retVal.link(new LinkIssuesInput(issue.getSummary(), target, relationship, null));
 				}
 			}
 		}
@@ -212,14 +220,28 @@ public class CreateIssues implements IStandardCommand {
 			}
 			return retVal;
 		});
+	}
 
+	@Data
+	@Builder
+	@AllArgsConstructor
+	protected static class LinkType {
+		protected final String name;
+
+		protected final boolean reverse;
 	}
 
 	protected List<String> implementChanges(Changes changes) throws IOException, URISyntaxException, InterruptedException, ExecutionException {
 		HLog.getLogControl().setLogLevel(Level.INFO);
 		try (final ExtendedJiraRestClient client = JIRAServer.load().connect(true)) {
-			final IssueRestClient issueClient = client.getIssueClient();
+			final Map<String, LinkType> linkTypes = new HashMap<>();
+			for (IssuelinksType linkType : client.getMetadataClient().getIssueLinkTypes().get()) {
+				linkTypes.put(linkType.getName(), new LinkType(linkType.getName(), false));
+				linkTypes.put(linkType.getInward(), new LinkType(linkType.getName(), true));
+				linkTypes.put(linkType.getOutward(), new LinkType(linkType.getName(), false));
+			}
 
+			final IssueRestClient issueClient = client.getIssueClient();
 			final Map<String, String> issues = new LinkedHashMap<>();
 			for (CreateIssue issue : changes.getIssues()) {
 				final IssueInputBuilder builder = new IssueInputBuilder(issue.getProject(), 0l);
@@ -255,10 +277,11 @@ public class CreateIssues implements IStandardCommand {
 			}
 
 			for (LinkIssuesInput link : changes.getLinks()) {
+				final LinkType linkType = linkTypes.get(link.getLinkType());
 				final String from = issues.get(link.getFromIssueKey());
 				final String to = issues.getOrDefault(link.getToIssueKey(), link.getToIssueKey());
 				// TODO: Handle it when an issue we're linking wasn't created
-				issueClient.linkIssue(new LinkIssuesInput(from, to, link.getLinkType(), link.getComment())).get();
+				issueClient.linkIssue(new LinkIssuesInput(linkType.isReverse() ? to : from, linkType.isReverse() ? from : to, linkType.getName(), link.getComment())).get();
 			}
 
 			return new ArrayList<>(issues.values());
