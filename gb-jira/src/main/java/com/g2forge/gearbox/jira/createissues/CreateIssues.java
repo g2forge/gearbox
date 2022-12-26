@@ -253,7 +253,11 @@ public class CreateIssues implements IStandardCommand {
 				if (issue.getAssignee() != null) builder.setAssigneeName(issue.getAssignee());
 				if ((issue.getComponents() != null) && !issue.getComponents().isEmpty()) {
 					final Map<String, BasicComponent> components = getProjectComponents(client, issue.getProject());
-					builder.setFieldInput(new FieldInput(IssueFieldId.COMPONENTS_FIELD, issue.getComponents().stream().map(name -> ComplexIssueInputFieldValue.with("id", components.get(name).getId().toString())).collect(Collectors.toSet())));
+					builder.setFieldInput(new FieldInput(IssueFieldId.COMPONENTS_FIELD, issue.getComponents().stream().map(name -> {
+						final BasicComponent component = components.get(name);
+						if (component == null) throw new IllegalArgumentException(String.format("Component \"%1$s\" was not found in Jira", name));
+						return ComplexIssueInputFieldValue.with("id", component.getId().toString());
+					}).collect(Collectors.toSet())));
 				}
 				if ((issue.getLabels() != null) && !issue.getLabels().isEmpty()) builder.setFieldInput(new FieldInput(IssueFieldId.LABELS_FIELD, issue.getLabels()));
 
