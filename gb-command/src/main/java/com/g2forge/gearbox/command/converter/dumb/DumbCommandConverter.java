@@ -15,6 +15,7 @@ import com.g2forge.alexandria.command.invocation.environment.modified.ModifiedEn
 import com.g2forge.alexandria.command.invocation.format.ICommandFormat;
 import com.g2forge.alexandria.command.stdio.StandardIO;
 import com.g2forge.alexandria.java.core.enums.EnumException;
+import com.g2forge.alexandria.java.core.error.NotYetImplementedError;
 import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.java.core.marker.ISingleton;
 import com.g2forge.alexandria.java.function.IConsumer2;
@@ -40,6 +41,7 @@ import com.g2forge.gearbox.command.proxy.result.StreamResultSupplier;
 import com.g2forge.gearbox.command.proxy.result.StringResultSupplier;
 import com.g2forge.gearbox.command.proxy.result.VoidResultSupplier;
 import com.g2forge.habitat.metadata.Metadata;
+import com.g2forge.habitat.metadata.value.subject.ISubject;
 
 import lombok.Builder;
 import lombok.Data;
@@ -59,24 +61,28 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 
 	protected static final IConsumer2<ArgumentContext, Object> ARGUMENT_BUILDER = new TypeSwitch2.ConsumerBuilder<ArgumentContext, Object>().with(builder -> {
 		builder.add(ArgumentContext.class, String[].class, (c, v) -> {
-			if (c.getArgument().getMetadata().isPresent(Named.class)) throw new IllegalArgumentException("Named string arrays are not supported!");
+			final ISubject metadata = c.getArgument().getMetadata();
+			if (metadata.isPresent(Named.class)) throw new IllegalArgumentException("Named string arrays are not supported!");
+			if (metadata.isPresent(Environment.class)) throw new IllegalArgumentException("We do not support setting an environment variable to a string array!");
+			if (metadata.isPresent(EnvPath.class)) throw new IllegalArgumentException("We do not support setting the PATH environment variable to a string array!");
+
 			for (String value : v) {
 				c.getCommand().argument(value);
 			}
 		});
 		builder.add(ArgumentContext.class, String.class, (c, v) -> {
-			c.getCommand().arguments(HDumbCommandConverter.computeString(c.getArgument(), v));
+			HDumbCommandConverter.set(c, c.getArgument(), v);
 		});
 		builder.add(ArgumentContext.class, Integer.class, (c, v) -> {
-			c.getCommand().arguments(HDumbCommandConverter.computeString(c.getArgument(), Integer.toString(v)));
+			HDumbCommandConverter.set(c, c.getArgument(), Integer.toString(v));
 		});
 		builder.add(ArgumentContext.class, Path.class, (c, v) -> {
-			boolean isArgument = true;
+			boolean isNormal = true;
 
 			final Working working = c.getArgument().getMetadata().get(Working.class);
 			if (working != null) {
 				c.getCommand().working(v);
-				isArgument = false;
+				isNormal = false;
 			}
 
 			final EnvPath envPath = c.getArgument().getMetadata().get(EnvPath.class);
@@ -94,11 +100,11 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 							throw new EnumException(EnvPath.Usage.class, envPath.usage());
 					}
 				});
-				isArgument = false;
+				isNormal = false;
 			}
 
-			if (isArgument) c.getCommand().arguments(HDumbCommandConverter.computeString(c.getArgument(), v.toString()));
-			else if (c.getArgument().getMetadata().isPresent(Named.class)) throw new IllegalArgumentException("Paths used as non-arguments cannot also be named!");
+			if (isNormal) HDumbCommandConverter.set(c, c.getArgument(), v.toString());
+			else if (c.getArgument().getMetadata().isPresent(Named.class)) throw new IllegalArgumentException("Paths used as environment paths or working directories cannot also be used in normal arguments & environment variables!");
 		});
 
 		final IConsumer2<? super ArgumentContext, ? super Boolean> bool = (c, v) -> {
@@ -107,7 +113,7 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 				if (c.getArgument().getMetadata().isPresent(Named.class)) throw new IllegalArgumentException("Flags cannot also be named!");
 				if (v) c.getCommand().argument(flag.value());
 				return;
-			} else c.getCommand().arguments(HDumbCommandConverter.computeString(c.getArgument(), Boolean.toString(v)));
+			} else HDumbCommandConverter.set(c, c.getArgument(), Boolean.toString(v));
 		};
 		builder.add(ArgumentContext.class, Boolean.class, bool);
 		builder.add(ArgumentContext.class, Boolean.TYPE, bool);
@@ -185,6 +191,7 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 
 			final IArgumentRenderer<?> argumentRenderer = methodArgument.getMetadata().get(IArgumentRenderer.class);
 			if (argumentRenderer != null) {
+				if (methodArgument.getMetadata().isPresent(Environment.class)) throw new NotYetImplementedError("Parameters with custom argument renderers cannot be used as environment variables (yet)!");
 				@SuppressWarnings({ "unchecked", "rawtypes" })
 				final List<String> arguments = argumentRenderer.render((IMethodArgument) methodArgument);
 				commandInvocationBuilder.arguments(arguments);

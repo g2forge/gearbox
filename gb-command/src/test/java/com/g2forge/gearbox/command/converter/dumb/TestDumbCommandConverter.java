@@ -42,6 +42,10 @@ public class TestDumbCommandConverter {
 	}
 
 	public interface IEnvironment extends ITestCommandInterface {
+		public void method(@Environment("a") String a, @Environment("b") Path b);
+	}
+
+	public interface IEnvPath extends ITestCommandInterface {
 		public void method(@EnvPath(usage = EnvPath.Usage.Replace) Path path);
 	}
 
@@ -127,8 +131,16 @@ public class TestDumbCommandConverter {
 
 	@Test
 	public void environment() {
+		final String a = "aval", b = "bval";
+		final CommandInvocation<IRedirect, IRedirect> command = assertCommand(IEnvironment.class, x -> x.method(a, Paths.get(b)), VoidResultSupplier.class, null, "method");
+		HAssert.assertEquals(a, command.getEnvironment().apply("a"));
+		HAssert.assertEquals(b, command.getEnvironment().apply("b"));
+	}
+
+	@Test
+	public void envPath() {
 		final String value = "path";
-		final CommandInvocation<IRedirect, IRedirect> command = assertCommand(IEnvironment.class, x -> x.method(Paths.get(value)), VoidResultSupplier.class, null, "method");
+		final CommandInvocation<IRedirect, IRedirect> command = assertCommand(IEnvPath.class, x -> x.method(Paths.get(value)), VoidResultSupplier.class, null, "method");
 		HAssert.assertEquals(value, command.getEnvironment().apply(HPlatform.PATH));
 	}
 
