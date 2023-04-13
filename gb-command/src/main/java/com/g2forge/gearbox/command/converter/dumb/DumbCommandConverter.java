@@ -117,6 +117,10 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 		};
 		builder.add(ArgumentContext.class, Boolean.class, bool);
 		builder.add(ArgumentContext.class, Boolean.TYPE, bool);
+		builder.fallback((c, v) -> {
+			if (v == null) HDumbCommandConverter.set(c, c.getArgument(), null);
+			else throw new IllegalArgumentException(String.format("Parameter %1$s cannot be converted to a command line argument because the type of \"2$s\" (%3$s) is unknown.  Please consider implementing %4$s.", c.getArgument().getName(), v, v.getClass(), IArgumentRenderer.class.getSimpleName()));
+		});
 	}).build();
 
 	@SuppressWarnings("unchecked")

@@ -7,8 +7,10 @@ import com.g2forge.habitat.metadata.Metadata;
 import com.g2forge.habitat.metadata.value.subject.ISubject;
 
 import lombok.AllArgsConstructor;
+import lombok.ToString;
 
 @AllArgsConstructor
+@ToString
 public class MethodArgument implements IMethodArgument<Object> {
 	protected final Object value;
 
