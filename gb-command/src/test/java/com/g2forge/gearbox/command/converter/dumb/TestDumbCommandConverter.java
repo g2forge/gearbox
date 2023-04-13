@@ -45,6 +45,10 @@ public class TestDumbCommandConverter {
 		public void method(@Environment("a") String a, @Environment("b") Path b);
 	}
 
+	public interface IEnvironmentNull extends ITestCommandInterface {
+		public void method(@Environment("a") String a);
+	}
+
 	public interface IEnvPath extends ITestCommandInterface {
 		public void method(@EnvPath(usage = EnvPath.Usage.Replace) Path path);
 	}
@@ -93,8 +97,7 @@ public class TestDumbCommandConverter {
 	private static final ProxyInvocationHandler handler = computeHandler();
 
 	public static <T> CommandInvocation<IRedirect, IRedirect> assertCommand(Class<T> type, IConsumer1<? super T> invoke, Class<? extends IResultSupplier<?>> expectedResultSupplierType, Path expectedWorking, String... expectedArguments) {
-		@SuppressWarnings("unchecked")
-		final T proxy = (T) Proxy.newProxyInstance(type.getClassLoader(), new Class<?>[] { type }, getHandler());
+		final T proxy = createProxy(type);
 		try {
 			invoke.accept(proxy);
 			throw new UnreachableCodeError();
@@ -111,6 +114,12 @@ public class TestDumbCommandConverter {
 
 	protected static ProxyInvocationHandler computeHandler() {
 		return new ProxyInvocationHandler(new MethodToCommandInvocationTransformer(DumbCommandConverter.create()), null);
+	}
+
+	protected static <T> T createProxy(Class<T> type) {
+		@SuppressWarnings("unchecked")
+		final T proxy = (T) Proxy.newProxyInstance(type.getClassLoader(), new Class<?>[] { type }, getHandler());
+		return proxy;
 	}
 
 	@Test
@@ -135,6 +144,12 @@ public class TestDumbCommandConverter {
 		final CommandInvocation<IRedirect, IRedirect> command = assertCommand(IEnvironment.class, x -> x.method(a, Paths.get(b)), VoidResultSupplier.class, null, "method");
 		HAssert.assertEquals(a, command.getEnvironment().apply("a"));
 		HAssert.assertEquals(b, command.getEnvironment().apply("b"));
+	}
+
+	@Test
+	public void environmentNull() {
+		final CommandInvocation<IRedirect, IRedirect> command = assertCommand(IEnvironmentNull.class, x -> x.method(null), VoidResultSupplier.class, null, "method");
+		HAssert.assertNull(command.getEnvironment().apply("a"));
 	}
 
 	@Test
@@ -192,7 +207,19 @@ public class TestDumbCommandConverter {
 	}
 
 	@Test
+	public void stringNamedNull() {
+		final IStringNamed proxy = createProxy(IStringNamed.class);
+		HAssert.assertException(NullPointerException.class, () -> proxy.method(null));
+	}
+
+	@Test
 	public void stringValue() {
 		assertCommand(IStringValue.class, x -> x.method("A"), StringResultSupplier.class, null, "method", "A");
+	}
+
+	@Test
+	public void stringValueNull() {
+		final IStringValue proxy = createProxy(IStringValue.class);
+		HAssert.assertException(NullPointerException.class, () -> proxy.method(null));
 	}
 }

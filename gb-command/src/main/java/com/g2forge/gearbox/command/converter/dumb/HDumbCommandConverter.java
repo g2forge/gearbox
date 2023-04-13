@@ -27,6 +27,7 @@ public class HDumbCommandConverter {
 		// Handle named arguments
 		final Named named = metadata.get(Named.class);
 		if (named != null) {
+			if (value == null) throw new NullPointerException("Named argument values cannot be null (though they can be the string spelling \"null\")!");
 			if (!named.joined()) {
 				command.argument(named.value());
 				command.argument(value);
@@ -40,10 +41,12 @@ public class HDumbCommandConverter {
 		// Handle environment variables
 		final Environment environment = metadata.get(Environment.class);
 		if (environment != null) {
-			argumentContext.getEnvironment().modifier(environment.value(), prior -> value);
+			//  Null environment values, do nothing
+			if (value != null) argumentContext.getEnvironment().modifier(environment.value(), prior -> value);
 			return;
 		}
 
+		if (value == null) throw new NullPointerException("Positional argument values cannot be null (though they can be the string spelling \"null\")!");
 		command.argument(value);
 	}
 }
