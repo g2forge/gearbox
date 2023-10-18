@@ -16,7 +16,7 @@ public class TestExample {
 			final ExampleHome home = site.open();
 			HAssert.assertEquals("Example Domain", home.getTitle());
 			final ExampleMoreInformation moreInformation = home.openMoreInformation();
-			HAssert.assertEquals("IANA-managed Reserved Domains", moreInformation.getTitle());
+			HAssert.assertEquals("Example Domains", moreInformation.getTitle());
 		} catch (WebDriverException exception) {
 			// Don't try and run the test if firefox isn't installed
 			HAssume.assumeFalse(exception.getMessage().contains("Cannot find firefox binary in PATH"));

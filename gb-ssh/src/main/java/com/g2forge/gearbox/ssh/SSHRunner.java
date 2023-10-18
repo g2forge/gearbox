@@ -4,12 +4,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.EnumSet;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.channel.ChannelExec;
 import org.apache.sshd.client.channel.ClientChannelEvent;
-import org.apache.sshd.client.future.ConnectFuture;
 import org.apache.sshd.client.session.ClientSession;
 
 import com.g2forge.alexandria.annotations.note.Note;
@@ -30,24 +30,33 @@ public class SSHRunner implements IRunner, ICloseable {
 
 	protected boolean open = false;
 
-	public SSHRunner(SSHServer server) {
-		client = SshClient.setUpDefaultClient();
-		client.start();
+	protected final boolean ownClient;
 
-		try {
-			final ConnectFuture future = client.connect(server.getUsername(), server.getHost(), server.getPort());
-			if (!future.await()) throw new RuntimeIOException();
-			session = future.getSession();
-		} catch (IOException exception) {
-			throw new RuntimeIOException(exception);
-		}
-		session.addPasswordIdentity(server.getPassword());
+	protected SSHRunner(final SshClient client, final boolean ownClient, final SSHConfig config) {
+		Objects.requireNonNull(client);
+		Objects.requireNonNull(config);
+
+		this.client = client;
+		this.ownClient = ownClient;
+		if (this.ownClient) client.start();
+
+		this.session = config.getRemote().connect(client);
+		if (config.getCredentials() != null) config.getCredentials().configure(session);
+
 		try {
 			session.auth().verify();
 		} catch (IOException exception) {
 			throw new RuntimeIOException(exception);
 		}
 		open = true;
+	}
+
+	public SSHRunner(final SshClient client, final SSHConfig config) {
+		this(client, false, config);
+	}
+
+	public SSHRunner(final SSHConfig config) {
+		this(SshClient.setUpDefaultClient(), true, config);
 	}
 
 	@Note(type = NoteType.TODO, value = "IO redirection and working directories")
@@ -113,7 +122,7 @@ public class SSHRunner implements IRunner, ICloseable {
 		} catch (IOException exception) {
 			throw new RuntimeIOException(exception);
 		} finally {
-			client.stop();
+			if (ownClient) client.stop();
 		}
 	}
 
