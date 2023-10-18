@@ -27,26 +27,26 @@ import com.g2forge.gearbox.command.converter.dumb.DumbCommandConverter;
 import com.g2forge.gearbox.command.process.IProcess;
 import com.g2forge.gearbox.command.process.redirect.IRedirect;
 import com.g2forge.gearbox.command.test.ATestCommand;
-import com.g2forge.gearbox.ssh.SSHServer.SSHServerBuilder;
 
 import lombok.Getter;
 
 public class TestSSHRunner extends ATestCommand {
 	@Getter(lazy = true)
-	private static final SSHServer server = createServer();
+	private static final SSHConfig config = createConfig();
 
-	protected static SSHServer createServer() {
+	protected static SSHConfig createConfig() {
 		final ExecutorService executor = Executors.newSingleThreadExecutor();
-		final Future<SSHServer> handler = executor.submit(new Callable<SSHServer>() {
+		final Future<SSHConfig> handler = executor.submit(new Callable<SSHConfig>() {
 			@Override
-			public SSHServer call() throws Exception {
+			public SSHConfig call() throws Exception {
 				try {
-					final SSHServerBuilder builder = SSHServer.builder();
-					builder.username(new PropertyStringInput("ssh.username").fallback(new UserStringInput("SSH Username", false)).get());
-					builder.password(new PropertyStringInput("ssh.password").fallback(new UserPasswordInput("SSH Password")).get());
-					builder.host(new PropertyStringInput("ssh.host").fallback(new UserStringInput("SSH Host", false)).get());
-					builder.port(Integer.valueOf(new PropertyStringInput("ssh.port").fallback(new UserStringInput("SSH Port", false)).get()));
-					return builder.build();
+					final SSHRemote.SSHRemoteBuilder remote = SSHRemote.builder();
+					final SSHCredentials.SSHCredentialsBuilder credentials = SSHCredentials.builder();
+					remote.username(new PropertyStringInput("ssh.username").fallback(new UserStringInput("SSH Username", false)).get());
+					credentials.password(new PropertyStringInput("ssh.password").fallback(new UserPasswordInput("SSH Password")).get());
+					remote.host(new PropertyStringInput("ssh.host").fallback(new UserStringInput("SSH Host", false)).get());
+					remote.port(Integer.valueOf(new PropertyStringInput("ssh.port").fallback(new UserStringInput("SSH Port", false)).get()));
+					return new SSHConfig(remote.build(), credentials.build());
 				} catch (InputUnspecifiedException exception) {
 					return null;
 				}
@@ -80,24 +80,24 @@ public class TestSSHRunner extends ATestCommand {
 
 	@Override
 	protected IFunction1<CommandInvocation<IRedirect, IRedirect>, IProcess> createRunner() {
-		return new SSHRunner(getServer());
+		return new SSHRunner(getConfig());
 	}
 
 	@Test
 	public void cwd() {
-		HAssume.assumeNotNull(getServer());
+		HAssume.assumeNotNull(getConfig());
 		final String cwd = HAssume.assumeNoException(new PropertyStringInput("sshtest.cwd").fallback(new UserStringInput("SSH Test CWD", false)));
 		HAssert.assertEquals(cwd, getUtils().pwd(Paths.get("./"), false).trim());
 	}
 
 	@Test
 	public void hostname() {
-		HAssume.assumeNotNull(getServer());
+		HAssume.assumeNotNull(getConfig());
 		final String hostname = HAssume.assumeNoException(new PropertyStringInput("sshtest.hostname").fallback(new UserStringInput("SSH Test Hostname", false)));
 		HAssert.assertEquals(hostname, getUtils().echo(false, "${HOSTNAME}").trim());
 	}
 
 	protected boolean isValid() {
-		return getServer() != null;
+		return getConfig() != null;
 	}
 }
