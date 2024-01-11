@@ -85,6 +85,10 @@ public class TestDumbCommandConverter {
 		public String method(@Named("name=") String argument);
 	}
 
+	public interface IStringNamedSkipNull extends ITestCommandInterface {
+		public String method(@Named(value = "name=", skipNull = true) String argument);
+	}
+
 	public interface IStringNamedNonJoined extends ITestCommandInterface {
 		public String method(@Named(value = "name", joined = false) String argument);
 	}
@@ -184,7 +188,7 @@ public class TestDumbCommandConverter {
 		assertCommand(IPathWorking.class, x -> x.method(Paths.get("A")), VoidResultSupplier.class, Paths.get("A"), "method");
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = RuntimeException.class)
 	public void stringArrayNamed() {
 		assertCommand(IStringArrayNamed.class, x -> x.method("A", "B"), StringResultSupplier.class, null);
 	}
@@ -209,7 +213,12 @@ public class TestDumbCommandConverter {
 	@Test
 	public void stringNamedNull() {
 		final IStringNamed proxy = createProxy(IStringNamed.class);
-		HAssert.assertException(NullPointerException.class, () -> proxy.method(null));
+		HAssert.assertException(RuntimeException.class, () -> proxy.method(null));
+	}
+
+	@Test
+	public void stringNamedNullSkip() {
+		assertCommand(IStringNamedSkipNull.class, x -> x.method(null), StringResultSupplier.class, null, "method");
 	}
 
 	@Test
@@ -220,6 +229,6 @@ public class TestDumbCommandConverter {
 	@Test
 	public void stringValueNull() {
 		final IStringValue proxy = createProxy(IStringValue.class);
-		HAssert.assertException(NullPointerException.class, () -> proxy.method(null));
+		HAssert.assertException(RuntimeException.class, () -> proxy.method(null));
 	}
 }

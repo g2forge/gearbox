@@ -4,7 +4,9 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.g2forge.alexandria.annotations.note.Note;
@@ -15,6 +17,7 @@ import com.g2forge.alexandria.command.invocation.environment.modified.ModifiedEn
 import com.g2forge.alexandria.command.invocation.format.ICommandFormat;
 import com.g2forge.alexandria.command.stdio.StandardIO;
 import com.g2forge.alexandria.java.core.enums.EnumException;
+import com.g2forge.alexandria.java.core.error.HError;
 import com.g2forge.alexandria.java.core.error.NotYetImplementedError;
 import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.java.core.marker.ISingleton;
@@ -118,8 +121,13 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 		builder.add(ArgumentContext.class, Boolean.class, bool);
 		builder.add(ArgumentContext.class, Boolean.TYPE, bool);
 		builder.fallback((c, v) -> {
-			if (v == null) HDumbCommandConverter.set(c, c.getArgument(), null);
-			else throw new IllegalArgumentException(String.format("Parameter %1$s cannot be converted to a command line argument because the type of \"2$s\" (%3$s) is unknown.  Please consider implementing %4$s.", c.getArgument().getName(), v, v.getClass(), IArgumentRenderer.class.getSimpleName()));
+			if (v == null) {
+				final ISubject subject = c.getArgument().getMetadata();
+				if (subject.isPresent(Working.class)) return;
+				if (subject.isPresent(Environment.class)) return;
+				if (subject.isPresent(EnvPath.class)) return;
+				HDumbCommandConverter.set(c, c.getArgument(), null);
+			} else throw new IllegalArgumentException(String.format("Parameter %1$s cannot be converted to a command line argument because the type of \"2$s\" (%3$s) is unknown.  Please consider implementing %4$s.", c.getArgument().getName(), v, v.getClass(), IArgumentRenderer.class.getSimpleName()));
 		});
 	}).build();
 
@@ -175,11 +183,13 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 			if (returnTypeRef.getErasedType().isAssignableFrom(Void.class) || returnTypeRef.getErasedType().isAssignableFrom(Void.TYPE)) commandInvocationBuilder.io(StandardIO.<IRedirect, IRedirect>builder().standardInput(InheritRedirect.create()).standardOutput(InheritRedirect.create()).standardError(InheritRedirect.create()).build());
 		}
 
-		// Compute the command name
+		// Compute the command name & initial arguments
 		commandInvocationBuilder.clearArguments();
 		final Command command = Metadata.getStandard().of(methodInvocation.getMethod()).get(Command.class);
-		if (command != null) Stream.of(command.value()).forEach(commandInvocationBuilder::argument);
-		else commandInvocationBuilder.argument(methodInvocation.getMethod().getName());
+		final List<String> commandArguments;
+		if (command != null) commandArguments = HCollection.asList(command.value());
+		else commandArguments = HCollection.asList(methodInvocation.getMethod().getName());
+		commandArguments.forEach(commandInvocationBuilder::argument);
 
 		// Compute the result generator
 		if (processInvocation.getResultSupplier() == null) {
@@ -189,24 +199,31 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 
 		// Generate the command & environment from the method arguments
 		final Parameter[] parameters = methodInvocation.getMethod().getParameters();
+		final List<Throwable> throwables = new ArrayList<>();
 		for (int i = 0; i < parameters.length; i++) {
-			final Object value = methodInvocation.getArguments().get(i);
-			final IMethodArgument<Object> methodArgument = new MethodArgument(value, parameters[i]);
+			// Convert all the parameters and collect any exceptions, so that the final exception report is comprehensive
+			try {
+				final Object value = methodInvocation.getArguments().get(i);
+				final IMethodArgument<Object> methodArgument = new MethodArgument(value, parameters[i]);
 
-			final IArgumentRenderer<?> argumentRenderer = methodArgument.getMetadata().get(IArgumentRenderer.class);
-			if (argumentRenderer != null) {
-				if (methodArgument.getMetadata().isPresent(Environment.class)) throw new NotYetImplementedError("Parameters with custom argument renderers cannot be used as environment variables (yet)!");
-				@SuppressWarnings({ "unchecked", "rawtypes" })
-				final List<String> arguments = argumentRenderer.render((IMethodArgument) methodArgument);
-				commandInvocationBuilder.arguments(arguments);
-			} else {
-				final ArgumentContext argumentContext = new ArgumentContext(commandInvocationBuilder, environmentBuilder, methodArgument);
-				ARGUMENT_BUILDER.accept(argumentContext, value);
+				final IArgumentRenderer<?> argumentRenderer = methodArgument.getMetadata().get(IArgumentRenderer.class);
+				if (argumentRenderer != null) {
+					if (methodArgument.getMetadata().isPresent(Environment.class)) throw new NotYetImplementedError("Parameters with custom argument renderers cannot be used as environment variables (yet)!");
+					@SuppressWarnings({ "unchecked", "rawtypes" })
+					final List<String> arguments = argumentRenderer.render((IMethodArgument) methodArgument);
+					commandInvocationBuilder.arguments(arguments);
+				} else {
+					final ArgumentContext argumentContext = new ArgumentContext(commandInvocationBuilder, environmentBuilder, methodArgument);
+					ARGUMENT_BUILDER.accept(argumentContext, value);
+				}
+
+				final Constant constant = methodArgument.getMetadata().get(Constant.class);
+				if ((constant != null) && (constant.value() != null)) commandInvocationBuilder.arguments(HCollection.asList(constant.value()));
+			} catch (Throwable throwable) {
+				throwables.add(throwable);
 			}
-
-			final Constant constant = methodArgument.getMetadata().get(Constant.class);
-			if ((constant != null) && (constant.value() != null)) commandInvocationBuilder.arguments(HCollection.asList(constant.value()));
 		}
+		if (!throwables.isEmpty()) throw HError.withSuppressed(new RuntimeException(String.format("Failed to convert parameters to arguments for %1$s", commandArguments.stream().collect(Collectors.joining(" ")))), throwables);
 
 		processInvocationBuilder.commandInvocation(commandInvocationBuilder.environment(environmentBuilder.build().simplify()).build());
 		return processInvocationBuilder.build();
