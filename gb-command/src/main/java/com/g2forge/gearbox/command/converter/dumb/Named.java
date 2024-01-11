@@ -16,4 +16,6 @@ public @interface Named {
 	public String value();
 	
 	public boolean joined() default true;
+	
+	public boolean skipNull() default false;
 }
