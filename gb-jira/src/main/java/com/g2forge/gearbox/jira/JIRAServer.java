@@ -174,8 +174,10 @@ public class JIRAServer {
 		builder.protocol(new PropertyStringInput("jira.protocol").fallback(NullableOptional.of("https")).get());
 		builder.host(new PropertyStringInput("jira.host").fallback(new UserStringInput("Jira Host", true)).get());
 		builder.port(Integer.valueOf(new PropertyStringInput("jira.port").fallback(NullableOptional.of("0")).get()));
-		builder.username(new PropertyStringInput("jira.username").fallback(new UserStringInput("Jira Username", true)).get());
-		builder.password(new PropertyStringInput("jira.password").fallback(new UserPasswordInput(String.format("Jira Password for %1$s", builder.username))).get());
+		final String username = new PropertyStringInput("jira.username").fallback(NullableOptional.of(null)).get();
+		builder.username(username);
+		builder.password(new PropertyStringInput("jira.password").fallback(username == null ? NullableOptional.of(null) : new UserPasswordInput(String.format("Jira Password for %1$s", builder.username))).get());
+		builder.token(new PropertyStringInput("jira.token").fallback(username == null ? new UserPasswordInput("Jira Personal Access Token") : NullableOptional.of(null)).get());
 		return builder.build();
 	}
 
@@ -189,6 +191,8 @@ public class JIRAServer {
 
 	protected final String password;
 
+	protected final String token;
+
 	public ExtendedJiraRestClient connect(boolean acceptSelfSignedCertificates) throws URISyntaxException {
 		final String protocol = getProtocol();
 		final int port = getPort();
@@ -196,7 +200,15 @@ public class JIRAServer {
 
 		final HttpClientOptions options = new HttpClientOptions();
 		options.setTrustSelfSignedCertificates(acceptSelfSignedCertificates);
+		final AuthenticationHandler authenticationHandler = getAuthenticationHandler();
+		return new ExtendedAsynchronousJiraRestClient(uri, createClient(uri, authenticationHandler, options));
+	}
+
+	private AuthenticationHandler getAuthenticationHandler() {
 		final String username = getUsername();
-		return new ExtendedAsynchronousJiraRestClient(uri, createClient(uri, (username == null) ? null : new BasicHttpAuthenticationHandler(username, getPassword()), options));
+		if (username != null) return new BasicHttpAuthenticationHandler(username, getPassword());
+		final String token = getToken();
+		if (token != null) return new BearerHttpAuthenticationHandler(token);
+		throw new IllegalStateException("Either username (& password) or personal access token is required, and neither was specified!");
 	}
 }
