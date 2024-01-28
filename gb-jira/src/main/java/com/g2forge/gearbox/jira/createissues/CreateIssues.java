@@ -38,10 +38,7 @@ import com.g2forge.alexandria.command.command.IStandardCommand;
 import com.g2forge.alexandria.command.exit.IExit;
 import com.g2forge.alexandria.command.invocation.CommandInvocation;
 import com.g2forge.alexandria.java.core.error.HError;
-import com.g2forge.alexandria.java.function.IConsumer1;
 import com.g2forge.alexandria.log.HLog;
-import com.g2forge.alexandria.wizard.PropertyStringInput;
-import com.g2forge.alexandria.wizard.UserStringInput;
 import com.g2forge.gearbox.jira.ExtendedJiraRestClient;
 import com.g2forge.gearbox.jira.JIRAServer;
 
@@ -174,11 +171,6 @@ public class CreateIssues implements IStandardCommand {
 
 	public static void main(String[] args) throws Throwable {
 		IStandardCommand.main(args, new CreateIssues());
-	}
-
-	protected static void promptUser(IConsumer1<? super String> consumer, Class<?> clazz, String property) {
-		final String value = new PropertyStringInput(clazz.getSimpleName().toLowerCase() + "." + property.toLowerCase()).fallback(new UserStringInput(property, true)).get();
-		if (value != null) consumer.accept(value);
 	}
 
 	protected static void verifyChanges(final Changes changes) {
