@@ -209,6 +209,6 @@ public class JIRAServer {
 		if (username != null) return new BasicHttpAuthenticationHandler(username, getPassword());
 		final String token = getToken();
 		if (token != null) return new BearerHttpAuthenticationHandler(token);
-		throw new IllegalStateException("Either username (& password) or personal access token is required, and neither was specified!");
+		return null;
 	}
 }
