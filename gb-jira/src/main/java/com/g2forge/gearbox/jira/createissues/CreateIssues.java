@@ -146,7 +146,7 @@ import lombok.Data;
  * </table>
  */
 public class CreateIssues implements IStandardCommand {
-	protected static final Pattern PATTERN_KEY = Pattern.compile("([A-Z0-9]{2,4}-[0-9]+)(\\s.*)?");
+	protected static final Pattern PATTERN_KEY = Pattern.compile("([A-Z0-9]{2,5}-[0-9]+)(\\s.*)?");
 
 	protected static Changes computeChanges(CreateConfig config) {
 		final Changes.ChangesBuilder retVal = Changes.builder();
