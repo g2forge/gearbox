@@ -40,7 +40,11 @@ public class SSHConfig {
 	}
 
 	public FileSystem createFileSystem() {
-		final SftpFileSystemProvider provider = new SftpFileSystemProvider();
+		return createFileSystem(null /* This works because SftpFileSystemProvider does this anyway for the no-arg constructor */);
+	}
+
+	public FileSystem createFileSystem(SshClient client) {
+		final SftpFileSystemProvider provider = new SftpFileSystemProvider(client);
 		provider.setSftpFileSystemClientSessionInitializer(new SftpFileSystemClientSessionInitializer() {
 			@Override
 			public void authenticateClientSession(SftpFileSystemProvider provider, SftpFileSystemInitializationContext context, ClientSession session) throws IOException {
