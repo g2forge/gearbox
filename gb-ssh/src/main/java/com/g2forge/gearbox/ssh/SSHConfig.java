@@ -6,6 +6,7 @@ import java.nio.file.FileSystem;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.session.ClientSession;
 import org.apache.sshd.sftp.client.fs.SftpFileSystemClientSessionInitializer;
 import org.apache.sshd.sftp.client.fs.SftpFileSystemInitializationContext;
@@ -25,6 +26,18 @@ public class SSHConfig {
 	protected final SSHRemote remote;
 
 	protected final SSHCredentials credentials;
+
+	public ClientSession connect(SshClient client) {
+		final ClientSession retVal = getRemote().connect(client);
+		if (getCredentials() != null) getCredentials().configure(retVal);
+
+		try {
+			retVal.auth().verify();
+		} catch (IOException exception) {
+			throw new RuntimeIOException(exception);
+		}
+		return retVal;
+	}
 
 	public FileSystem createFileSystem() {
 		final SftpFileSystemProvider provider = new SftpFileSystemProvider();
