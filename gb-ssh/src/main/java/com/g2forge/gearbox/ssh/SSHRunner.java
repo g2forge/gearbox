@@ -40,14 +40,7 @@ public class SSHRunner implements IRunner, ICloseable {
 		this.ownClient = ownClient;
 		if (this.ownClient) client.start();
 
-		this.session = config.getRemote().connect(client);
-		if (config.getCredentials() != null) config.getCredentials().configure(session);
-
-		try {
-			session.auth().verify();
-		} catch (IOException exception) {
-			throw new RuntimeIOException(exception);
-		}
+		this.session = config.connect(client);
 		open = true;
 	}
 
