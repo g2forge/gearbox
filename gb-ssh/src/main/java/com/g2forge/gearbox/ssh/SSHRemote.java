@@ -26,7 +26,7 @@ public class SSHRemote {
 		try {
 			final ConnectFuture future = client.connect(getUsername(), getHost(), getPort());
 			if (!future.await()) throw new RuntimeIOException("Failed to connect to " + this);
-			return future.getSession();
+			return future.verify().getSession();
 		} catch (IOException exception) {
 			throw new RuntimeIOException("Failed to connect to " + this, exception);
 		}

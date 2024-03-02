@@ -3,6 +3,7 @@ package com.g2forge.gearbox.ssh;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.time.Duration;
 import java.util.EnumSet;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -26,30 +27,33 @@ import com.g2forge.gearbox.command.process.redirect.IRedirect;
 public class SSHRunner implements IRunner, ICloseable {
 	protected final SshClient client;
 
+	protected final boolean ownClient;
+
+	protected final Duration closeDuration;
+
 	protected final ClientSession session;
 
 	protected boolean open = false;
 
-	protected final boolean ownClient;
-
-	protected SSHRunner(final SshClient client, final boolean ownClient, final SSHConfig config) {
+	protected SSHRunner(final SshClient client, final boolean ownClient, Duration closeDuration, final SSHConfig config) {
 		Objects.requireNonNull(client);
 		Objects.requireNonNull(config);
 
 		this.client = client;
 		this.ownClient = ownClient;
+		this.closeDuration = closeDuration;
 		if (this.ownClient) client.start();
 
 		this.session = config.connect(client);
 		open = true;
 	}
 
-	public SSHRunner(final SshClient client, final SSHConfig config) {
-		this(client, false, config);
+	public SSHRunner(final SshClient client, Duration closeDuration, final SSHConfig config) {
+		this(client, false, closeDuration, config);
 	}
 
-	public SSHRunner(final SSHConfig config) {
-		this(SshClient.setUpDefaultClient(), true, config);
+	public SSHRunner(Duration closeDuration, final SSHConfig config) {
+		this(SshClient.setUpDefaultClient(), true, closeDuration, config);
 	}
 
 	@Note(type = NoteType.TODO, value = "IO redirection and working directories")
@@ -72,7 +76,8 @@ public class SSHRunner implements IRunner, ICloseable {
 			@Override
 			public void close() {
 				try {
-					channel.close();
+					if (closeDuration == null) channel.close();
+					else channel.close(false).await(closeDuration);
 				} catch (IOException e) {
 					throw new RuntimeIOException(e);
 				}
