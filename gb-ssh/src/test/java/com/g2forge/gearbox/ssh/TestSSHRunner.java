@@ -1,6 +1,7 @@
 package com.g2forge.gearbox.ssh;
 
 import java.nio.file.Paths;
+import java.time.Duration;
 
 import org.junit.After;
 import org.junit.Test;
@@ -37,7 +38,7 @@ public class TestSSHRunner extends ATestCommand {
 
 	@Override
 	protected IFunction1<CommandInvocation<IRedirect, IRedirect>, IProcess> createRunner() {
-		return new SSHRunner(TestSSH.getConfig());
+		return new SSHRunner(Duration.ofSeconds(5), TestSSH.getConfig());
 	}
 
 	@Test

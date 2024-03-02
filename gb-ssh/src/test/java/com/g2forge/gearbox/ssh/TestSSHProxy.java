@@ -1,6 +1,7 @@
 package com.g2forge.gearbox.ssh;
 
 import java.io.IOException;
+import java.time.Duration;
 
 import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.session.ClientSession;
@@ -26,7 +27,7 @@ public class TestSSHProxy {
 
 				final SSHConfig proxyConfig = new SSHConfig(new SSHRemote(config.getRemote().getUsername(), "localhost", tunnel.getBoundAddress().getPort()), config.getCredentials());
 				final String message = "Test message";
-				try (final SSHRunner runner = new SSHRunner(client, proxyConfig)) {
+				try (final SSHRunner runner = new SSHRunner(client, Duration.ofSeconds(5), proxyConfig)) {
 					final String actual = new CommandProxyFactory(new DumbCommandConverter(), runner).apply(IUtils.class).echo(false, message);
 					HAssert.assertEquals(message, actual.stripTrailing());
 				}
