@@ -3,6 +3,7 @@ package com.g2forge.gearbox.command.converter.dumb;
 import java.util.List;
 
 import com.g2forge.alexandria.command.invocation.CommandInvocation.CommandInvocationBuilder;
+import com.g2forge.alexandria.command.invocation.environment.modified.EnvironmentValue;
 import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.gearbox.command.converter.IMethodArgument;
 import com.g2forge.gearbox.command.converter.dumb.DumbCommandConverter.ArgumentContext;
@@ -43,7 +44,7 @@ public class HDumbCommandConverter {
 		final Environment environment = metadata.get(Environment.class);
 		if (environment != null) {
 			// Null environment values, do nothing
-			if (value != null) argumentContext.getEnvironment().modifier(environment.value(), prior -> value);
+			if (value != null) argumentContext.getEnvironment().modifier(environment.value(), new EnvironmentValue(value));
 			return;
 		}
 
