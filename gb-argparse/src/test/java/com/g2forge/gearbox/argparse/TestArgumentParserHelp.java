@@ -3,6 +3,7 @@ package com.g2forge.gearbox.argparse;
 import org.junit.Test;
 
 import com.g2forge.alexandria.java.core.helpers.HCollection;
+import com.g2forge.alexandria.java.function.IThrowRunnable;
 import com.g2forge.alexandria.test.HAssert;
 import com.g2forge.alexandria.test.HMatchers;
 
@@ -13,7 +14,8 @@ public class TestArgumentParserHelp {
 	}
 
 	private void assertHelp(final String help, final Class<?> type) {
-		HAssert.assertThat(() -> ArgumentParser.parse(type, HCollection.asList("--help")), HMatchers.isThrowable(ArgumentHelpException.class, HMatchers.equalTo(help)));
+		final IThrowRunnable<RuntimeException> runnable = () -> ArgumentParser.parse(type, HCollection.asList("--help"));
+		HAssert.assertThat(runnable, HMatchers.isThrowable(ArgumentHelpException.class, HMatchers.equalTo(help)));
 	}
 
 	@Test
