@@ -1,4 +1,6 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>gearbox</artifactId>
@@ -12,10 +14,12 @@
 	</parent>
 
 	<name>Gearbox</name>
-	<description>A library of clients and frameworks for building them, including REST and command line.</description>
+	<description>A library of clients and frameworks for building them,
+		including REST and command line.</description>
 
 	<modules>
 		<module>gb-project</module>
+		<module>gb-argparse</module>
 		<module>gb-command</module>
 		<module>gb-command-test</module>
 		<module>gb-ssh</module>
