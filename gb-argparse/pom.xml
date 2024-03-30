@@ -1,0 +1,25 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>gb-argparse</artifactId>
+
+	<parent>
+		<groupId>com.g2forge.gearbox</groupId>
+		<artifactId>gb-project</artifactId>
+		<version>0.0.10-SNAPSHOT</version>
+		<relativePath>../gb-project/pom.xml</relativePath>
+	</parent>
+
+	<name>Gearbox ArgParse</name>
+	<description>A simple command line argument parsing library.</description>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.g2forge.habitat</groupId>
+			<artifactId>ha-metadata</artifactId>
+			<version>${habitat.version}</version>
+		</dependency>
+	</dependencies>
+</project>
