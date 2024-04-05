@@ -17,7 +17,7 @@ public class TestArgumentParser {
 	@Builder(toBuilder = true)
 	@AllArgsConstructor
 	protected static class Flag {
-		@NamedParameter("--flag")
+		@Parameter("--flag")
 		protected final boolean flag;
 	}
 
@@ -25,7 +25,7 @@ public class TestArgumentParser {
 	@Builder(toBuilder = true)
 	@AllArgsConstructor
 	protected static class Mixed {
-		@NamedParameter("--flag")
+		@Parameter("--flag")
 		@ArgumentHelp("An optional flag")
 		protected final boolean flag;
 
