@@ -2,7 +2,6 @@ package com.g2forge.gearbox.argparse;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -83,7 +82,7 @@ public class ArgumentParser<T> {
 	private final IArgumentsParser argumentsParser = computeArgumentsParser();
 
 	protected ArgumentsParser computeArgumentsParser() {
-		final Parameter[] parameterActuals = getConstructor().getParameters();
+		final java.lang.reflect.Parameter[] parameterActuals = getConstructor().getParameters();
 		final List<IParameterInfo> parameterInfos = new ArrayList<>();
 		for (int i = 0; i < parameterActuals.length; i++) {
 			parameterInfos.add(new IParameterInfo.ParameterInfoAdapter(i, parameterActuals[i]));
@@ -148,7 +147,7 @@ public class ArgumentParser<T> {
 
 				final ParameterParserInfo info = new ParameterParserInfo(i, parameterTypeParser);
 				final ISubject subject = parameter.getSubject();
-				final NamedParameter annotation = subject.get(NamedParameter.class);
+				final Parameter annotation = subject.get(Parameter.class);
 				if (annotation != null) named.put(annotation.value(), info);
 				else positional.add(info);
 			}

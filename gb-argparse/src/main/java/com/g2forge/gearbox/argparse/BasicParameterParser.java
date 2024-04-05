@@ -10,20 +10,20 @@ public enum BasicParameterParser implements IParameterParser {
 	BOOLEAN {
 		@Override
 		public IOptional<Object> getDefault(IParameterInfo parameter) {
-			if (parameter.getSubject().bind(NamedParameter.class).isPresent()) return NullableOptional.of(false);
+			if (parameter.getSubject().bind(Parameter.class).isPresent()) return NullableOptional.of(false);
 			return NullableOptional.empty();
 		}
 
 		@Override
 		public Object parse(IParameterInfo parameter, ListIterator<String> argumentIterator) {
-			if (parameter.getSubject().bind(NamedParameter.class).isPresent()) return true;
+			if (parameter.getSubject().bind(Parameter.class).isPresent()) return true;
 			else return Boolean.valueOf(argumentIterator.next());
 		}
 	},
 	PATH {
 		@Override
 		public IOptional<Object> getDefault(IParameterInfo parameter) {
-			if (parameter.getSubject().bind(NamedParameter.class).isPresent()) return NullableOptional.of(null);
+			if (parameter.getSubject().bind(Parameter.class).isPresent()) return NullableOptional.of(null);
 			return NullableOptional.empty();
 		}
 
@@ -35,7 +35,7 @@ public enum BasicParameterParser implements IParameterParser {
 	STRING {
 		@Override
 		public IOptional<Object> getDefault(IParameterInfo parameter) {
-			if (parameter.getSubject().bind(NamedParameter.class).isPresent()) return NullableOptional.of(null);
+			if (parameter.getSubject().bind(Parameter.class).isPresent()) return NullableOptional.of(null);
 			return NullableOptional.empty();
 		}
 
