@@ -13,6 +13,7 @@ import com.g2forge.alexandria.annotations.note.Note;
 import com.g2forge.alexandria.annotations.note.NoteType;
 import com.g2forge.alexandria.command.invocation.CommandInvocation;
 import com.g2forge.alexandria.command.invocation.environment.SystemEnvironment;
+import com.g2forge.alexandria.command.invocation.environment.modified.IEnvironmentModifier;
 import com.g2forge.alexandria.command.invocation.environment.modified.ModifiedEnvironment;
 import com.g2forge.alexandria.command.invocation.format.ICommandFormat;
 import com.g2forge.alexandria.command.stdio.StandardIO;
@@ -48,6 +49,7 @@ import com.g2forge.habitat.metadata.value.subject.ISubject;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
 public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 	@Data
@@ -61,6 +63,31 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 	}
 
 	protected static final DumbCommandConverter instance = new DumbCommandConverter();
+
+	@Data
+	@Builder(toBuilder = true)
+	@RequiredArgsConstructor
+	protected static class EnvPathModifier implements IEnvironmentModifier {
+		protected final EnvPath.Usage usage;
+
+		protected final Path value;
+
+		@Override
+		public String modify(String parent) {
+			final String pathSeparator = HPlatform.getPlatform().getPathSpec().getPathSeparator();
+			switch (getUsage()) {
+				case AddFirst:
+					return getValue().toString() + pathSeparator + parent;
+				case Replace:
+					return getValue().toString();
+				case AddLast:
+					return parent + pathSeparator + getValue().toString();
+				default:
+					throw new EnumException(EnvPath.Usage.class, getUsage());
+			}
+		}
+
+	}
 
 	protected static final IConsumer2<ArgumentContext, Object> ARGUMENT_BUILDER = new TypeSwitch2.ConsumerBuilder<ArgumentContext, Object>().with(builder -> {
 		builder.add(ArgumentContext.class, String[].class, (c, v) -> {
@@ -84,25 +111,13 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 
 			final Working working = c.getArgument().getMetadata().get(Working.class);
 			if (working != null) {
-				c.getCommand().working(v);
+				if (v != null) c.getCommand().working(v);
 				isNormal = false;
 			}
 
 			final EnvPath envPath = c.getArgument().getMetadata().get(EnvPath.class);
 			if (envPath != null) {
-				c.getEnvironment().modifier(HPlatform.PATH, parent -> {
-					final String pathSeparator = HPlatform.getPlatform().getPathSpec().getPathSeparator();
-					switch (envPath.usage()) {
-						case AddFirst:
-							return v.toString() + pathSeparator + parent;
-						case Replace:
-							return v.toString();
-						case AddLast:
-							return parent + pathSeparator + v.toString();
-						default:
-							throw new EnumException(EnvPath.Usage.class, envPath.usage());
-					}
-				});
+				c.getEnvironment().modifier(HPlatform.PATH, new EnvPathModifier(envPath.usage(), v));
 				isNormal = false;
 			}
 
