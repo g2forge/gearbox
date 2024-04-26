@@ -30,7 +30,7 @@ public class HDumbCommandConverter {
 		if (named != null) {
 			if (value == null) {
 				if (named.skipNull()) return;
-				else throw new NullPointerException("Named argument values cannot be null (though they can be the string spelling \"null\")!");
+				else throw new NullPointerException("Named argument values cannot be null (though they can be the string spelling \"null\"), please check the value for \"" + named.value() + "\"!");
 			}
 			if (!named.joined()) {
 				command.argument(named.value());
