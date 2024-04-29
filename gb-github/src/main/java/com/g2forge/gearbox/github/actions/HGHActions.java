@@ -21,6 +21,12 @@ public class HGHActions {
 	@Getter(lazy = true)
 	private static final ObjectMapper mapper = new ObjectMapper(new YAMLFactory().enable(Feature.MINIMIZE_QUOTES).disable(Feature.WRITE_DOC_START_MARKER).disable(Feature.SPLIT_LINES));
 
+	protected static final String JAVA_VERSION = "17";
+
+	protected static final String CHECKOUT_VERSION = "v4";
+
+	protected static final String SETUP_JAVA_VERSION = "v3";
+
 	@Note(type = NoteType.TODO, value = "Use gb-command to render command lines")
 	public static GHActionWorkflow createMavenWorkflow(String name, String branch, String mavenSettingsXML, Set<String> dependencies, Set<String> mavenEnvSecrets) {
 		final boolean hasDependencies = (dependencies != null) && (dependencies.size() > 0);
@@ -37,16 +43,15 @@ public class HGHActions {
 		{ // Checkout
 			if (hasDependencies) for (String dependency : dependencies) {
 				final String repo = dependency.substring(dependency.indexOf('/') + 1);
-				build.step(GHActionStep.builder().name("Checkout " + repo).uses("actions/checkout@v2").with("repository", dependency).with("path", repo).build());
+				build.step(GHActionStep.builder().name("Checkout " + repo).uses("actions/checkout@" + CHECKOUT_VERSION).with("repository", dependency).with("path", repo).build());
 			}
 
-			final GHActionStepBuilder checkout = GHActionStep.builder().name("Checkout").uses("actions/checkout@v4");
+			final GHActionStepBuilder checkout = GHActionStep.builder().name("Checkout").uses("actions/checkout@" + CHECKOUT_VERSION);
 			if (hasDependencies && (name != null)) checkout.with("path", name);
 			build.step(checkout.build());
 		}
 
-		final String JAVA_VERSION = "17";
-		build.step(GHActionStep.builder().uses("actions/setup-java@v3").with("distribution", "adopt").with("java-version", JAVA_VERSION).with("cache", "maven").build());
+		build.step(GHActionStep.builder().uses("actions/setup-java@" + SETUP_JAVA_VERSION).with("distribution", "adopt").with("java-version", JAVA_VERSION).with("cache", "maven").build());
 
 		{
 			if (hasDependencies) for (String dependency : dependencies) {
