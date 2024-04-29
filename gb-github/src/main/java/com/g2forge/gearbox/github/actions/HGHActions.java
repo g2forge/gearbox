@@ -45,7 +45,7 @@ public class HGHActions {
 			build.step(checkout.build());
 		}
 
-		final String JAVA_VERSION = "11";
+		final String JAVA_VERSION = "17";
 		build.step(GHActionStep.builder().uses("actions/setup-java@v3").with("distribution", "adopt").with("java-version", JAVA_VERSION).with("cache", "maven").build());
 
 		{
