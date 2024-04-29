@@ -40,13 +40,13 @@ public class HGHActions {
 				build.step(GHActionStep.builder().name("Checkout " + repo).uses("actions/checkout@v2").with("repository", dependency).with("path", repo).build());
 			}
 
-			final GHActionStepBuilder checkout = GHActionStep.builder().name("Checkout").uses("actions/checkout@v2");
+			final GHActionStepBuilder checkout = GHActionStep.builder().name("Checkout").uses("actions/checkout@v4");
 			if (hasDependencies && (name != null)) checkout.with("path", name);
 			build.step(checkout.build());
 		}
 
 		final String JAVA_VERSION = "11";
-		build.step(GHActionStep.builder().uses("actions/setup-java@v2").with("distribution", "adopt").with("java-version", JAVA_VERSION).with("cache", "maven").build());
+		build.step(GHActionStep.builder().uses("actions/setup-java@v3").with("distribution", "adopt").with("java-version", JAVA_VERSION).with("cache", "maven").build());
 
 		{
 			if (hasDependencies) for (String dependency : dependencies) {
@@ -56,7 +56,7 @@ public class HGHActions {
 
 			final GHActionStepBuilder maven = GHActionStep.builder().name("Build");
 			if (hasDependencies && (name != null)) maven.workingDirectory("./" + name);
-			final String mavenGoal = hasDependencies ? "package" : "${{ (((github.event_name == 'push') || (github.event_name == 'workflow_dispatch')) && (github.ref == 'refs/heads/master')) && 'deploy' || 'package' }}";
+			final String mavenGoal = hasDependencies ? "package" : "${{ (((github.event_name == 'push') || (github.event_name == 'workflow_dispatch')) && (github.ref == 'refs/heads/" + branch + "')) && 'deploy' || 'package' }}";
 			maven.run("mvn" + (mavenSettingsXML == null ? "" : " -s \"" + mavenSettingsXML + "\"") + " -B " + mavenGoal + " --file pom.xml -Prelease,release-snapshot");
 			maven.env("GITHUB_TOKEN", "${{ github.token }}");
 			if (mavenEnvSecrets != null) for (String secret : mavenEnvSecrets) {
