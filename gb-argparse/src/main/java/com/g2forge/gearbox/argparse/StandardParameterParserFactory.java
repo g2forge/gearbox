@@ -74,6 +74,7 @@ public class StandardParameterParserFactory implements IParameterParserFactory, 
 		if (Path.class.equals(type)) return BasicParameterParser.PATH;
 		if (String.class.equals(type)) return BasicParameterParser.STRING;
 		if (Boolean.TYPE.equals(type) || Boolean.class.equals(type)) return BasicParameterParser.BOOLEAN;
+		if (Enum.class.isAssignableFrom(type)) return BasicParameterParser.ENUM;
 		if (type.isArray()) {
 			final Class<?> componentType = type.getComponentType();
 			final IParameterParser componentParser = computeParser(componentType);
