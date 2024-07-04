@@ -3,6 +3,7 @@ package com.g2forge.gearbox.argparse;
 import java.nio.file.Paths;
 import java.util.ListIterator;
 
+import com.g2forge.alexandria.java.core.enums.HEnum;
 import com.g2forge.alexandria.java.fluent.optional.IOptional;
 import com.g2forge.alexandria.java.fluent.optional.NullableOptional;
 
@@ -42,6 +43,21 @@ public enum BasicParameterParser implements IParameterParser {
 		@Override
 		public Object parse(IParameterInfo parameter, ListIterator<String> argumentIterator) {
 			return argumentIterator.next();
+		}
+	},
+	ENUM {
+		@Override
+		public IOptional<Object> getDefault(IParameterInfo parameter) {
+			if (parameter.getSubject().bind(Parameter.class).isPresent()) return NullableOptional.of(null);
+			return NullableOptional.empty();
+		}
+
+		@SuppressWarnings("unchecked")
+		@Override
+		public Object parse(IParameterInfo parameter, ListIterator<String> argumentIterator) {
+			@SuppressWarnings("rawtypes")
+			final Class<? extends Enum> cast = (Class<? extends Enum>) parameter.getType();
+			return HEnum.valueOfInsensitive(cast, argumentIterator.next());
 		}
 	};
 }
