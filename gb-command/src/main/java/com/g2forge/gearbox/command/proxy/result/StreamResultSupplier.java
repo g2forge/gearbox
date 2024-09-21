@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import com.g2forge.alexandria.adt.collection.CircularBuffer;
+import com.g2forge.alexandria.collection.CircularBuffer;
 import com.g2forge.alexandria.command.stdio.IStandardIO;
 import com.g2forge.alexandria.command.stdio.StandardIO;
 import com.g2forge.alexandria.java.close.ICloseable;
