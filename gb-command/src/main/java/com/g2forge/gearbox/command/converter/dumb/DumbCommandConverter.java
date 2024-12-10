@@ -6,6 +6,7 @@ import java.lang.reflect.Type;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -13,6 +14,7 @@ import com.g2forge.alexandria.annotations.note.Note;
 import com.g2forge.alexandria.annotations.note.NoteType;
 import com.g2forge.alexandria.command.invocation.CommandInvocation;
 import com.g2forge.alexandria.command.invocation.environment.SystemEnvironment;
+import com.g2forge.alexandria.command.invocation.environment.modified.EnvironmentValue;
 import com.g2forge.alexandria.command.invocation.environment.modified.IEnvironmentModifier;
 import com.g2forge.alexandria.command.invocation.environment.modified.ModifiedEnvironment;
 import com.g2forge.alexandria.command.invocation.format.ICommandFormat;
@@ -135,6 +137,22 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 		};
 		builder.add(ArgumentContext.class, Boolean.class, bool);
 		builder.add(ArgumentContext.class, Boolean.TYPE, bool);
+		builder.add(ArgumentContext.class, Map.class, (c, v) -> {
+			final Environment environment = c.getArgument().getMetadata().get(Environment.class);
+			if ((environment == null) || (environment.value() != null)) throw new IllegalArgumentException("Map arguments must be environemt with \"null\" name!");
+			final ModifiedEnvironment.ModifiedEnvironmentBuilder e = c.getEnvironment();
+			@SuppressWarnings("unchecked")
+			final Map<String, ?> map = (Map<String, ?>) v;
+			for (Map.Entry<String, ?> entry : map.entrySet()) {
+				final String key = entry.getKey();
+				final Object value = entry.getValue();
+				final IEnvironmentModifier modifier;
+				if (value instanceof IEnvironmentModifier) modifier = (IEnvironmentModifier) value;
+				else if (value instanceof String) modifier = new EnvironmentValue((String) value);
+				else throw new IllegalArgumentException("Arguments of type \"" + value.getClass() + "\" are not supported!");
+				e.modifier(key, modifier);
+			}
+		});
 		builder.fallback((c, v) -> {
 			if (v == null) {
 				final ISubject subject = c.getArgument().getMetadata();
@@ -142,7 +160,7 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 				if (subject.isPresent(Environment.class)) return;
 				if (subject.isPresent(EnvPath.class)) return;
 				HDumbCommandConverter.set(c, c.getArgument(), null);
-			} else throw new IllegalArgumentException(String.format("Parameter %1$s cannot be converted to a command line argument because the type of \"2$s\" (%3$s) is unknown.  Please consider implementing %4$s.", c.getArgument().getName(), v, v.getClass(), IArgumentRenderer.class.getSimpleName()));
+			} else throw new IllegalArgumentException(String.format("Parameter %1$s cannot be converted to a command line argument because the type of \"%2$s\" (%3$s) is unknown.  Please consider implementing %4$s.", c.getArgument().getName(), v, v.getClass(), IArgumentRenderer.class.getSimpleName()));
 		});
 	}).build();
 
