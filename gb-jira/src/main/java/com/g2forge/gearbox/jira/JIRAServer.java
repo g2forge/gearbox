@@ -26,6 +26,7 @@ import com.g2forge.alexandria.wizard.UserStringInput;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.extern.jackson.Jacksonized;
 
 /**
  * An abstraction of a Jira server, allowing the caller to get access to the servers ReST API. When instantiated, this class will connect to the server based
@@ -68,8 +69,9 @@ import lombok.Data;
  * </table>
  */
 @Data
-@Builder
+@Builder(toBuilder = true)
 @AllArgsConstructor
+@Jacksonized
 public class JIRAServer {
 	public static DisposableHttpClient createClient(final URI uri, final AuthenticationHandler authenticationHandler, HttpClientOptions options) {
 		final EventPublisher eventPublisher = new EventPublisher() {
@@ -169,15 +171,33 @@ public class JIRAServer {
 		};
 	}
 
-	public static JIRAServer load() {
+	public static JIRAServer createDefault() {
 		final JIRAServerBuilder builder = JIRAServer.builder();
-		builder.protocol(new PropertyStringInput("jira.protocol").fallback(NullableOptional.of("https")).get());
-		builder.host(new PropertyStringInput("jira.host").fallback(new UserStringInput("Jira Host", true)).get());
-		builder.port(Integer.valueOf(new PropertyStringInput("jira.port").fallback(NullableOptional.of("0")).get()));
-		final String username = new PropertyStringInput("jira.username").fallback(NullableOptional.of(null)).get();
-		builder.username(username);
-		builder.password(new PropertyStringInput("jira.password").fallback(username == null ? NullableOptional.of(null) : new UserPasswordInput(String.format("Jira Password for %1$s", builder.username))).get());
-		builder.token(new PropertyStringInput("jira.token").fallback(username == null ? new UserPasswordInput("Jira Personal Access Token") : NullableOptional.of(null)).get());
+		builder.protocol("https");
+		builder.port(0);
+		return builder.build();
+	}
+
+	public static JIRAServer load() {
+		return createFromPropertyInput(null, createDefault());
+	}
+
+	public static JIRAServer createFromPropertyInput(JIRAServer specified, JIRAServer fallback) {
+		if (fallback == null) fallback = createDefault();
+		final JIRAServerBuilder builder = specified == null ? JIRAServer.builder() : specified.toBuilder();
+
+		if (specified == null || specified.getProtocol() == null) builder.protocol(new PropertyStringInput("jira.protocol").fallback(NullableOptional.of(fallback.getProtocol())).get());
+		if (specified == null || specified.getHost() == null) builder.host(new PropertyStringInput("jira.host").fallback(new UserStringInput("Jira Host", true)).get());
+		if (specified == null || specified.getPort() < 0) builder.port(Integer.valueOf(new PropertyStringInput("jira.port").fallback(NullableOptional.of(Integer.toString(fallback.getPort()))).get()));
+
+		final String username;
+		if (specified == null || specified.getUsername() == null) {
+			username = new PropertyStringInput("jira.username").fallback(NullableOptional.of(fallback.getUsername())).get();
+			builder.username(username);
+		} else username = specified.getUsername();
+
+		if (specified == null || specified.getPassword() == null) builder.password(new PropertyStringInput("jira.password").fallback(username == null ? NullableOptional.of(fallback.getPassword()) : new UserPasswordInput(String.format("Jira Password for %1$s", builder.username))).get());
+		if (specified == null || specified.getToken() == null) builder.token(new PropertyStringInput("jira.token").fallback(username == null ? new UserPasswordInput("Jira Personal Access Token") : NullableOptional.of(fallback.getToken())).get());
 		return builder.build();
 	}
 
