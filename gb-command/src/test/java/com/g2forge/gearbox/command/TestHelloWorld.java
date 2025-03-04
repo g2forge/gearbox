@@ -3,7 +3,7 @@ package com.g2forge.gearbox.command;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.g2forge.alexandria.command.invocation.runner.IdentityCommandRunner;
+import com.g2forge.alexandria.command.invocation.runner.ICommandRunner;
 import com.g2forge.gearbox.command.converter.dumb.DumbCommandConverter;
 import com.g2forge.gearbox.command.process.ProcessBuilderRunner;
 import com.g2forge.gearbox.command.proxy.CommandProxyFactory;
@@ -30,7 +30,7 @@ public class TestHelloWorld {
 		// Create a new command proxy factory
 		// Use the "dumb" converter to render command line arguments from method arguments
 		// Use process builder to run the resulting commands
-		final ICommandProxyFactory factory = new CommandProxyFactory(DumbCommandConverter.create(), new ProcessBuilderRunner(IdentityCommandRunner.create()));
+		final ICommandProxyFactory factory = new CommandProxyFactory(DumbCommandConverter.create(), new ProcessBuilderRunner(ICommandRunner.create()));
 
 		// Get a magical implementation of the interface
 		final IEcho echo = factory.apply(IEcho.class);
