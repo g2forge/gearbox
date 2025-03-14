@@ -6,6 +6,8 @@ import javax.ws.rs.core.UriBuilder;
 
 import com.atlassian.jira.rest.client.internal.async.AsynchronousJiraRestClient;
 import com.atlassian.jira.rest.client.internal.async.DisposableHttpClient;
+import com.g2forge.gearbox.jira.components.AsynchronousProjectComponentClient;
+import com.g2forge.gearbox.jira.components.ProjectComponentsRestClient;
 
 import lombok.Getter;
 

@@ -72,7 +72,7 @@ import lombok.extern.jackson.Jacksonized;
 @Builder(toBuilder = true)
 @AllArgsConstructor
 @Jacksonized
-public class JIRAServer {
+public class JiraAPI {
 	public static DisposableHttpClient createClient(final URI uri, final AuthenticationHandler authenticationHandler, HttpClientOptions options) {
 		final EventPublisher eventPublisher = new EventPublisher() {
 			@Override
@@ -171,20 +171,20 @@ public class JIRAServer {
 		};
 	}
 
-	public static JIRAServer createDefault() {
-		final JIRAServerBuilder builder = JIRAServer.builder();
+	public static JiraAPI createDefault() {
+		final JiraAPI.JiraAPIBuilder builder = JiraAPI.builder();
 		builder.protocol("https");
 		builder.port(0);
 		return builder.build();
 	}
 
-	public static JIRAServer load() {
+	public static JiraAPI load() {
 		return createFromPropertyInput(null, createDefault());
 	}
 
-	public static JIRAServer createFromPropertyInput(JIRAServer specified, JIRAServer fallback) {
+	public static JiraAPI createFromPropertyInput(JiraAPI specified, JiraAPI fallback) {
 		if (fallback == null) fallback = createDefault();
-		final JIRAServerBuilder builder = specified == null ? JIRAServer.builder() : specified.toBuilder();
+		final JiraAPI.JiraAPIBuilder builder = specified == null ? JiraAPI.builder() : specified.toBuilder();
 
 		if (specified == null || specified.getProtocol() == null) builder.protocol(new PropertyStringInput("jira.protocol").fallback(NullableOptional.of(fallback.getProtocol())).get());
 		if (specified == null || specified.getHost() == null) builder.host(new PropertyStringInput("jira.host").fallback(new UserStringInput("Jira Host", true)).get());
@@ -224,7 +224,7 @@ public class JIRAServer {
 		return new ExtendedAsynchronousJiraRestClient(uri, createClient(uri, authenticationHandler, options));
 	}
 
-	private AuthenticationHandler getAuthenticationHandler() {
+	protected AuthenticationHandler getAuthenticationHandler() {
 		final String username = getUsername();
 		if (username != null) return new BasicHttpAuthenticationHandler(username, getPassword());
 		final String token = getToken();

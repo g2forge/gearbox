@@ -1,4 +1,4 @@
-package com.g2forge.gearbox.jira;
+package com.g2forge.gearbox.jira.components;
 
 import java.net.URI;
 
