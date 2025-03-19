@@ -20,9 +20,8 @@ public class AsynchronousExtendedUserRestClient extends AsynchronousUserRestClie
 		this.baseUri = baseUri;
 	}
 
-	@Override
-	public Promise<User> getUserByKey(final String key) {
-		final URI userUri = UriBuilder.fromUri(baseUri).path(USER_URI_PREFIX).queryParam("key", key).queryParam("expand", "groups").build();
+	public Promise<User> getUserByQueryParam(final String queryParam, final String value) {
+		final URI userUri = UriBuilder.fromUri(baseUri).path(USER_URI_PREFIX).queryParam(queryParam, value).queryParam("expand", "groups").build();
 		return getUser(userUri);
 	}
 }
