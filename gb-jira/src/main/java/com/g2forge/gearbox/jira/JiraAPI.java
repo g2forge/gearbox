@@ -178,10 +178,6 @@ public class JiraAPI {
 		return builder.build();
 	}
 
-	public static JiraAPI load() {
-		return createFromPropertyInput(null, createDefault());
-	}
-
 	public static JiraAPI createFromPropertyInput(JiraAPI specified, JiraAPI fallback) {
 		if (fallback == null) fallback = createDefault();
 		final JiraAPI.JiraAPIBuilder builder = specified == null ? JiraAPI.builder() : specified.toBuilder();
@@ -199,6 +195,10 @@ public class JiraAPI {
 		if (specified == null || specified.getPassword() == null) builder.password(new PropertyStringInput("jira.password").fallback(username == null ? NullableOptional.of(fallback.getPassword()) : new UserPasswordInput(String.format("Jira Password for %1$s", builder.username))).get());
 		if (specified == null || specified.getToken() == null) builder.token(new PropertyStringInput("jira.token").fallback(username == null ? new UserPasswordInput("Jira Personal Access Token") : NullableOptional.of(fallback.getToken())).get());
 		return builder.build();
+	}
+
+	public static JiraAPI load() {
+		return createFromPropertyInput(null, createDefault());
 	}
 
 	protected final String protocol;
@@ -222,6 +222,11 @@ public class JiraAPI {
 		options.setTrustSelfSignedCertificates(acceptSelfSignedCertificates);
 		final AuthenticationHandler authenticationHandler = getAuthenticationHandler();
 		return new ExtendedAsynchronousJiraRestClient(uri, createClient(uri, authenticationHandler, options));
+	}
+
+	public String createIssueLink(String issueKey) {
+		final String port = (getPort() > 0) ? (":" + getPort()) : "";
+		return String.format("http://%1$s%2$s/browse/%3$s", getHost(), port, issueKey);
 	}
 
 	protected AuthenticationHandler getAuthenticationHandler() {
