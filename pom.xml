@@ -32,5 +32,6 @@
 		<module>gb-rest</module>
 		<module>gb-maven</module>
 		<module>gb-image</module>
+		<module>gb-csv</module>
 	</modules>
 </project>
