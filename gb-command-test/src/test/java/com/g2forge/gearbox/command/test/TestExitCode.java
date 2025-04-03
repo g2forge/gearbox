@@ -38,8 +38,8 @@ public class TestExitCode extends ATestCommand {
 		try {
 			getFactory().apply(IGenericCommand.class).run(null, clireport.toString(), arguments).collect(Collectors.toList());
 		} catch (RuntimeException e) {
-			final List<String> lines = HCLIReport.computeExpectedOutput(clireport.toString(), arguments);
-			final String message = String.format("Showing last %1$d lines of output:\n", lines.size()) + lines.stream().map(s -> "\t" + s).collect(HCollector.joining("\n")) + "\n";
+			final HCLIReport.Output expected = HCLIReport.computeExpectedOutput(clireport.toString(), arguments);
+			final String message = String.format("Showing last %1$d lines of output:\n", expected.getOutput().size()) + expected.getOutput().stream().map(s -> "\t" + s).collect(HCollector.joining("\n")) + "\n";
 			HAssert.assertEquals(message, e.getMessage());
 			return;
 		}
@@ -51,6 +51,6 @@ public class TestExitCode extends ATestCommand {
 		final Path clireport = HCLIReport.download(null).get().toAbsolutePath();
 		final String[] arguments = new String[] { "--exit", "0", "A", "B" };
 		final List<String> actual = getFactory().apply(IGenericCommand.class).run(null, clireport.toString(), arguments).collect(Collectors.toList());
-		HAssert.assertEquals(HCLIReport.computeExpectedOutput(clireport.toString(), arguments), actual);
+		HAssert.assertEquals(HCLIReport.computeExpectedOutput(clireport.toString(), arguments).getOutput(), actual);
 	}
 }
