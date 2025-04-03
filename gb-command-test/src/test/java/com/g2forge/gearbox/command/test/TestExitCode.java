@@ -51,6 +51,6 @@ public class TestExitCode extends ATestCommand {
 		final Path clireport = HCLIReport.download(null).get().toAbsolutePath();
 		final String[] arguments = new String[] { "--exit", "0", "A", "B" };
 		final List<String> actual = getFactory().apply(IGenericCommand.class).run(null, clireport.toString(), arguments).collect(Collectors.toList());
-		HAssert.assertEquals(HCLIReport.computeExpectedOutput(clireport.toString(), arguments).getExitCode(), actual);
+		HAssert.assertEquals(HCLIReport.computeExpectedOutput(clireport.toString(), arguments).getOutput(), actual);
 	}
 }
