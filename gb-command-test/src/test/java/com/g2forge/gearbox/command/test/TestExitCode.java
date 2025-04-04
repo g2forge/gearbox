@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import com.g2forge.alexandria.command.clireport.HCLIReport;
 import com.g2forge.alexandria.java.core.helpers.HCollector;
+import com.g2forge.alexandria.java.platform.HPlatform;
 import com.g2forge.alexandria.test.HAssert;
 import com.g2forge.gearbox.command.converter.ICommandConverterR_;
 import com.g2forge.gearbox.command.converter.dumb.Command;
@@ -44,6 +45,34 @@ public class TestExitCode extends ATestCommand {
 			return;
 		}
 		HAssert.fail();
+	}
+
+	@Test
+	public void sleep() {
+		final String executable;
+		final String[] arguments;
+
+		switch (HPlatform.getPlatform().getCategory()) {
+			case Microsoft: {
+				executable = "cmd";
+				arguments = new String[] { "/c", "sleep 1 && exit 1" };
+				break;
+			}
+			default: {
+				executable = "/bin/sh";
+				arguments = new String[] { "-c", "sleep 1; exit 1" };
+				break;
+			}
+		}
+
+		for (int i = 0; i < 100; i++) {
+			try {
+				getFactory().apply(IGenericCommand.class).run(null, executable, arguments).collect(Collectors.toList());
+			} catch (RuntimeException e) {
+				continue;
+			}
+			HAssert.fail("Failed to correctly catch the non-zero exit code in iteration " + i + " (there's probably a race condition due to variations in OS behavior around process termination and stream redirection)");
+		}
 	}
 
 	@Test

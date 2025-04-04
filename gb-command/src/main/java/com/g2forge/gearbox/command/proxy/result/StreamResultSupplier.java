@@ -54,7 +54,7 @@ public class StreamResultSupplier implements IResultSupplier<Stream<String>>, IS
 		public void close() {
 			done = true;
 			try {
-				if (!process.isRunning() && !process.isSuccess()) {
+				if (!process.isSuccess()) {
 					final List<String> lines = buffer.getList();
 					final StringBuilder builder = new StringBuilder().append("Showing last ").append(lines.size()).append(" lines of output:\n");
 					final Consumer<? super String> printer = line -> builder.append('\t').append(line).append('\n');
