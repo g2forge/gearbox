@@ -1,6 +1,7 @@
 package com.g2forge.gearbox.argparse;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -16,6 +17,7 @@ import com.g2forge.alexandria.java.core.helpers.HStream;
 import com.g2forge.alexandria.java.fluent.optional.IOptional;
 import com.g2forge.alexandria.java.function.IFunction1;
 import com.g2forge.alexandria.java.text.HString;
+import com.g2forge.habitat.metadata.Metadata;
 import com.g2forge.habitat.metadata.value.predicate.IPredicate;
 import com.g2forge.habitat.metadata.value.subject.ISubject;
 
@@ -28,95 +30,6 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public class ArgumentParser<T> {
-	@Data
-	@Builder(toBuilder = true)
-	@RequiredArgsConstructor
-	protected static class ParameterParserInfo {
-		protected final int index;
-
-		protected final IParameterParser parser;
-	}
-
-	protected static final Set<String> STANDARD_HELP_ARGUMENTS = HCollection.asSet("/h", "/?", "-h", "-help", "--help");
-
-	public enum HelpArguments {
-		STANDARD {
-			@Override
-			public boolean isHelp(List<String> arguments) {
-				if (arguments.size() == 1) return STANDARD_HELP_ARGUMENTS.contains(arguments.get(0));
-				return false;
-			}
-		},
-		EMPTY {
-			@Override
-			public boolean isHelp(List<String> arguments) {
-				return arguments.isEmpty();
-			}
-		};
-
-		public abstract boolean isHelp(List<String> arguments);
-	}
-
-	protected final Class<T> type;
-
-	protected final Set<HelpArguments> help;
-
-	public ArgumentParser(Class<T> type) {
-		this(type, EnumSet.of(HelpArguments.STANDARD));
-	}
-
-	@Getter(lazy = true, value = AccessLevel.PROTECTED)
-	private final Constructor<T> constructor = findConstructor();
-
-	public T parse(List<String> arguments) {
-		final IArgumentsParser argumentsParser = getArgumentsParser();
-
-		final boolean help = getHelp().stream().filter(helpArguments -> helpArguments.isHelp(arguments)).findAny().isPresent();
-		if (help) throw new ArgumentHelpException(argumentsParser.generateHelp());
-
-		final Object[] parsed = argumentsParser.apply(arguments);
-		return create(parsed);
-	}
-
-	@Getter(lazy = true, value = AccessLevel.PROTECTED)
-	private final IArgumentsParser argumentsParser = computeArgumentsParser();
-
-	protected ArgumentsParser computeArgumentsParser() {
-		final java.lang.reflect.Parameter[] parameterActuals = getConstructor().getParameters();
-		final List<IParameterInfo> parameterInfos = new ArrayList<>();
-		for (int i = 0; i < parameterActuals.length; i++) {
-			parameterInfos.add(new IParameterInfo.ParameterInfoAdapter(i, parameterActuals[i]));
-		}
-		final ArgumentsParser argumentsParser = new ArgumentsParser(parameterInfos);
-		return argumentsParser;
-	}
-
-	private T create(final Object[] parsed) {
-		final Constructor<T> constructor = getConstructor();
-		try {
-			return constructor.newInstance(parsed);
-		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	private Constructor<T> findConstructor() {
-		final Constructor<?>[] constructors = type.getDeclaredConstructors();
-		if (constructors.length != 1) throw new IllegalArgumentException(String.format("Argument type %1$s has %2$d constructors, only single constructor types are supported (for now).", type, constructors.length));
-
-		@SuppressWarnings({ "rawtypes", "unchecked" })
-		final Constructor<T> constructor = (Constructor) constructors[0];
-		return constructor;
-	}
-
-	public static <T> T parse(Class<T> type, List<String> arguments) {
-		return new ArgumentParser<>(type).parse(arguments);
-	}
-
-	protected interface IArgumentsParser extends IFunction1<List<String>, Object[]> {
-		public String generateHelp();
-	}
-
 	protected static class ArgumentsParser implements IArgumentsParser {
 		protected final List<? extends IParameterInfo> parameters;
 
@@ -129,9 +42,8 @@ public class ArgumentParser<T> {
 		/** A list of parsers, one for each input parameter. */
 		protected final List<IParameterParser> parsers;
 
-		public ArgumentsParser(final List<? extends IParameterInfo> parameters) {
-			this(StandardParameterParserFactory.create(), parameters);
-		}
+		@Getter(AccessLevel.PROTECTED)
+		protected final boolean foundAnnotations;
 
 		public ArgumentsParser(final IParameterParserFactory parameterParserFactory, final List<? extends IParameterInfo> parameters) {
 			// Parse the parameter model from the constructor
@@ -139,6 +51,7 @@ public class ArgumentParser<T> {
 			positional = new ArrayList<>();
 			named = new HashMap<>();
 			parsers = new ArrayList<>();
+			boolean foundAnnotations = false;
 			for (int i = 0; i < parameters.size(); i++) {
 				final IParameterInfo parameter = parameters.get(i);
 
@@ -148,9 +61,16 @@ public class ArgumentParser<T> {
 				final ParameterParserInfo info = new ParameterParserInfo(i, parameterTypeParser);
 				final ISubject subject = parameter.getSubject();
 				final Parameter annotation = subject.get(Parameter.class);
-				if (annotation != null) named.put(annotation.value(), info);
-				else positional.add(info);
+				if (annotation != null) {
+					named.put(annotation.value(), info);
+					foundAnnotations = true;
+				} else positional.add(info);
 			}
+			this.foundAnnotations = foundAnnotations;
+		}
+
+		public ArgumentsParser(final List<? extends IParameterInfo> parameters) {
+			this(StandardParameterParserFactory.create(), parameters);
 		}
 
 		public Object[] apply(List<String> arguments) {
@@ -238,5 +158,108 @@ public class ArgumentParser<T> {
 
 			return retVal.toString();
 		}
+	}
+
+	public enum HelpArguments {
+		STANDARD {
+			@Override
+			public boolean isHelp(List<String> arguments) {
+				if (arguments.size() == 1) return STANDARD_HELP_ARGUMENTS.contains(arguments.get(0));
+				return false;
+			}
+		},
+		EMPTY {
+			@Override
+			public boolean isHelp(List<String> arguments) {
+				return arguments.isEmpty();
+			}
+		};
+
+		public abstract boolean isHelp(List<String> arguments);
+	}
+
+	protected interface IArgumentsParser extends IFunction1<List<String>, Object[]> {
+		public String generateHelp();
+	}
+
+	@Data
+	@Builder(toBuilder = true)
+	@RequiredArgsConstructor
+	protected static class ParameterParserInfo {
+		protected final int index;
+
+		protected final IParameterParser parser;
+	}
+
+	protected static final Set<String> STANDARD_HELP_ARGUMENTS = HCollection.asSet("/h", "/?", "-h", "-help", "--help");
+
+	public static <T> T parse(Class<T> type, List<String> arguments) {
+		return new ArgumentParser<>(type).parse(arguments);
+	}
+
+	protected final Class<T> type;
+
+	protected final Set<HelpArguments> help;
+
+	@Getter(lazy = true, value = AccessLevel.PROTECTED)
+	private final Constructor<T> constructor = findConstructor();
+
+	@Getter(lazy = true, value = AccessLevel.PROTECTED)
+	private final IArgumentsParser argumentsParser = computeArgumentsParser();
+
+	public ArgumentParser(Class<T> type) {
+		this(type, EnumSet.of(HelpArguments.STANDARD));
+	}
+
+	protected ArgumentsParser computeArgumentsParser() {
+		final java.lang.reflect.Parameter[] parameterActuals = getConstructor().getParameters();
+		final List<IParameterInfo> parameterInfos = new ArrayList<>();
+		for (int i = 0; i < parameterActuals.length; i++) {
+			parameterInfos.add(new IParameterInfo.ParameterInfoAdapter(i, parameterActuals[i]));
+		}
+		final ArgumentsParser argumentsParser = new ArgumentsParser(parameterInfos);
+		if (!argumentsParser.isFoundAnnotations()) {
+			boolean foundAnnotationsOnFields = false;
+			Class<?> type = getType();
+			outer: while (!Object.class.equals(type)) {
+				for (Field field : getType().getDeclaredFields()) {
+					if (Metadata.getStandard().of(field, null).bind(Parameter.class).isPresent()) {
+						foundAnnotationsOnFields = true;
+						break outer;
+					}
+				}
+				type = type.getSuperclass();
+			}
+			if (foundAnnotationsOnFields) throw new RuntimeException(String.format("There are argument parsing exceptions on the fields of %1$s, but not the parameters of %2$s.  Please ensure you have \"lombok.anyConstructor.addConstructorProperties = true\", \"lombok.copyableAnnotations += %3$s\", and \"lombok.copyableAnnotations += %4$s\" in the relevant lombok.config or manually copy the annotations to your constructor parameters!", getType(), getConstructor(), Parameter.class, ArgumentHelp.class));
+		}
+		return argumentsParser;
+	}
+
+	private T create(final Object[] parsed) {
+		final Constructor<T> constructor = getConstructor();
+		try {
+			return constructor.newInstance(parsed);
+		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private Constructor<T> findConstructor() {
+		final Constructor<?>[] constructors = type.getDeclaredConstructors();
+		if (constructors.length != 1) throw new IllegalArgumentException(String.format("Argument type %1$s has %2$d constructors, only single constructor types are supported (for now).", type, constructors.length));
+
+		@SuppressWarnings({ "rawtypes", "unchecked" })
+		final Constructor<T> constructor = (Constructor) constructors[0];
+		return constructor;
+	}
+
+	public T parse(List<String> arguments) {
+		final IArgumentsParser argumentsParser = getArgumentsParser();
+
+		final boolean help = getHelp().stream().filter(helpArguments -> helpArguments.isHelp(arguments)).findAny().isPresent();
+		if (help) throw new ArgumentHelpException(argumentsParser.generateHelp());
+
+		final Object[] parsed = argumentsParser.apply(arguments);
+		return create(parsed);
 	}
 }
