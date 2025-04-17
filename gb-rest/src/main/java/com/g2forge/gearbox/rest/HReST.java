@@ -14,6 +14,7 @@ import lombok.experimental.UtilityClass;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
@@ -54,7 +55,9 @@ public class HReST {
 		try {
 			final Call<? extends ReturnType> call = supplier.get();
 			response = call.execute();
-			if (!response.isSuccessful()) throw new RuntimeException(response.errorBody().string());
+			if (!response.isSuccessful()) try (final ResponseBody errorBody = response.errorBody()) {
+				throw new RuntimeException(errorBody.string());
+			}
 		} catch (IOException e) {
 			throw new RuntimeIOException(e);
 		}
