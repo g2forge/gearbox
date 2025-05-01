@@ -35,6 +35,10 @@ public class SSHRunner implements IRunner, ICloseable {
 
 	protected boolean open = false;
 
+	public SSHRunner(Duration closeDuration, final SSHConfig config) {
+		this(SshClient.setUpDefaultClient(), true, closeDuration, config);
+	}
+
 	protected SSHRunner(final SshClient client, final boolean ownClient, Duration closeDuration, final SSHConfig config) {
 		Objects.requireNonNull(client);
 		Objects.requireNonNull(config);
@@ -52,10 +56,6 @@ public class SSHRunner implements IRunner, ICloseable {
 		this(client, false, closeDuration, config);
 	}
 
-	public SSHRunner(Duration closeDuration, final SSHConfig config) {
-		this(SshClient.setUpDefaultClient(), true, closeDuration, config);
-	}
-
 	@Note(type = NoteType.TODO, value = "IO redirection and working directories")
 	@Note(type = NoteType.TODO, value = "Environment variables")
 	@Override
@@ -64,18 +64,25 @@ public class SSHRunner implements IRunner, ICloseable {
 
 		ensureOpen();
 		final ChannelExec channel;
-		try {
-			final String command = commandInvocation.getArguments().stream().collect(Collectors.joining(" "));
-			channel = session.createExecChannel(command);
-			if (!channel.open().await()) throw new RuntimeIOException();
-		} catch (IOException exception) {
-			throw new RuntimeIOException(exception);
+		final Throwable launchException;
+		{
+			ChannelExec _channel = null;
+			Throwable _launchException = null;
+			try {
+				final String command = commandInvocation.getArguments().stream().collect(Collectors.joining(" "));
+				_channel = session.createExecChannel(command);
+				if (!_channel.open().await()) throw new RuntimeIOException();
+			} catch (Throwable throwable) {
+				_launchException = throwable;
+			}
+			channel = _channel;
+			launchException = _launchException;
 		}
 
 		return new IProcess() {
 			@Override
 			public void close() {
-				try {
+				if (isLaunched()) try {
 					if (closeDuration == null) channel.close();
 					else channel.close(false).await(closeDuration);
 				} catch (IOException e) {
@@ -85,28 +92,37 @@ public class SSHRunner implements IRunner, ICloseable {
 
 			@Override
 			public int getExitCode() {
+				assertLaunch();
 				channel.waitFor(EnumSet.of(ClientChannelEvent.CLOSED, ClientChannelEvent.EXIT_SIGNAL, ClientChannelEvent.EXIT_STATUS), 0);
 				return channel.getExitStatus();
 			}
 
 			@Override
+			public Throwable getLaunchException() {
+				return launchException;
+			}
+
+			@Override
 			public InputStream getStandardError() {
+				assertLaunch();
 				return channel.getInvertedErr();
 			}
 
 			@Override
 			public OutputStream getStandardInput() {
+				assertLaunch();
 				return channel.getInvertedIn();
 			}
 
 			@Override
 			public InputStream getStandardOutput() {
+				assertLaunch();
 				return channel.getInvertedOut();
 			}
 
 			@Override
 			public boolean isRunning() {
-				return channel.isOpen();
+				return isLaunched() && channel.isOpen();
 			}
 		};
 	}

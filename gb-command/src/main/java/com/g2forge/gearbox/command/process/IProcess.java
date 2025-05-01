@@ -12,7 +12,13 @@ import com.g2forge.alexandria.java.function.IConsumer1;
 import com.g2forge.alexandria.java.io.HTextIO;
 
 public interface IProcess extends ICloseable, IStandardIO<OutputStream, InputStream> {
+	public default void assertLaunch() {
+		final Throwable launchException = getLaunchException();
+		if (launchException != null) throw new RuntimeException("Process failed to launch", launchException);
+	}
+
 	public default void assertSuccess() {
+		assertLaunch();
 		if (!isSuccess()) {
 			final StringBuilder builder = new StringBuilder();
 			final List<Throwable> throwables = new ArrayList<>();
@@ -36,6 +42,12 @@ public interface IProcess extends ICloseable, IStandardIO<OutputStream, InputStr
 	}
 
 	public int getExitCode();
+
+	public Throwable getLaunchException();
+
+	public default boolean isLaunched() {
+		return getLaunchException() == null;
+	}
 
 	public boolean isRunning();
 

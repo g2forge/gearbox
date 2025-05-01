@@ -195,6 +195,7 @@ public class StreamResultSupplier implements IResultSupplier<Stream<String>>, IS
 
 	@Override
 	public Stream<String> apply(IProcess process) {
+		process.assertLaunch();
 		final List<Stream2Queue> threads = new ArrayList<>(2);
 		try {
 			final ConcurrentLinkedQueue<String> queue = new ConcurrentLinkedQueue<>();
