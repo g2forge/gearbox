@@ -13,6 +13,7 @@ public class BooleanResultSupplier implements IResultSupplier<Boolean>, ISinglet
 	@Override
 	public Boolean apply(IProcess process) {
 		try {
+			if (!process.isLaunched()) return false;
 			return process.getExitCode() == 0;
 		} finally {
 			process.close();
