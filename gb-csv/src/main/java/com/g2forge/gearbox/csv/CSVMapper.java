@@ -1,8 +1,6 @@
 package com.g2forge.gearbox.csv;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 
@@ -10,11 +8,11 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.SequenceWriter;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.g2forge.alexandria.java.core.helpers.HCollection;
-import com.g2forge.alexandria.java.io.RuntimeIOException;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -22,13 +20,10 @@ import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-public class CSVMapper<T> {
+public class CSVMapper<T> extends ACSVMapper<T, T> {
 	protected final Class<T> type;
 
 	protected final List<String> columns;
-
-	@Getter(lazy = true, value = AccessLevel.PROTECTED)
-	private final CsvMapper mapper = createMapper();
 
 	@Getter(lazy = true, value = AccessLevel.PROTECTED)
 	private final CsvSchema schema = createSchema();
@@ -37,11 +32,22 @@ public class CSVMapper<T> {
 		this(type, HCollection.asList(columns));
 	}
 
+	@Override
 	protected CsvMapper createMapper() {
-		final CsvMapper retVal = new CsvMapper();
+		final CsvMapper retVal = super.createMapper();
 		retVal.configure(JsonGenerator.Feature.IGNORE_UNKNOWN, true);
 		retVal.enable(CsvParser.Feature.IGNORE_TRAILING_UNMAPPABLE);
 		return retVal;
+	}
+
+	@Override
+	protected ObjectReader createObjectReader() {
+		return getMapper().readerFor(getType()).with(getSchema());
+	}
+
+	@Override
+	protected ObjectWriter createObjectWriter() {
+		return getMapper().writerFor(getType()).with(getSchema());
 	}
 
 	protected CsvSchema createSchema() {
@@ -52,23 +58,13 @@ public class CSVMapper<T> {
 		return builder.build();
 	}
 
-	public List<T> read(InputStream stream) {
-		final ObjectReader reader = getMapper().readerFor(getType()).with(getSchema());
-
-		try {
-			final MappingIterator<T> iterator = reader.readValues(stream);
-			return iterator.readAll();
-		} catch (IOException e) {
-			throw new RuntimeIOException(e);
-		}
+	@Override
+	protected List<T> readAll(MappingIterator<T> iterator) throws IOException {
+		return iterator.readAll();
 	}
 
-	public void write(Collection<T> values, Path path) {
-		final ObjectWriter writer = getMapper().writerFor(getType()).with(getSchema());
-		try {
-			writer.writeValues(path.toFile()).writeAll(values);
-		} catch (IOException e) {
-			throw new RuntimeIOException(e);
-		}
+	@Override
+	protected void writeAll(Collection<T> values, final SequenceWriter sequenceWriter) throws IOException {
+		sequenceWriter.writeAll(values);
 	}
 }
