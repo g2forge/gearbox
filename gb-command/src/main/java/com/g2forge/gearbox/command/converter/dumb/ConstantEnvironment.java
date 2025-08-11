@@ -6,11 +6,14 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Specifies a constant environment variable to set for the child process.  You can specify multiple of these through {@link Command#env}
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 @Documented
-public @interface Command {
-	public String[] value();
+public @interface ConstantEnvironment {
+	public String variable();
 
-	public ConstantEnvironment[] env() default {};
+	public String value();
 }

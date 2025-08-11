@@ -46,11 +46,14 @@ import com.g2forge.gearbox.command.proxy.result.ProcessResultSupplier;
 import com.g2forge.gearbox.command.proxy.result.StreamResultSupplier;
 import com.g2forge.gearbox.command.proxy.result.StringResultSupplier;
 import com.g2forge.gearbox.command.proxy.result.VoidResultSupplier;
+import com.g2forge.habitat.metadata.IMetadata;
 import com.g2forge.habitat.metadata.Metadata;
 import com.g2forge.habitat.metadata.value.subject.ISubject;
 
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
@@ -63,8 +66,6 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 
 		protected final IMethodArgument<Object> argument;
 	}
-
-	protected static final DumbCommandConverter instance = new DumbCommandConverter();
 
 	@Data
 	@Builder(toBuilder = true)
@@ -90,6 +91,8 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 		}
 
 	}
+
+	protected static final DumbCommandConverter instance = new DumbCommandConverter();
 
 	protected static final IConsumer2<ArgumentContext, Object> ARGUMENT_BUILDER = new TypeSwitch2.ConsumerBuilder<ArgumentContext, Object>().with(builder -> {
 		builder.add(ArgumentContext.class, String[].class, (c, v) -> {
@@ -164,6 +167,9 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 		});
 	}).build();
 
+	@Getter(lazy = true, value = AccessLevel.PROTECTED)
+	private static final IMetadata metadata = Metadata.getStandard();
+
 	@SuppressWarnings("unchecked")
 	protected static <T> ITypeRef<T> computeReturnTypeRef(Method method) {
 		return (ITypeRef<T>) new ATypeRefIdentity<Object>() {
@@ -216,13 +222,28 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 			if (returnTypeRef.getErasedType().isAssignableFrom(Void.class) || returnTypeRef.getErasedType().isAssignableFrom(Void.TYPE)) commandInvocationBuilder.io(StandardIO.<IRedirect, IRedirect>builder().standardInput(InheritRedirect.create()).standardOutput(InheritRedirect.create()).standardError(InheritRedirect.create()).build());
 		}
 
+		final ISubject methodSubject = getMetadata().of(methodInvocation.getMethod());
+
 		// Compute the command name & initial arguments
 		commandInvocationBuilder.clearArguments();
-		final Command command = Metadata.getStandard().of(methodInvocation.getMethod()).get(Command.class);
+		final Command command = methodSubject.get(Command.class);
 		final List<String> commandArguments;
 		if (command != null) commandArguments = HCollection.asList(command.value());
 		else commandArguments = HCollection.asList(methodInvocation.getMethod().getName());
 		commandArguments.forEach(commandInvocationBuilder::argument);
+
+		{
+			final ConstantEnvironment constantEnvironment = methodSubject.get(ConstantEnvironment.class);
+			if (constantEnvironment != null) environmentBuilder.modifier(constantEnvironment.variable(), new EnvironmentValue(constantEnvironment.value()));
+		}
+		if (command != null) {
+			final ConstantEnvironment[] env = command.env();
+			if ((env != null) && (env.length > 0)) {
+				for (ConstantEnvironment constantEnvironment : env) {
+					environmentBuilder.modifier(constantEnvironment.variable(), new EnvironmentValue(constantEnvironment.value()));
+				}
+			}
+		}
 
 		// Compute the result generator
 		if (processInvocation.getResultSupplier() == null) {
