@@ -80,11 +80,11 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 			final String pathSeparator = HPlatform.getPlatform().getPathSpec().getPathSeparator();
 			switch (getUsage()) {
 				case AddFirst:
-					return getValue().toString() + pathSeparator + parent;
+					return getValue().toString() + ((parent == null) ? "" : (pathSeparator + parent));
 				case Replace:
 					return getValue().toString();
 				case AddLast:
-					return parent + pathSeparator + getValue().toString();
+					return ((parent == null) ? "" : (parent + pathSeparator)) + getValue().toString();
 				default:
 					throw new EnumException(EnvPath.Usage.class, getUsage());
 			}
