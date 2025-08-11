@@ -97,6 +97,12 @@ public class TestDumbCommandConverter {
 		public String method(String argument);
 	}
 
+	public interface IConstantEnvironment extends ITestCommandInterface {
+		@ConstantEnvironment(variable = "X", value = "A")
+		@Command(value = "method", env = { @ConstantEnvironment(variable = "Y", value = "B") })
+		public String method();
+	}
+
 	@Getter(lazy = true)
 	private static final ProxyInvocationHandler handler = computeHandler();
 
@@ -124,6 +130,13 @@ public class TestDumbCommandConverter {
 		@SuppressWarnings("unchecked")
 		final T proxy = (T) Proxy.newProxyInstance(type.getClassLoader(), new Class<?>[] { type }, getHandler());
 		return proxy;
+	}
+
+	@Test
+	public void constantEnvironment() {
+		final CommandInvocation<IRedirect, IRedirect> command = assertCommand(IConstantEnvironment.class, x -> x.method(), StringResultSupplier.class, null, "method");
+		HAssert.assertEquals("A", command.getEnvironment().apply("X"));
+		HAssert.assertEquals("B", command.getEnvironment().apply("Y"));
 	}
 
 	@Test
