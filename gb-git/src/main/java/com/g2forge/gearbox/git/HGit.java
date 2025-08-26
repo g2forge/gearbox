@@ -36,6 +36,7 @@ import org.eclipse.jgit.lib.ReflogEntry;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.SshTransport;
@@ -57,45 +58,6 @@ import lombok.experimental.UtilityClass;
 @Helpers
 @UtilityClass
 public class HGit {
-	public static final String REFSPEC_SEPARATOR = ":";
-
-	public static TransportConfigCallback createTransportConfig(String key, String password) {
-		final SshdSessionFactoryBuilder sessionFactoryBuilder = new SshdSessionFactoryBuilder();
-		sessionFactoryBuilder.setHomeDirectory(FS.DETECTED.userHome());
-		sessionFactoryBuilder.setSshDirectory(FS.DETECTED.userHome().toPath().resolve(HSSH.SSHDIR).toFile());
-		sessionFactoryBuilder.setDefaultIdentities(unused -> HCollection.asList(Paths.get(key)));
-		sessionFactoryBuilder.setKeyPasswordProvider(unused -> new KeyPasswordProvider() {
-			@Override
-			public char[] getPassphrase(URIish uri, int attempt) throws IOException {
-				return password.toCharArray();
-			}
-
-			@Override
-			public boolean keyLoaded(URIish uri, int attempt, Exception error) throws IOException, GeneralSecurityException {
-				return false;
-			}
-
-			@Override
-			public void setAttempts(int maxNumberOfAttempts) {}
-		});
-
-		final SshdSessionFactory sessionFactory = sessionFactoryBuilder.build(null);
-		return new TransportConfigCallback() {
-			@Override
-			public void configure(Transport transport) {
-				if (transport instanceof SshTransport) {
-					final SshTransport sshTransport = ((SshTransport) transport);
-					sshTransport.setSshSessionFactory(sessionFactory);
-				}
-			}
-		};
-	}
-
-	public static ZonedDateTime getTime(ReflogEntry entry) {
-		final PersonIdent who = entry.getWho();
-		return ZonedDateTime.ofInstant(who.getWhen().toInstant(), who.getTimeZone().toZoneId());
-	}
-
 	public static class ReflogTimeComparator implements Comparator<ReflogEntry> {
 		@Override
 		public int compare(ReflogEntry arg0, ReflogEntry arg1) {
@@ -129,86 +91,9 @@ public class HGit {
 		}
 	}
 
-	public static Git createGit(Path root) {
-		return createGit(root, true);
-	}
-
-	public static Git createGit(Path root, boolean create) {
-		try {
-			final Path gitDir = getGitFile(root);
-			final boolean actuallyCreate = create && !Files.isDirectory(gitDir);
-			if (actuallyCreate) Files.createDirectories(root);
-			final FileRepository repository = new FileRepository(gitDir.toFile());
-			if (actuallyCreate) repository.create();
-
-			final Git git = new Git(repository);
-			if (create) {
-				if (!Files.isDirectory(gitDir)) try {
-					Git.init().setGitDir(gitDir.toFile()).call();
-				} catch (GitAPIException exception) {
-					throw new RuntimeException("Failed to initialize new git repository in " + root, exception);
-				}
-			}
-			return git;
-		} catch (IOException exception) {
-			throw new RuntimeIOException(exception);
-		}
-	}
-
-	public static Path getGitFile(Path root) {
-		return root.resolve(GIT_DIRECTORY);
-	}
+	public static final String REFSPEC_SEPARATOR = ":";
 
 	public static final String GIT_DIRECTORY = ".git";
-
-	/**
-	 * Test if the given git repository has a branch with the specified name.
-	 * 
-	 * @param git The git repository to check for the branch
-	 * @param branch The name of the branch to look for
-	 * @return <code>true</code> if a branch with the specified name exists in the specified repository
-	 */
-	public static boolean isBranch(final Git git, final String branch) {
-		try {
-			return git.getRepository().findRef(Constants.R_HEADS + branch) != null;
-		} catch (IOException exception) {
-			throw new RuntimeIOException(String.format("Failed to check for branch \"%1$s\" in repository \"%2$s\"!", branch, git.getRepository().getDirectory().toPath()), exception);
-		}
-	}
-
-	public static String getMyRemote(final Git git) {
-		final List<RemoteConfig> remotes;
-		try {
-			remotes = git.remoteList().call();
-		} catch (GitAPIException e) {
-			throw new RuntimeException(e);
-		}
-		if (remotes.size() == 1) return HCollection.getOne(remotes).getName();
-
-		final List<RemoteConfig> modify = new ArrayList<>(remotes);
-		for (Iterator<RemoteConfig> i = modify.iterator(); i.hasNext();) {
-			final RemoteConfig remote = i.next();
-			if (remote.getName().equals(Constants.DEFAULT_REMOTE_NAME)) {
-				i.remove();
-				continue;
-			}
-
-			final String uri = HCollection.getOne(remote.getURIs()).toString();
-			final Path path;
-			try {
-				path = Paths.get(uri);
-			} catch (Throwable t) {
-				continue;
-			}
-			if (Files.isDirectory(path)) {
-				i.remove();
-				continue;
-			}
-		}
-
-		if (modify.size() != 1) throw new IllegalStateException(String.format("Cannot automatically guess your git remote from among %1$s!", modify.stream().map(RemoteConfig::getName).collect(Collectors.toList())));
-		return HCollection.getOne(modify).getName();
-	}
 
 	/**
 	 * Add a new remote, and pull from it.
@@ -245,8 +130,128 @@ public class HGit {
 		return remote;
 	}
 
+	public static Git createGit(Path root) {
+		return createGit(root, true);
+	}
+
+	public static Git createGit(Path root, boolean create) {
+		return createGit(root, create, new FileRepositoryBuilder());
+	}
+
+	public static Git createGit(Path root, boolean create, FileRepositoryBuilder fileRepositoryBuilder) {
+		try {
+			final Path gitDir = getGitFile(root);
+			final boolean actuallyCreate = create && !Files.isDirectory(gitDir);
+			if (actuallyCreate) Files.createDirectories(root);
+			final FileRepository repository = new FileRepository(fileRepositoryBuilder.setGitDir(gitDir.toFile()).setup());
+			if (actuallyCreate) repository.create();
+
+			final Git git = new Git(repository);
+			if (create) {
+				if (!Files.isDirectory(gitDir)) try {
+					Git.init().setGitDir(gitDir.toFile()).call();
+				} catch (GitAPIException exception) {
+					throw new RuntimeException("Failed to initialize new git repository in " + root, exception);
+				}
+			}
+			return git;
+		} catch (IOException exception) {
+			throw new RuntimeIOException(exception);
+		}
+	}
+
 	public static RefSpec createRefSpec(String remote, String local) {
 		return new RefSpec(remote + HGit.REFSPEC_SEPARATOR + local);
+	}
+
+	public static TransportConfigCallback createTransportConfig(String key, String password) {
+		final SshdSessionFactoryBuilder sessionFactoryBuilder = new SshdSessionFactoryBuilder();
+		sessionFactoryBuilder.setHomeDirectory(FS.DETECTED.userHome());
+		sessionFactoryBuilder.setSshDirectory(FS.DETECTED.userHome().toPath().resolve(HSSH.SSHDIR).toFile());
+		sessionFactoryBuilder.setDefaultIdentities(unused -> HCollection.asList(Paths.get(key)));
+		sessionFactoryBuilder.setKeyPasswordProvider(unused -> new KeyPasswordProvider() {
+			@Override
+			public char[] getPassphrase(URIish uri, int attempt) throws IOException {
+				return password.toCharArray();
+			}
+
+			@Override
+			public boolean keyLoaded(URIish uri, int attempt, Exception error) throws IOException, GeneralSecurityException {
+				return false;
+			}
+
+			@Override
+			public void setAttempts(int maxNumberOfAttempts) {}
+		});
+
+		final SshdSessionFactory sessionFactory = sessionFactoryBuilder.build(null);
+		return new TransportConfigCallback() {
+			@Override
+			public void configure(Transport transport) {
+				if (transport instanceof SshTransport) {
+					final SshTransport sshTransport = ((SshTransport) transport);
+					sshTransport.setSshSessionFactory(sessionFactory);
+				}
+			}
+		};
+	}
+
+	public static Path getGitFile(Path root) {
+		return root.resolve(GIT_DIRECTORY);
+	}
+
+	public static String getMyRemote(final Git git) {
+		final List<RemoteConfig> remotes;
+		try {
+			remotes = git.remoteList().call();
+		} catch (GitAPIException e) {
+			throw new RuntimeException(e);
+		}
+		if (remotes.size() == 1) return HCollection.getOne(remotes).getName();
+
+		final List<RemoteConfig> modify = new ArrayList<>(remotes);
+		for (Iterator<RemoteConfig> i = modify.iterator(); i.hasNext();) {
+			final RemoteConfig remote = i.next();
+			if (remote.getName().equals(Constants.DEFAULT_REMOTE_NAME)) {
+				i.remove();
+				continue;
+			}
+
+			final String uri = HCollection.getOne(remote.getURIs()).toString();
+			final Path path;
+			try {
+				path = Paths.get(uri);
+			} catch (Throwable t) {
+				continue;
+			}
+			if (Files.isDirectory(path)) {
+				i.remove();
+				continue;
+			}
+		}
+
+		if (modify.size() != 1) throw new IllegalStateException(String.format("Cannot automatically guess your git remote from among %1$s!", modify.stream().map(RemoteConfig::getName).collect(Collectors.toList())));
+		return HCollection.getOne(modify).getName();
+	}
+
+	public static ZonedDateTime getTime(ReflogEntry entry) {
+		final PersonIdent who = entry.getWho();
+		return ZonedDateTime.ofInstant(who.getWhen().toInstant(), who.getTimeZone().toZoneId());
+	}
+
+	/**
+	 * Test if the given git repository has a branch with the specified name.
+	 * 
+	 * @param git The git repository to check for the branch
+	 * @param branch The name of the branch to look for
+	 * @return <code>true</code> if a branch with the specified name exists in the specified repository
+	 */
+	public static boolean isBranch(final Git git, final String branch) {
+		try {
+			return git.getRepository().findRef(Constants.R_HEADS + branch) != null;
+		} catch (IOException exception) {
+			throw new RuntimeIOException(String.format("Failed to check for branch \"%1$s\" in repository \"%2$s\"!", branch, git.getRepository().getDirectory().toPath()), exception);
+		}
 	}
 
 	public static boolean isMerged(Repository repository, ObjectId branch, ObjectId commit) throws MissingObjectException, IncorrectObjectTypeException, IOException {
