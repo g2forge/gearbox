@@ -5,6 +5,7 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.List;
 
 import com.g2forge.alexandria.java.core.error.HError;
 import com.g2forge.alexandria.java.function.IFunction1;
@@ -33,7 +34,8 @@ public class DefaultMethodInvocationTransformer implements IDelegatingInvocation
 				// return MethodHandles.lookup().in(declaringClass).unreflectSpecial(method, declaringClass).bindTo(proxy).invokeWithArguments(args);
 				final MethodHandle bound = constructor.newInstance(declaringClass).in(declaringClass).unreflectSpecial(method, declaringClass).bindTo(methodInvocation.getObject());
 				try {
-					final Object retVal = bound.invokeWithArguments(methodInvocation.getArguments().toArray());
+					final List<Object> arguments = methodInvocation.getArguments();
+					final Object retVal = bound.invokeWithArguments(arguments == null ? new Object[0] : arguments.toArray());
 					return new ProcessInvocation<>(null, process -> retVal);
 				} catch (ModifyProcessInvocationException exception) {
 					final ProcessInvocation<?> processInvocation = getDelegate().apply(methodInvocation);
