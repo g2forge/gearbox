@@ -13,7 +13,26 @@ import com.g2forge.gearbox.command.proxy.process.ReturnProcessInvocationExceptio
 import com.g2forge.gearbox.command.proxy.result.IntegerResultSupplier;
 
 public class TestCommandProxyFactory {
+	public static class FactoriedCommandFactory implements ICommandFactory<IFactoriedCommand> {
+		public static int OFFSET = 2;
+
+		@Override
+		public IFactoriedCommand create(ICommandProxyFactory factory) {
+			return new IFactoriedCommand() {
+				@Override
+				public int method(int argument) {
+					return argument + OFFSET;
+				}
+			};
+		}
+	}
+
 	public interface ICommand extends ITestCommandInterface {
+		public int method(int argument);
+	}
+
+	@CommandFactory(FactoriedCommandFactory.class)
+	public interface IFactoriedCommand extends ITestCommandInterface {
 		public int method(int argument);
 	}
 
@@ -29,6 +48,17 @@ public class TestCommandProxyFactory {
 			HAssert.assertNull(commandInvocation.getWorking());
 			HAssert.assertNull(commandInvocation.getIo());
 			HAssert.assertSame(IntegerResultSupplier.create(), processInvocation.getResultSupplier());
+		}
+	}
+
+	@Test
+	public void commandFactory() {
+		final ICommandProxyFactory factory = new CommandProxyFactory(DumbCommandConverter.create(), null);
+		final IFactoriedCommand command = factory.apply(IFactoriedCommand.class);
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++) {
+				HAssert.assertEquals(i + (FactoriedCommandFactory.OFFSET = j), command.method(i));
+			}
 		}
 	}
 }

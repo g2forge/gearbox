@@ -1,9 +1,8 @@
-package com.g2forge.gearbox.command;
+package com.g2forge.gearbox.command.which;
 
 import com.g2forge.gearbox.command.converter.dumb.Command;
-import com.g2forge.gearbox.command.proxy.method.ICommandInterface;
 
-public interface IWhich extends ICommandInterface {
+public interface IWhich extends IWhichLike {
 	@Command({ "which" })
 	public boolean isInstalled(String executable);
 
