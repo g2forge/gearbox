@@ -33,5 +33,7 @@
 		<module>gb-maven</module>
 		<module>gb-image</module>
 		<module>gb-csv</module>
+		<module>gb-issue</module>
+		<module>gb-issue-test</module>
 	</modules>
 </project>

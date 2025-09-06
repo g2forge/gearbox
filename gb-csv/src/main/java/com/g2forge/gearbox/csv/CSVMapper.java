@@ -1,6 +1,7 @@
 package com.g2forge.gearbox.csv;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 
@@ -13,6 +14,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.g2forge.alexandria.java.core.helpers.HCollection;
+import com.g2forge.alexandria.java.function.ICloseableConsumer1;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
