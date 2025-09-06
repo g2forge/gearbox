@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SequenceWriter;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
+import com.g2forge.alexandria.java.function.ICloseableConsumer1;
 import com.g2forge.alexandria.java.function.IThrowFunction1;
 import com.g2forge.alexandria.java.io.RuntimeIOException;
 
@@ -35,6 +36,7 @@ public abstract class ACSVMapper<T, Internal> implements ICSVMapper<T> {
 	protected abstract ObjectWriter createObjectWriter();
 
 	@Override
+	@SuppressWarnings("resource")
 	public List<T> read(InputStream stream) {
 		return read(reader -> reader.readValues(stream));
 	}
@@ -42,8 +44,7 @@ public abstract class ACSVMapper<T, Internal> implements ICSVMapper<T> {
 	protected List<T> read(IThrowFunction1<ObjectReader, MappingIterator<Internal>, IOException> read) {
 		final ObjectReader reader = createObjectReader();
 
-		try {
-			final MappingIterator<Internal> iterator = read.apply(reader);
+		try (final MappingIterator<Internal> iterator = read.apply(reader)) {
 			return readAll(iterator);
 		} catch (IOException e) {
 			throw new RuntimeIOException(e);
@@ -73,8 +74,7 @@ public abstract class ACSVMapper<T, Internal> implements ICSVMapper<T> {
 
 	protected void write(Collection<T> values, IThrowFunction1<ObjectWriter, SequenceWriter, IOException> write) {
 		final ObjectWriter objectWriter = createObjectWriter();
-		try {
-			final SequenceWriter sequenceWriter = write.apply(objectWriter);
+		try (final SequenceWriter sequenceWriter = write.apply(objectWriter)) {
 			writeAll(values, sequenceWriter);
 		} catch (IOException e) {
 			throw new RuntimeIOException(e);
@@ -82,6 +82,7 @@ public abstract class ACSVMapper<T, Internal> implements ICSVMapper<T> {
 	}
 
 	@Override
+	@SuppressWarnings("resource")
 	public void write(Collection<T> values, OutputStream stream) {
 		write(values, writer -> writer.writeValues(stream));
 	}
@@ -89,6 +90,36 @@ public abstract class ACSVMapper<T, Internal> implements ICSVMapper<T> {
 	@Override
 	public void write(Collection<T> values, Path path) {
 		write(values, writer -> writer.writeValues(path.toFile()));
+	}
+
+	@Override
+	public ICloseableConsumer1<? super T> write(Path path) {
+		final ObjectWriter objectWriter = createObjectWriter();
+		final SequenceWriter sequenceWriter;
+		try {
+			sequenceWriter = objectWriter.writeValues(path.toFile());
+		} catch (IOException e) {
+			throw new RuntimeIOException(e);
+		}
+		return new ICloseableConsumer1<T>() {
+			@Override
+			public void accept(T t) {
+				try {
+					sequenceWriter.write(t);
+				} catch (IOException e) {
+					throw new RuntimeIOException(e);
+				}
+			}
+
+			@Override
+			public void close() {
+				try {
+					sequenceWriter.close();
+				} catch (IOException e) {
+					throw new RuntimeIOException(e);
+				}
+			}
+		};
 	}
 
 	protected abstract void writeAll(Collection<T> values, final SequenceWriter sequenceWriter) throws IOException;
