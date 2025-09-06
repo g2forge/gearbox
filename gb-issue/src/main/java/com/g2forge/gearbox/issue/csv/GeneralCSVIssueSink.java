@@ -48,6 +48,10 @@ public class GeneralCSVIssueSink<Type extends IIssueType<?>> implements ICloseab
 
 	@Override
 	public void report(IIssue<? extends Type, ?> issue) {
-		writer.accept(computeLoggedIssue(issue));
+		@SuppressWarnings("rawtypes")
+		final IIssue cast = (IIssue) issue;
+		@SuppressWarnings("unchecked")
+		final LoggedIssue loggedIssue = computeLoggedIssue(cast);
+		writer.accept(loggedIssue);
 	}
 }
