@@ -23,7 +23,9 @@ import com.g2forge.alexandria.command.stdio.IStandardIO;
 import com.g2forge.alexandria.command.stdio.StandardIO;
 import com.g2forge.alexandria.java.close.ICloseable;
 import com.g2forge.alexandria.java.concurrent.AThreadActor;
+import com.g2forge.alexandria.java.core.helpers.HStream;
 import com.g2forge.alexandria.java.core.marker.ISingleton;
+import com.g2forge.alexandria.java.function.ISupplier;
 import com.g2forge.alexandria.java.io.HIO;
 import com.g2forge.alexandria.java.io.HTextIO;
 import com.g2forge.gearbox.command.process.IProcess;
@@ -189,6 +191,22 @@ public class StreamResultSupplier implements IResultSupplier<Stream<String>>, IS
 
 	public static final StreamResultSupplier STANDARD = new StreamResultSupplier(50, new StandardIO<>(null, true, true));
 
+	public static final int CHARACTERISTICS = Spliterator.ORDERED | Spliterator.NONNULL;
+
+	@SafeVarargs
+	public static <T> Stream<T> chain(ISupplier<? extends Stream<T>>... suppliers) {
+		if (suppliers.length < 1) return Stream.empty();
+		if (suppliers.length == 1) return suppliers[0].get();
+
+		final List<Stream<T>> streams = new ArrayList<>(suppliers.length);
+		for (int i = 0; i < suppliers.length; i++) {
+			final ISupplier<? extends Stream<T>> supplier = suppliers[i];
+			if (i == 0) streams.add(supplier.get());
+			else streams.add(StreamSupport.stream(() -> supplier.get().spliterator(), CHARACTERISTICS, false));
+		}
+		return HStream.concat(streams);
+	}
+
 	protected final int lines;
 
 	protected final IStandardIO<Void, Boolean> include;
@@ -203,7 +221,7 @@ public class StreamResultSupplier implements IResultSupplier<Stream<String>>, IS
 			if (getInclude().getStandardError()) threads.add(new Stream2Queue(process.getStandardError(), 50, queue));
 			threads.forEach(Stream2Queue::open);
 			final IOIterator iterator = new IOIterator(threads, queue, process);
-			return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED | Spliterator.NONNULL), false).onClose(iterator::close);
+			return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, CHARACTERISTICS), false).onClose(iterator::close);
 		} catch (Throwable throwable) {
 			HIO.closeAll(threads);
 			throw throwable;
