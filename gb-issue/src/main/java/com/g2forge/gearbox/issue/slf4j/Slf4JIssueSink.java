@@ -1,8 +1,10 @@
 package com.g2forge.gearbox.issue.slf4j;
 
 import org.slf4j.Logger;
+import org.slf4j.event.Level;
 
 import com.g2forge.gearbox.issue.IIssue;
+import com.g2forge.gearbox.issue.IIssueConsumer;
 import com.g2forge.gearbox.issue.IIssueSink;
 import com.g2forge.gearbox.issue.IIssueType;
 
@@ -23,14 +25,15 @@ public class Slf4JIssueSink<Type extends IIssueType<?>> implements IIssueSink<Ty
 
 	@Override
 	public void report(IIssue<? extends Type, ?> issue) {
-		reportInternal(issue);
+		IIssueConsumer.create(this::reportInternal).accept(issue);
 	}
 
 	protected <_Type extends IIssueType<_Payload>, _Payload> void reportInternal(IIssue<_Type, _Payload> issue) {
 		final _Type type = issue.getType();
-		if (getLogger().isEnabledForLevel(type.getLevel().getSlf4j())) {
+		final Level level = type.getLevel().getSlf4j();
+		if (getLogger().isEnabledForLevel(level)) {
 			final String message = type.computeMessage(issue.getPayload());
-			getLogger().atLevel(type.getLevel().getSlf4j()).log(message);
+			getLogger().atLevel(level).log(message);
 		}
 	}
 }
