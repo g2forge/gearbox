@@ -1,4 +1,4 @@
-package com.g2forge.gearbox.issue;
+package com.g2forge.gearbox.issue.csv;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -10,7 +10,8 @@ import org.junit.Test;
 import com.g2forge.alexandria.java.io.TextRangeSpecifier;
 import com.g2forge.alexandria.java.io.file.TempDirectory;
 import com.g2forge.alexandria.test.HAssert;
-import com.g2forge.gearbox.issue.csv.GeneralCSVIssueSink;
+import com.g2forge.gearbox.issue.ExampleIssueType;
+import com.g2forge.gearbox.issue.ExamplePayload;
 import com.g2forge.gearbox.issue.sink.ICloseableIssueSink;
 
 public class TestGeneralCSVIssueSink {
