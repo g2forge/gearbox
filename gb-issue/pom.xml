@@ -22,6 +22,11 @@
 			<version>${alexandria.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>com.g2forge.alexandria</groupId>
+			<artifactId>ax-log</artifactId>
+			<version>${alexandria.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>com.g2forge.gearbox</groupId>
 			<artifactId>gb-csv</artifactId>
 			<version>${project.version}</version>

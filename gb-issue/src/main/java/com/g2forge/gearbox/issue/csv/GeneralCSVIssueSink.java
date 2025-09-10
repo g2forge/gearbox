@@ -6,6 +6,7 @@ import com.g2forge.alexandria.java.function.ICloseableConsumer1;
 import com.g2forge.gearbox.csv.CSVMapper;
 import com.g2forge.gearbox.issue.DependencyNotLoadedError;
 import com.g2forge.gearbox.issue.IIssue;
+import com.g2forge.gearbox.issue.IIssueFunction;
 import com.g2forge.gearbox.issue.IIssueType;
 import com.g2forge.gearbox.issue.Level;
 import com.g2forge.gearbox.issue.sink.ICloseableIssueSink;
@@ -48,10 +49,7 @@ public class GeneralCSVIssueSink<Type extends IIssueType<?>> implements ICloseab
 
 	@Override
 	public void report(IIssue<? extends Type, ?> issue) {
-		@SuppressWarnings("rawtypes")
-		final IIssue cast = (IIssue) issue;
-		@SuppressWarnings("unchecked")
-		final LoggedIssue loggedIssue = computeLoggedIssue(cast);
+		final LoggedIssue loggedIssue = IIssueFunction.create(GeneralCSVIssueSink::computeLoggedIssue).apply(issue);
 		writer.accept(loggedIssue);
 	}
 }
