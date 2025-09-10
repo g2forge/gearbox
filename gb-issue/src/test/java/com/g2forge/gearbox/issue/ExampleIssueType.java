@@ -1,8 +1,6 @@
 package com.g2forge.gearbox.issue;
 
-import com.g2forge.alexandria.java.function.ISupplier;
-
-public enum ExampleIssueType implements IIssueType<ExamplePayload> {
+public enum ExampleIssueType implements IEnumIssueType<ExampleIssueType, ExamplePayload> {
 	Generic,
 	Override {
 		@Override
@@ -24,15 +22,5 @@ public enum ExampleIssueType implements IIssueType<ExamplePayload> {
 	@Override
 	public Level getLevel() {
 		return Level.ERROR;
-	}
-
-	@Override
-	public IIssue<ExampleIssueType, ExamplePayload> of(ISupplier<? extends ExamplePayload> supplier) {
-		return new LateIssue<>(this, supplier);
-	}
-
-	@Override
-	public IIssue<ExampleIssueType, ExamplePayload> of(ExamplePayload payload) {
-		return new Issue<>(this, payload);
 	}
 }

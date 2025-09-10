@@ -26,11 +26,27 @@
 			<artifactId>ax-log</artifactId>
 			<version>${alexandria.version}</version>
 		</dependency>
+		
+		<!-- CSV issue sink -->
 		<dependency>
 			<groupId>com.g2forge.gearbox</groupId>
 			<artifactId>gb-csv</artifactId>
 			<version>${project.version}</version>
 			<scope>provided</scope>
+		</dependency>
+		
+		<!-- Document issue sink -->
+		<dependency>
+			<groupId>com.g2forge.enigma</groupId>
+			<artifactId>en-document</artifactId>
+			<version>${enigma.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.g2forge.habitat</groupId>
+			<artifactId>ha-trace</artifactId>
+			<version>${habitat.version}</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 </project>
