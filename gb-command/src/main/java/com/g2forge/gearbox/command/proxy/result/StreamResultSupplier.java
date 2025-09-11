@@ -25,6 +25,7 @@ import com.g2forge.alexandria.java.close.ICloseable;
 import com.g2forge.alexandria.java.concurrent.AThreadActor;
 import com.g2forge.alexandria.java.core.helpers.HStream;
 import com.g2forge.alexandria.java.core.marker.ISingleton;
+import com.g2forge.alexandria.java.core.stream.DelayedDelegatingSpliterator;
 import com.g2forge.alexandria.java.function.ISupplier;
 import com.g2forge.alexandria.java.io.HIO;
 import com.g2forge.alexandria.java.io.HTextIO;
@@ -202,7 +203,7 @@ public class StreamResultSupplier implements IResultSupplier<Stream<String>>, IS
 		for (int i = 0; i < suppliers.length; i++) {
 			final ISupplier<? extends Stream<T>> supplier = suppliers[i];
 			if (i == 0) streams.add(supplier.get());
-			else streams.add(StreamSupport.stream(() -> supplier.get().spliterator(), CHARACTERISTICS, false));
+			else streams.add(StreamSupport.stream(new DelayedDelegatingSpliterator<T, Spliterator<T>>(() -> supplier.get().spliterator(), CHARACTERISTICS), false));
 		}
 		return HStream.concat(streams);
 	}
