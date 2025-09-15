@@ -2,11 +2,11 @@ package com.g2forge.gearbox.command.proxy;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.g2forge.alexandria.command.invocation.CommandInvocation;
 import com.g2forge.alexandria.java.core.helpers.HCollection;
+import com.g2forge.alexandria.java.core.helpers.HCollector;
 import com.g2forge.alexandria.java.function.IFunction1;
 import com.g2forge.gearbox.command.process.IProcess;
 import com.g2forge.gearbox.command.process.redirect.IRedirect;
@@ -31,7 +31,7 @@ public class ProxyInvocationHandler implements InvocationHandler {
 			final String name = method.getName();
 			if ("equals".equals(name)) return args[0] == proxy;
 			else if ("hashCode".equals(name)) return System.identityHashCode(proxy);
-			else if ("toString".equals(name)) return "Command proxy for " + Stream.of(proxy.getClass().getInterfaces()).map(Class::getName).collect(Collectors.joining(", "));
+			else if ("toString".equals(name)) return "Command proxy for " + Stream.of(proxy.getClass().getInterfaces()).map(Class::getName).collect(HCollector.joiningHuman());
 			else throw new UnsupportedOperationException();
 		}
 
