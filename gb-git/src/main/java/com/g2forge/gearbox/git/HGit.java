@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.GeneralSecurityException;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -39,13 +38,6 @@ import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.RemoteConfig;
-import org.eclipse.jgit.transport.SshTransport;
-import org.eclipse.jgit.transport.Transport;
-import org.eclipse.jgit.transport.URIish;
-import org.eclipse.jgit.transport.sshd.KeyPasswordProvider;
-import org.eclipse.jgit.transport.sshd.SshdSessionFactory;
-import org.eclipse.jgit.transport.sshd.SshdSessionFactoryBuilder;
-import org.eclipse.jgit.util.FS;
 
 import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.java.core.marker.Helpers;
@@ -162,38 +154,6 @@ public class HGit {
 
 	public static RefSpec createRefSpec(String remote, String local) {
 		return new RefSpec(remote + HGit.REFSPEC_SEPARATOR + local);
-	}
-
-	public static TransportConfigCallback createTransportConfig(String key, String password) {
-		final SshdSessionFactoryBuilder sessionFactoryBuilder = new SshdSessionFactoryBuilder();
-		sessionFactoryBuilder.setHomeDirectory(FS.DETECTED.userHome());
-		sessionFactoryBuilder.setSshDirectory(FS.DETECTED.userHome().toPath().resolve(HSSH.SSHDIR).toFile());
-		sessionFactoryBuilder.setDefaultIdentities(unused -> HCollection.asList(Paths.get(key)));
-		sessionFactoryBuilder.setKeyPasswordProvider(unused -> new KeyPasswordProvider() {
-			@Override
-			public char[] getPassphrase(URIish uri, int attempt) throws IOException {
-				return password.toCharArray();
-			}
-
-			@Override
-			public boolean keyLoaded(URIish uri, int attempt, Exception error) throws IOException, GeneralSecurityException {
-				return false;
-			}
-
-			@Override
-			public void setAttempts(int maxNumberOfAttempts) {}
-		});
-
-		final SshdSessionFactory sessionFactory = sessionFactoryBuilder.build(null);
-		return new TransportConfigCallback() {
-			@Override
-			public void configure(Transport transport) {
-				if (transport instanceof SshTransport) {
-					final SshTransport sshTransport = ((SshTransport) transport);
-					sshTransport.setSshSessionFactory(sessionFactory);
-				}
-			}
-		};
 	}
 
 	public static Path getGitFile(Path root) {
