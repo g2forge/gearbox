@@ -1,6 +1,8 @@
 package com.g2forge.gearbox.maven;
 
 import com.g2forge.alexandria.java.fluent.optional.NullableOptional;
+import com.g2forge.gearbox.maven.packaging.IMavenPackaging;
+import com.g2forge.gearbox.maven.packaging.MavenPackaging;
 
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -21,7 +23,7 @@ public class MavenCoordinates {
 	protected final String version;
 
 	@Builder.Default
-	protected final MavenPackaging packaging = MavenPackaging.JAR;
+	protected final IMavenPackaging packaging = MavenPackaging.JAR;
 
 	@ToString.Exclude
 	@Getter(lazy = true, value = AccessLevel.PROTECTED)
