@@ -1,7 +1,6 @@
 package com.g2forge.gearbox.csv;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 
@@ -14,7 +13,6 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.g2forge.alexandria.java.core.helpers.HCollection;
-import com.g2forge.alexandria.java.function.ICloseableConsumer1;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -39,6 +37,8 @@ public class CSVMapper<T> extends ACSVMapper<T, T> {
 		final CsvMapper retVal = super.createMapper();
 		retVal.configure(JsonGenerator.Feature.IGNORE_UNKNOWN, true);
 		retVal.enable(CsvParser.Feature.IGNORE_TRAILING_UNMAPPABLE);
+		retVal.enable(CsvParser.Feature.INSERT_NULLS_FOR_MISSING_COLUMNS);
+		retVal.disable(CsvParser.Feature.FAIL_ON_MISSING_HEADER_COLUMNS);
 		return retVal;
 	}
 
@@ -53,7 +53,7 @@ public class CSVMapper<T> extends ACSVMapper<T, T> {
 	}
 
 	protected CsvSchema createSchema() {
-		final CsvSchema.Builder builder = CsvSchema.builder().setUseHeader(true);
+		final CsvSchema.Builder builder = CsvSchema.builder().setUseHeader(true).setReorderColumns(true);
 		for (String column : getColumns()) {
 			builder.addColumn(column);
 		}
