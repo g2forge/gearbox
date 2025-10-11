@@ -16,7 +16,7 @@ public class ExampleHome {
 	protected final StatefulBrowser browser;
 
 	public ExampleMoreInformation openMoreInformation() {
-		return getBrowser().change(browser -> browser.getBrowser().find(By.partialLinkText("More information")).operation().wrap(ChangeWait.create()).execute(IElement::click), ExampleMoreInformation::new);
+		return getBrowser().change(browser -> browser.getBrowser().find(By.partialLinkText("Learn more")).operation().wrap(ChangeWait.create()).execute(IElement::click), ExampleMoreInformation::new);
 	}
 
 	public String getTitle() {
