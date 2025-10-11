@@ -207,10 +207,11 @@ public class HGit {
 	 * @return <code>true</code> if a branch with the specified name exists in the specified repository
 	 */
 	public static boolean isBranch(final Git git, final String branch) {
+		final Repository repository = git.getRepository();
 		try {
-			return git.getRepository().findRef(Constants.R_HEADS + branch) != null;
+			return repository.findRef(Constants.R_HEADS + branch) != null;
 		} catch (IOException exception) {
-			throw new RuntimeIOException(String.format("Failed to check for branch \"%1$s\" in repository \"%2$s\"!", branch, git.getRepository().getDirectory().toPath()), exception);
+			throw new RuntimeIOException(String.format("Failed to check for branch \"%1$s\" in repository \"%2$s\"!", branch, repository.getDirectory().toPath()), exception);
 		}
 	}
 

@@ -21,6 +21,7 @@ import java.util.stream.StreamSupport;
 import com.g2forge.alexandria.collection.CircularBuffer;
 import com.g2forge.alexandria.command.stdio.IStandardIO;
 import com.g2forge.alexandria.command.stdio.StandardIO;
+import com.g2forge.alexandria.java.close.HCloseable;
 import com.g2forge.alexandria.java.close.ICloseable;
 import com.g2forge.alexandria.java.concurrent.AThreadActor;
 import com.g2forge.alexandria.java.core.helpers.HStream;
@@ -199,13 +200,18 @@ public class StreamResultSupplier implements IResultSupplier<Stream<String>>, IS
 		if (suppliers.length < 1) return Stream.empty();
 		if (suppliers.length == 1) return suppliers[0].get();
 
+		final List<Stream<T>> open = new ArrayList<>();
 		final List<Stream<T>> streams = new ArrayList<>(suppliers.length);
 		for (int i = 0; i < suppliers.length; i++) {
 			final ISupplier<? extends Stream<T>> supplier = suppliers[i];
 			if (i == 0) streams.add(supplier.get());
-			else streams.add(StreamSupport.stream(new DelayedDelegatingSpliterator<T, Spliterator<T>>(() -> supplier.get().spliterator(), CHARACTERISTICS), false));
+			else streams.add(StreamSupport.stream(new DelayedDelegatingSpliterator<T, Spliterator<T>>(() -> {
+				final Stream<T> retVal = supplier.get();
+				open.add(retVal);
+				return retVal.spliterator();
+			}, CHARACTERISTICS), false));
 		}
-		return HStream.concat(streams);
+		return HStream.concat(streams).onClose(() -> HCloseable.close(open));
 	}
 
 	protected final int lines;
