@@ -4,7 +4,7 @@ import java.nio.file.Paths;
 
 import org.junit.Test;
 
-import com.g2forge.gearbox.issue.DependencyNotLoadedError;
+import com.g2forge.alexandria.java.core.error.DependencyNotLoadedError;
 
 public class TestGeneralCSVIssueSink {
 	@Test(expected = DependencyNotLoadedError.class)
