@@ -2,14 +2,14 @@ package com.g2forge.gearbox.issue.csv;
 
 import java.nio.file.Path;
 
+import com.g2forge.alexandria.java.core.error.DependencyNotLoadedError;
 import com.g2forge.alexandria.java.function.ICloseableConsumer1;
-import com.g2forge.gearbox.csv.CSVMapper;
-import com.g2forge.gearbox.issue.DependencyNotLoadedError;
 import com.g2forge.gearbox.issue.IIssue;
 import com.g2forge.gearbox.issue.IIssueFunction;
 import com.g2forge.gearbox.issue.IIssueType;
 import com.g2forge.gearbox.issue.Level;
 import com.g2forge.gearbox.issue.sink.ICloseableIssueSink;
+import com.g2forge.gearbox.csv.CSVMapper;
 
 import lombok.Builder;
 import lombok.Data;
@@ -35,11 +35,8 @@ public class GeneralCSVIssueSink<Type extends IIssueType<?>> implements ICloseab
 	protected final ICloseableConsumer1<? super LoggedIssue> writer;
 
 	public GeneralCSVIssueSink(Path path) {
-		try {
-			this.writer = new CSVMapper<>(LoggedIssue.class, "level", "code", "message").write(path);
-		} catch (NoClassDefFoundError error) {
-			throw new DependencyNotLoadedError("gb-csv", error);
-		}
+		this.writer = DependencyNotLoadedError.tryWithModule(() -> new CSVMapper<>(LoggedIssue.class, "level", "code", "message").write(path), HCSVIssueSink.MODULES);
+
 	}
 
 	@Override

@@ -1,9 +1,9 @@
 package com.g2forge.gearbox.issue.document;
 
+import com.g2forge.alexandria.java.core.error.DependencyNotLoadedError;
 import com.g2forge.enigma.document.model.DocList;
 import com.g2forge.enigma.document.model.DocList.Marker;
 import com.g2forge.enigma.document.model.IBlock;
-import com.g2forge.gearbox.issue.DependencyNotLoadedError;
 import com.g2forge.gearbox.issue.IIssue;
 import com.g2forge.gearbox.issue.IIssueSink;
 
@@ -11,11 +11,7 @@ public class DocumentIssueSink<Type extends IDocumentIssueType<?>> implements II
 	protected final DocList.DocListBuilder list;
 
 	public DocumentIssueSink() {
-		try {
-			list = DocList.builder().marker(Marker.Numbered);
-		} catch (NoClassDefFoundError error) {
-			throw new DependencyNotLoadedError("en-document", error);
-		}
+		list = DependencyNotLoadedError.tryWithModule(() -> DocList.builder().marker(Marker.Numbered), "en-document");
 	}
 
 	public IBlock build() {
