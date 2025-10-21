@@ -30,7 +30,7 @@
 		<!-- CSV issue sink -->
 		<dependency>
 			<groupId>com.g2forge.gearbox</groupId>
-			<artifactId>gb-csv</artifactId>
+			<artifactId>gb-serdes</artifactId>
 			<version>${project.version}</version>
 			<scope>provided</scope>
 		</dependency>

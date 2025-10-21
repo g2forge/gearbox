@@ -3,7 +3,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>gb-csv</artifactId>
+	<artifactId>gb-serdes</artifactId>
 
 	<parent>
 		<groupId>com.g2forge.gearbox</groupId>
@@ -12,15 +12,28 @@
 		<relativePath>../gb-project/pom.xml</relativePath>
 	</parent>
 
-	<name>Gearbox CSV</name>
-	<description>A thin wrapper of helpers methods Jackson for serializing and
-		deserializing CSV files.</description>
+	<name>Gearbox SerDes</name>
+	<description>A library for structured data serialization &amp;
+		deserialization. Mostly a thin wrapper of helpers methods around
+		Jackon's various formats.</description>
 
 	<dependencies>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>${jackson.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
 			<artifactId>jackson-dataformat-csv</artifactId>
 			<version>${jackson.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-yaml</artifactId>
+			<version>${jackson.version}</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 </project>

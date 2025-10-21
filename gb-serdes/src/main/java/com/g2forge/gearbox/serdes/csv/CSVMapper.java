@@ -1,4 +1,4 @@
-package com.g2forge.gearbox.csv;
+package com.g2forge.gearbox.serdes.csv;
 
 import java.io.IOException;
 import java.util.Collection;
