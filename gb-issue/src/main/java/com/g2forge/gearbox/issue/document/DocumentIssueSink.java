@@ -11,7 +11,7 @@ public class DocumentIssueSink<Type extends IDocumentIssueType<?>> implements II
 	protected final DocList.DocListBuilder list;
 
 	public DocumentIssueSink() {
-		list = DependencyNotLoadedError.tryWithModule("en-document", () -> DocList.builder()).marker(Marker.Numbered);
+		list = DependencyNotLoadedError.tryWithModule(() -> DocList.builder().marker(Marker.Numbered), "en-document");
 	}
 
 	public IBlock build() {

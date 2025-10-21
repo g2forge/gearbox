@@ -8,11 +8,11 @@ import com.g2forge.alexandria.java.core.error.DependencyNotLoadedError;
 import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.java.function.ICloseableConsumer1;
 import com.g2forge.alexandria.java.type.ref.ITypeRef;
-import com.g2forge.gearbox.csv.CSVMapper;
 import com.g2forge.gearbox.issue.IIssue;
 import com.g2forge.gearbox.issue.IIssueType;
 import com.g2forge.gearbox.issue.Level;
 import com.g2forge.gearbox.issue.sink.ICloseableIssueSink;
+import com.g2forge.gearbox.serdes.csv.CSVMapper;
 
 import lombok.Builder;
 import lombok.Data;
@@ -45,7 +45,7 @@ public class TypedCSVIssueSink<Type extends IIssueType<Payload>, Payload> implem
 	public TypedCSVIssueSink(Path path, ITypeRef<Payload> payloadType, String... payloadColumns) {
 		this.payloadType = payloadType;
 		final List<String> allColumns = HCollection.concatenate(HCollection.asList("level", "code", "description"), HCollection.asList(payloadColumns));
-		this.writer = DependencyNotLoadedError.tryWithModule("gb-csv", () -> new CSVMapper<>(LoggedIssue.class, allColumns)).write(path);
+		this.writer = DependencyNotLoadedError.tryWithModule(() -> new CSVMapper<>(LoggedIssue.class, allColumns).write(path), HCSVIssueSink.MODULES);
 	}
 
 	@Override
