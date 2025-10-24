@@ -12,7 +12,7 @@ import com.g2forge.gearbox.issue.IIssue;
 import com.g2forge.gearbox.issue.IIssueType;
 import com.g2forge.gearbox.issue.Level;
 import com.g2forge.gearbox.issue.sink.ICloseableIssueSink;
-import com.g2forge.gearbox.csv.CSVMapper;
+import com.g2forge.gearbox.serdes.csv.CSVMapper;
 
 import lombok.Builder;
 import lombok.Data;

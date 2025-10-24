@@ -30,9 +30,15 @@
 		<!-- CSV issue sink -->
 		<dependency>
 			<groupId>com.g2forge.gearbox</groupId>
-			<artifactId>gb-csv</artifactId>
+			<artifactId>gb-serdes</artifactId>
 			<version>${project.version}</version>
 			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-csv</artifactId>
+			<version>${jackson.version}</version>
+			<scope>test</scope>
 		</dependency>
 		
 		<!-- Document issue sink -->
