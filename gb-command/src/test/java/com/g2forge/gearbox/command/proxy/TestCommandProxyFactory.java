@@ -3,10 +3,12 @@ package com.g2forge.gearbox.command.proxy;
 import org.junit.Test;
 
 import com.g2forge.alexandria.command.invocation.CommandInvocation;
+import com.g2forge.alexandria.command.stdio.StandardIO;
 import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.test.HAssert;
 import com.g2forge.gearbox.command.converter.dumb.DumbCommandConverter;
 import com.g2forge.gearbox.command.process.redirect.IRedirect;
+import com.g2forge.gearbox.command.process.redirect.InheritRedirect;
 import com.g2forge.gearbox.command.proxy.method.ITestCommandInterface;
 import com.g2forge.gearbox.command.proxy.process.ProcessInvocation;
 import com.g2forge.gearbox.command.proxy.process.ReturnProcessInvocationException;
@@ -46,7 +48,7 @@ public class TestCommandProxyFactory {
 			final CommandInvocation<IRedirect, IRedirect> commandInvocation = processInvocation.getCommandInvocation();
 			HAssert.assertEquals(HCollection.asList("method", "0"), commandInvocation.getArguments());
 			HAssert.assertNull(commandInvocation.getWorking());
-			HAssert.assertNull(commandInvocation.getIo());
+			HAssert.assertEquals(commandInvocation.getIo(), StandardIO.of(InheritRedirect.create()));
 			HAssert.assertSame(IntegerResultSupplier.create(), processInvocation.getResultSupplier());
 		}
 	}
