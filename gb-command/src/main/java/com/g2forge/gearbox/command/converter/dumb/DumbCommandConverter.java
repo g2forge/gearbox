@@ -217,11 +217,6 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 			environmentBuilder.base(SystemEnvironment.create());
 		}
 
-		// Compute the IO redirection
-		if ((processInvocation.getCommandInvocation() == null) || (processInvocation.getCommandInvocation().getIo() == null)) {
-			if (returnTypeRef.getErasedType().isAssignableFrom(Void.class) || returnTypeRef.getErasedType().isAssignableFrom(Void.TYPE)) commandInvocationBuilder.io(StandardIO.<IRedirect, IRedirect>builder().standardInput(InheritRedirect.create()).standardOutput(InheritRedirect.create()).standardError(InheritRedirect.create()).build());
-		}
-
 		final ISubject methodSubject = getMetadata().of(methodInvocation.getMethod());
 
 		// Compute the command name & initial arguments
@@ -246,9 +241,17 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 		}
 
 		// Compute the result generator
+		final IResultSupplier<? extends T> resultSupplier;
 		if (processInvocation.getResultSupplier() == null) {
-			final IResultSupplier<T> standard = getStandard(returnTypeRef);
-			processInvocationBuilder.resultSupplier(standard);
+			resultSupplier = getStandard(returnTypeRef);
+			processInvocationBuilder.resultSupplier(resultSupplier);
+		} else resultSupplier = processInvocation.getResultSupplier();
+
+		// Compute the IO redirection
+		if ((processInvocation.getCommandInvocation() == null) || (processInvocation.getCommandInvocation().getIo() == null)) {
+			final StandardIO<IRedirect, IRedirect> redirect = resultSupplier.createRedirect();
+			if (redirect != null) commandInvocationBuilder.io(redirect);
+			else if (returnTypeRef.getErasedType().isAssignableFrom(Void.class) || returnTypeRef.getErasedType().isAssignableFrom(Void.TYPE)) commandInvocationBuilder.io(StandardIO.of(InheritRedirect.create()));
 		}
 
 		// Generate the command & environment from the method arguments
