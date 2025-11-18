@@ -2,8 +2,6 @@ package com.g2forge.gearbox.jira;
 
 import java.net.URI;
 
-import javax.ws.rs.core.UriBuilder;
-
 import com.atlassian.jira.rest.client.internal.async.AsynchronousJiraRestClient;
 import com.atlassian.jira.rest.client.internal.async.DisposableHttpClient;
 import com.g2forge.gearbox.jira.components.AsynchronousProjectComponentClient;
@@ -13,6 +11,7 @@ import com.g2forge.gearbox.jira.sprint.SprintRestClient;
 import com.g2forge.gearbox.jira.user.AsynchronousExtendedUserRestClient;
 import com.g2forge.gearbox.jira.user.ExtendedUserRestClient;
 
+import jakarta.ws.rs.core.UriBuilder;
 import lombok.Getter;
 
 @Getter
