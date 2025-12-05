@@ -22,6 +22,10 @@
 			<id>atlassian-packages</id>
 			<url>https://packages.atlassian.com/maven-public/</url>
 		</repository>
+		<repository>
+			<id>atlassian</id>
+			<url>https://maven.artifacts.atlassian.com/</url>
+		</repository>
 	</repositories>
 
 	<dependencies>
@@ -46,7 +50,7 @@
 		<dependency>
 			<groupId>com.atlassian.jira</groupId>
 			<artifactId>jira-rest-java-client-core</artifactId>
-			<version>5.2.7</version>
+			<version>7.0.1</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.slf4j</groupId>
@@ -57,7 +61,7 @@
 		<dependency>
 			<groupId>io.atlassian.fugue</groupId>
 			<artifactId>fugue</artifactId>
-			<version>5.0.0</version>
+			<version>6.1.2</version>
 		</dependency>
 
 		<dependency>
