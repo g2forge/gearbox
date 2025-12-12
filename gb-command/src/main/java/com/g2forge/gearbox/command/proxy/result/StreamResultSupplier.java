@@ -156,7 +156,7 @@ public class StreamResultSupplier implements IResultSupplier<Stream<String>>, IS
 					while (queue.size() >= capacity) {
 						if (!isOpen()) return;
 						synchronized (queue) {
-							queue.wait();
+							if (queue.size() >= capacity) queue.wait(1000);
 						}
 					}
 
