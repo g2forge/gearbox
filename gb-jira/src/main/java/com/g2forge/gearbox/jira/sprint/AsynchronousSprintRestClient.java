@@ -2,8 +2,6 @@ package com.g2forge.gearbox.jira.sprint;
 
 import java.net.URI;
 
-import javax.ws.rs.core.UriBuilder;
-
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
@@ -15,6 +13,7 @@ import com.atlassian.jira.rest.client.internal.json.gen.JsonGenerator;
 import com.g2forge.gearbox.jira.sprint.Sprint.SprintBuilder;
 
 import io.atlassian.util.concurrent.Promise;
+import jakarta.ws.rs.core.UriBuilder;
 
 public class AsynchronousSprintRestClient extends AbstractAsynchronousRestClient implements SprintRestClient {
 	protected static class SprintJsonParser implements JsonObjectParser<Sprint> {
