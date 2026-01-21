@@ -3,26 +3,18 @@ package com.g2forge.gearbox.maven.packaging;
 public enum MavenPackaging implements IMavenPackaging {
 	POM,
 	JAR,
-	MAVEN_PLUGIN {
-		@Override
-		public String toString() {
-			return "MAVEN-PLUGIN";
-		}
-	},
+	MAVEN_PLUGIN,
+	MAVEN_ARCHETYPE,
 	EJB,
 	WAR,
 	EAR,
 	RAR,
 	BUNDLE,
-	ECLIPSE_PLUGIN {
-		@Override
-		public String toString() {
-			return "ECLIPSE-PLUGIN";
-		}
-	};
+	ECLIPSE_PLUGIN,
+	ATLASSIAN_PLUGIN;
 
 	@Override
 	public String getName() {
-		return toString().toLowerCase();
+		return toString().replace("_", "-").toLowerCase();
 	}
 }
