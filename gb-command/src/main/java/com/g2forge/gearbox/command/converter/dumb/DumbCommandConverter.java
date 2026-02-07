@@ -240,7 +240,7 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 			}
 		}
 
-		// Compute the result generator
+		// Compute the result supplier
 		final IResultSupplier<? extends T> resultSupplier;
 		if (processInvocation.getResultSupplier() == null) {
 			resultSupplier = getStandard(returnTypeRef);
