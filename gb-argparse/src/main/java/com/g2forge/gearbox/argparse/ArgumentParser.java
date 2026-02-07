@@ -121,20 +121,24 @@ public class ArgumentParser<T> {
 
 		@Override
 		public String generateHelp() {
-			final StringBuilder retVal = new StringBuilder();
+			final StringBuilder argumentLine = new StringBuilder();
 			final Map<String, String> positionalHelp = new LinkedHashMap<>();
 			for (ParameterParserInfo info : positional) {
 				final IParameterInfo parameter = parameters.get(info.getIndex());
-				if (!retVal.isEmpty()) retVal.append(' ');
-				retVal.append('<').append(parameter.getName()).append('>');
+				if (!argumentLine.isEmpty()) argumentLine.append(' ');
+				argumentLine.append('<').append(parameter.getName()).append('>');
 
 				final IPredicate<ArgumentHelp> predicate = parameter.getSubject().bind(ArgumentHelp.class);
 				if (predicate.isPresent()) positionalHelp.put(parameter.getName(), predicate.get0().value());
 			}
-			final boolean hasNamed = named.isEmpty();
-			if (!hasNamed && !retVal.isEmpty()) retVal.append(" [...]");
 
-			if (!positionalHelp.isEmpty() || !hasNamed) {
+			final boolean hasNamed = !named.isEmpty();
+			if (hasNamed && !argumentLine.isEmpty()) argumentLine.append(" [...]");
+
+			final StringBuilder retVal = new StringBuilder();
+			retVal.append(argumentLine.isEmpty() ? "No Positional Arguments" : "Arguments: ");
+			retVal.append(argumentLine);
+			if (!positionalHelp.isEmpty() || hasNamed) {
 				final int padded = HStream.concat(positionalHelp.keySet().stream(), named.keySet().stream()).mapToInt(String::length).max().getAsInt();
 
 				if (!positionalHelp.isEmpty()) {
@@ -144,11 +148,11 @@ public class ArgumentParser<T> {
 					}
 				}
 
-				if (!hasNamed) {
+				if (hasNamed) {
 					for (Map.Entry<String, ParameterParserInfo> entry : named.entrySet()) {
 						if (!retVal.isEmpty()) retVal.append('\n');
 						final IParameterInfo parameter = parameters.get(entry.getValue().getIndex());
-						retVal.append(HString.pad(entry.getKey(), " ", padded));
+						retVal.append('\t').append(HString.pad(entry.getKey(), " ", padded));
 						final ArgumentHelp argumentHelp = parameter.getSubject().get(ArgumentHelp.class);
 						if (argumentHelp != null) retVal.append(" - ").append(argumentHelp.value());
 					}
@@ -264,7 +268,7 @@ public class ArgumentParser<T> {
 		final IArgumentsParser argumentsParser = getArgumentsParser();
 
 		final boolean help = getHelp().stream().filter(helpArguments -> helpArguments.isHelp(argumentsParser, arguments)).findAny().isPresent();
-		if (help) throw new ArgumentHelpException("\n\nArguments: " + argumentsParser.generateHelp() + "\n");
+		if (help) throw new ArgumentHelpException("\n\n" + argumentsParser.generateHelp() + "\n");
 
 		final Object[] parsed = argumentsParser.apply(arguments);
 		return create(parsed);

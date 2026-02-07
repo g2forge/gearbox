@@ -6,7 +6,9 @@ import java.nio.file.Paths;
 import org.junit.Test;
 
 import com.g2forge.alexandria.java.core.helpers.HCollection;
+import com.g2forge.alexandria.java.function.IThrowRunnable;
 import com.g2forge.alexandria.test.HAssert;
+import com.g2forge.alexandria.test.HMatchers;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -95,7 +97,8 @@ public class TestArgumentParser {
 
 	@Test
 	public void missing() {
-		HAssert.assertException(UnspecifiedParameterException.class, "Parameter #0 (string) was not specified!", () -> ArgumentParser.parse(Ordered.class, HCollection.asList()));
+		final IThrowRunnable<RuntimeException> runnable = () -> ArgumentParser.parse(Ordered.class, HCollection.asList());
+		HAssert.assertThat(runnable, HMatchers.isThrowable(ArgumentHelpException.class, HMatchers.equalTo("\n\nArguments: <string>\n")));
 	}
 
 	@Test
