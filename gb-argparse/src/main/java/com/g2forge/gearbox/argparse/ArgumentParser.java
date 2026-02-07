@@ -135,13 +135,12 @@ public class ArgumentParser<T> {
 			if (!hasNamed && !retVal.isEmpty()) retVal.append(" [...]");
 
 			if (!positionalHelp.isEmpty() || !hasNamed) {
-				if (!retVal.isEmpty()) retVal.append("\n");
 				final int padded = HStream.concat(positionalHelp.keySet().stream(), named.keySet().stream()).mapToInt(String::length).max().getAsInt();
 
 				if (!positionalHelp.isEmpty()) {
 					for (Map.Entry<String, String> entry : positionalHelp.entrySet()) {
 						if (!retVal.isEmpty()) retVal.append('\n');
-						retVal.append(entry.getKey()).append(' ').append(entry.getValue());
+						retVal.append('\t').append(HString.pad(entry.getKey(), " ", padded)).append(" - ").append(entry.getValue());
 					}
 				}
 
@@ -151,35 +150,43 @@ public class ArgumentParser<T> {
 						final IParameterInfo parameter = parameters.get(entry.getValue().getIndex());
 						retVal.append(HString.pad(entry.getKey(), " ", padded));
 						final ArgumentHelp argumentHelp = parameter.getSubject().get(ArgumentHelp.class);
-						if (argumentHelp != null) retVal.append(' ').append(argumentHelp.value());
+						if (argumentHelp != null) retVal.append(" - ").append(argumentHelp.value());
 					}
 				}
 			}
 
 			return retVal.toString();
 		}
+
+		@Override
+		public boolean isArgumentsRequired() {
+			return !positional.isEmpty();
+		}
 	}
 
 	public enum HelpArguments {
 		STANDARD {
 			@Override
-			public boolean isHelp(List<String> arguments) {
+			public boolean isHelp(IArgumentsParser parser, List<String> arguments) {
+				if (parser.isArgumentsRequired() && arguments.isEmpty()) return true;
 				if (arguments.size() == 1) return STANDARD_HELP_ARGUMENTS.contains(arguments.get(0));
 				return false;
 			}
 		},
 		EMPTY {
 			@Override
-			public boolean isHelp(List<String> arguments) {
+			public boolean isHelp(IArgumentsParser parser, List<String> arguments) {
 				return arguments.isEmpty();
 			}
 		};
 
-		public abstract boolean isHelp(List<String> arguments);
+		public abstract boolean isHelp(IArgumentsParser parser, List<String> arguments);
 	}
 
 	protected interface IArgumentsParser extends IFunction1<List<String>, Object[]> {
 		public String generateHelp();
+
+		public boolean isArgumentsRequired();
 	}
 
 	@Data
@@ -256,8 +263,8 @@ public class ArgumentParser<T> {
 	public T parse(List<String> arguments) {
 		final IArgumentsParser argumentsParser = getArgumentsParser();
 
-		final boolean help = getHelp().stream().filter(helpArguments -> helpArguments.isHelp(arguments)).findAny().isPresent();
-		if (help) throw new ArgumentHelpException(argumentsParser.generateHelp());
+		final boolean help = getHelp().stream().filter(helpArguments -> helpArguments.isHelp(argumentsParser, arguments)).findAny().isPresent();
+		if (help) throw new ArgumentHelpException("\n\nArguments: " + argumentsParser.generateHelp() + "\n");
 
 		final Object[] parsed = argumentsParser.apply(arguments);
 		return create(parsed);
