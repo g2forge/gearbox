@@ -35,6 +35,7 @@ public class CSVMapper<T> extends ACSVMapper<T, T> {
 	@Override
 	protected CsvMapper createMapper() {
 		final CsvMapper retVal = super.createMapper();
+		retVal.findAndRegisterModules();
 		retVal.configure(JsonGenerator.Feature.IGNORE_UNKNOWN, true);
 		retVal.enable(CsvParser.Feature.IGNORE_TRAILING_UNMAPPABLE);
 		retVal.enable(CsvParser.Feature.INSERT_NULLS_FOR_MISSING_COLUMNS);
