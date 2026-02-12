@@ -17,6 +17,7 @@ import com.g2forge.alexandria.annotations.note.Note;
 import com.g2forge.alexandria.annotations.note.NoteType;
 import com.g2forge.alexandria.command.invocation.CommandInvocation;
 import com.g2forge.alexandria.command.invocation.environment.SystemEnvironment;
+import com.g2forge.alexandria.command.invocation.format.ICommandFormat;
 import com.g2forge.alexandria.java.close.ICloseable;
 import com.g2forge.alexandria.java.core.error.NotYetImplementedError;
 import com.g2forge.alexandria.java.io.RuntimeIOException;
@@ -69,7 +70,8 @@ public class SSHRunner implements IRunner, ICloseable {
 			ChannelExec _channel = null;
 			Throwable _launchException = null;
 			try {
-				final String command = commandInvocation.getArguments().stream().collect(Collectors.joining(" "));
+				final ICommandFormat format = commandInvocation.getFormat();
+				final String command = commandInvocation.getArguments().stream().map(format::quote).collect(Collectors.joining(" "));
 				_channel = session.createExecChannel(command);
 				if (!_channel.open().await()) throw new RuntimeIOException();
 			} catch (Throwable throwable) {
