@@ -10,7 +10,7 @@ import com.g2forge.alexandria.test.HMatchers;
 public class TestArgumentParserHelp {
 	@Test
 	public void unparseable() {
-		assertHelp("<unparseable>", TestArgumentParser.Unparseable.class);
+		assertHelp("\n\nArguments: <unparseable>\n", TestArgumentParser.Unparseable.class);
 	}
 
 	private void assertHelp(final String help, final Class<?> type) {
@@ -20,26 +20,26 @@ public class TestArgumentParserHelp {
 
 	@Test
 	public void array() {
-		assertHelp("<strings>", TestArgumentParser.Array.class);
+		assertHelp("\n\nArguments: <strings>\n", TestArgumentParser.Array.class);
 	}
 
 	@Test
 	public void flag() {
-		assertHelp("--flag", TestArgumentParser.Flag.class);
+		assertHelp("\n\nNo Positional Arguments\n\t--flag\n", TestArgumentParser.Flag.class);
 	}
 
 	@Test
 	public void mixed() {
-		assertHelp("<path> [...]\n\npath A path\n--flag An optional flag", TestArgumentParser.Mixed.class);
+		assertHelp("\n\nArguments: <path> [...]\n\tpath   - A path\n\t--flag - An optional flag\n", TestArgumentParser.Mixed.class);
 	}
 
 	@Test
 	public void none() {
-		assertHelp("", TestArgumentParser.None.class);
+		assertHelp("\n\nNo Positional Arguments\n", TestArgumentParser.None.class);
 	}
 
 	@Test
 	public void ordered() {
-		assertHelp("<string>", TestArgumentParser.Ordered.class);
+		assertHelp("\n\nArguments: <string>\n", TestArgumentParser.Ordered.class);
 	}
 }

@@ -121,65 +121,76 @@ public class ArgumentParser<T> {
 
 		@Override
 		public String generateHelp() {
-			final StringBuilder retVal = new StringBuilder();
+			final StringBuilder argumentLine = new StringBuilder();
 			final Map<String, String> positionalHelp = new LinkedHashMap<>();
 			for (ParameterParserInfo info : positional) {
 				final IParameterInfo parameter = parameters.get(info.getIndex());
-				if (!retVal.isEmpty()) retVal.append(' ');
-				retVal.append('<').append(parameter.getName()).append('>');
+				if (!argumentLine.isEmpty()) argumentLine.append(' ');
+				argumentLine.append('<').append(parameter.getName()).append('>');
 
 				final IPredicate<ArgumentHelp> predicate = parameter.getSubject().bind(ArgumentHelp.class);
 				if (predicate.isPresent()) positionalHelp.put(parameter.getName(), predicate.get0().value());
 			}
-			final boolean hasNamed = named.isEmpty();
-			if (!hasNamed && !retVal.isEmpty()) retVal.append(" [...]");
 
-			if (!positionalHelp.isEmpty() || !hasNamed) {
-				if (!retVal.isEmpty()) retVal.append("\n");
+			final boolean hasNamed = !named.isEmpty();
+			if (hasNamed && !argumentLine.isEmpty()) argumentLine.append(" [...]");
+
+			final StringBuilder retVal = new StringBuilder();
+			retVal.append(argumentLine.isEmpty() ? "No Positional Arguments" : "Arguments: ");
+			retVal.append(argumentLine);
+			if (!positionalHelp.isEmpty() || hasNamed) {
 				final int padded = HStream.concat(positionalHelp.keySet().stream(), named.keySet().stream()).mapToInt(String::length).max().getAsInt();
 
 				if (!positionalHelp.isEmpty()) {
 					for (Map.Entry<String, String> entry : positionalHelp.entrySet()) {
 						if (!retVal.isEmpty()) retVal.append('\n');
-						retVal.append(entry.getKey()).append(' ').append(entry.getValue());
+						retVal.append('\t').append(HString.pad(entry.getKey(), " ", padded)).append(" - ").append(entry.getValue());
 					}
 				}
 
-				if (!hasNamed) {
+				if (hasNamed) {
 					for (Map.Entry<String, ParameterParserInfo> entry : named.entrySet()) {
 						if (!retVal.isEmpty()) retVal.append('\n');
 						final IParameterInfo parameter = parameters.get(entry.getValue().getIndex());
-						retVal.append(HString.pad(entry.getKey(), " ", padded));
+						retVal.append('\t').append(HString.pad(entry.getKey(), " ", padded));
 						final ArgumentHelp argumentHelp = parameter.getSubject().get(ArgumentHelp.class);
-						if (argumentHelp != null) retVal.append(' ').append(argumentHelp.value());
+						if (argumentHelp != null) retVal.append(" - ").append(argumentHelp.value());
 					}
 				}
 			}
 
 			return retVal.toString();
 		}
+
+		@Override
+		public boolean isArgumentsRequired() {
+			return !positional.isEmpty();
+		}
 	}
 
 	public enum HelpArguments {
 		STANDARD {
 			@Override
-			public boolean isHelp(List<String> arguments) {
+			public boolean isHelp(IArgumentsParser parser, List<String> arguments) {
+				if (parser.isArgumentsRequired() && arguments.isEmpty()) return true;
 				if (arguments.size() == 1) return STANDARD_HELP_ARGUMENTS.contains(arguments.get(0));
 				return false;
 			}
 		},
 		EMPTY {
 			@Override
-			public boolean isHelp(List<String> arguments) {
+			public boolean isHelp(IArgumentsParser parser, List<String> arguments) {
 				return arguments.isEmpty();
 			}
 		};
 
-		public abstract boolean isHelp(List<String> arguments);
+		public abstract boolean isHelp(IArgumentsParser parser, List<String> arguments);
 	}
 
 	protected interface IArgumentsParser extends IFunction1<List<String>, Object[]> {
 		public String generateHelp();
+
+		public boolean isArgumentsRequired();
 	}
 
 	@Data
@@ -256,8 +267,8 @@ public class ArgumentParser<T> {
 	public T parse(List<String> arguments) {
 		final IArgumentsParser argumentsParser = getArgumentsParser();
 
-		final boolean help = getHelp().stream().filter(helpArguments -> helpArguments.isHelp(arguments)).findAny().isPresent();
-		if (help) throw new ArgumentHelpException(argumentsParser.generateHelp());
+		final boolean help = getHelp().stream().filter(helpArguments -> helpArguments.isHelp(argumentsParser, arguments)).findAny().isPresent();
+		if (help) throw new ArgumentHelpException("\n\n" + argumentsParser.generateHelp() + "\n");
 
 		final Object[] parsed = argumentsParser.apply(arguments);
 		return create(parsed);
