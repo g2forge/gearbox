@@ -9,14 +9,14 @@
 	<parent>
 		<groupId>com.g2forge.alexandria</groupId>
 		<artifactId>ax-project</artifactId>
-		<version>0.0.19</version>
+		<version>0.0.20-SNAPSHOT</version>
 		<relativePath />
 	</parent>
 
 	<properties>
-		<alexandria.version>0.0.19</alexandria.version>
-		<enigma.version>0.0.12</enigma.version>
-		<habitat.version>0.0.6</habitat.version>
+		<alexandria.version>0.0.20-SNAPSHOT</alexandria.version>
+		<enigma.version>0.0.13-SNAPSHOT</enigma.version>
+		<habitat.version>0.0.7-SNAPSHOT</habitat.version>
 
 		<gearbox.organization>g2forge</gearbox.organization>
 		<gearbox.name>Gearbox</gearbox.name>
