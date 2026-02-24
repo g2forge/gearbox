@@ -33,4 +33,6 @@ public class GHError {
 
 	@JsonProperty("documentation_url")
 	protected String documentationURL;
+
+	protected String status;
 }
