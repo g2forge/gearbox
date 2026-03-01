@@ -36,7 +36,7 @@ public class DefaultMethodInvocationTransformer implements IDelegatingInvocation
 				try {
 					final List<Object> arguments = methodInvocation.getArguments();
 					final Object retVal = bound.invokeWithArguments(arguments == null ? new Object[0] : arguments.toArray());
-					return new ProcessInvocation<>(null, process -> retVal);
+					return new ProcessInvocation<>(null, null, process -> retVal);
 				} catch (ModifyProcessInvocationException exception) {
 					final ProcessInvocation<?> processInvocation = getDelegate().apply(methodInvocation);
 					return exception.getFunction().apply(processInvocation);

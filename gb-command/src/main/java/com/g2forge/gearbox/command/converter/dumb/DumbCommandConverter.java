@@ -22,6 +22,7 @@ import com.g2forge.alexandria.command.stdio.StandardIO;
 import com.g2forge.alexandria.java.core.enums.EnumException;
 import com.g2forge.alexandria.java.core.error.HError;
 import com.g2forge.alexandria.java.core.error.NotYetImplementedError;
+import com.g2forge.alexandria.java.core.error.UnreachableCodeError;
 import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.java.core.marker.ISingleton;
 import com.g2forge.alexandria.java.function.IConsumer2;
@@ -32,7 +33,9 @@ import com.g2forge.alexandria.java.type.ref.ATypeRefIdentity;
 import com.g2forge.alexandria.java.type.ref.ITypeRef;
 import com.g2forge.gearbox.command.converter.ICommandConverterR_;
 import com.g2forge.gearbox.command.converter.IMethodArgument;
+import com.g2forge.gearbox.command.converter.MetadataEnvironmentModifier;
 import com.g2forge.gearbox.command.converter.MethodArgument;
+import com.g2forge.gearbox.command.process.CommandMetadata;
 import com.g2forge.gearbox.command.process.IProcess;
 import com.g2forge.gearbox.command.process.redirect.IRedirect;
 import com.g2forge.gearbox.command.process.redirect.InheritRedirect;
@@ -59,12 +62,25 @@ import lombok.RequiredArgsConstructor;
 public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 	@Data
 	@Builder(toBuilder = true)
+	@RequiredArgsConstructor
 	protected static class ArgumentContext {
 		protected final CommandInvocation.CommandInvocationBuilder<IRedirect, IRedirect> command;
+
+		protected final CommandMetadata.CommandMetadataBuilder metadata;
 
 		protected final ModifiedEnvironment.ModifiedEnvironmentBuilder environment;
 
 		protected final IMethodArgument<Object> argument;
+
+		public void argument(String argument, ISubject metadata) {
+			getCommand().argument(argument);
+			getMetadata().argument(metadata);
+		}
+
+		public void argument(String argument) {
+			getCommand().argument(argument);
+			getMetadata().argument(getArgument().getMetadata());
+		}
 	}
 
 	@Data
@@ -89,7 +105,6 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 					throw new EnumException(EnvPath.Usage.class, getUsage());
 			}
 		}
-
 	}
 
 	protected static final DumbCommandConverter instance = new DumbCommandConverter();
@@ -102,7 +117,7 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 			if (metadata.isPresent(EnvPath.class)) throw new IllegalArgumentException("We do not support setting the PATH environment variable to a string array!");
 
 			for (String value : v) {
-				c.getCommand().argument(value);
+				c.argument(value);
 			}
 		});
 		builder.add(ArgumentContext.class, String.class, (c, v) -> {
@@ -120,9 +135,10 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 				isNormal = false;
 			}
 
-			final EnvPath envPath = c.getArgument().getMetadata().get(EnvPath.class);
+			final ISubject metadata = c.getArgument().getMetadata();
+			final EnvPath envPath = metadata.get(EnvPath.class);
 			if (envPath != null) {
-				c.getEnvironment().modifier(HPlatform.PATH, new EnvPathModifier(envPath.usage(), v));
+				c.getEnvironment().modifier(HPlatform.PATH, new MetadataEnvironmentModifier(metadata, new EnvPathModifier(envPath.usage(), v)));
 				isNormal = false;
 			}
 
@@ -134,14 +150,15 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 			final Flag flag = c.getArgument().getMetadata().get(Flag.class);
 			if (flag != null) {
 				if (c.getArgument().getMetadata().isPresent(Named.class)) throw new IllegalArgumentException("Flags cannot also be named!");
-				if (v) c.getCommand().argument(flag.value());
+				if (v) c.argument(flag.value());
 				return;
 			} else HDumbCommandConverter.set(c, c.getArgument(), Boolean.toString(v));
 		};
 		builder.add(ArgumentContext.class, Boolean.class, bool);
 		builder.add(ArgumentContext.class, Boolean.TYPE, bool);
 		builder.add(ArgumentContext.class, Map.class, (c, v) -> {
-			final Environment environment = c.getArgument().getMetadata().get(Environment.class);
+			final ISubject metadata = c.getArgument().getMetadata();
+			final Environment environment = metadata.get(Environment.class);
 			if ((environment == null) || (environment.value() != null)) throw new IllegalArgumentException("Map arguments must be environemt with \"null\" name!");
 			final ModifiedEnvironment.ModifiedEnvironmentBuilder e = c.getEnvironment();
 			@SuppressWarnings("unchecked")
@@ -153,7 +170,7 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 				if (value instanceof IEnvironmentModifier) modifier = (IEnvironmentModifier) value;
 				else if (value instanceof String) modifier = new EnvironmentValue((String) value);
 				else throw new IllegalArgumentException("Arguments of type \"" + value.getClass() + "\" are not supported!");
-				e.modifier(key, modifier);
+				e.modifier(key, new MetadataEnvironmentModifier(metadata, modifier));
 			}
 		});
 		builder.fallback((c, v) -> {
@@ -208,6 +225,7 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 		final ITypeRef<T> returnTypeRef = computeReturnTypeRef(methodInvocation.getMethod());
 
 		final CommandInvocation.CommandInvocationBuilder<IRedirect, IRedirect> commandInvocationBuilder;
+		final CommandMetadata.CommandMetadataBuilder commandMetadataBuilder = CommandMetadata.builder();
 		final ModifiedEnvironment.ModifiedEnvironmentBuilder environmentBuilder = ModifiedEnvironment.builder();
 		if (processInvocation.getCommandInvocation() != null) {
 			commandInvocationBuilder = processInvocation.getCommandInvocation().toBuilder();
@@ -218,6 +236,7 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 		}
 
 		final ISubject methodSubject = getMetadata().of(methodInvocation.getMethod());
+		commandMetadataBuilder.command(methodSubject);
 
 		// Compute the command name & initial arguments
 		commandInvocationBuilder.clearArguments();
@@ -226,6 +245,8 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 		if (command != null) commandArguments = HCollection.asList(command.value());
 		else commandArguments = HCollection.asList(methodInvocation.getMethod().getName());
 		commandArguments.forEach(commandInvocationBuilder::argument);
+		for (int i = 0; i < commandArguments.size(); i++)
+			commandMetadataBuilder.argument(methodSubject);
 
 		{
 			final ConstantEnvironment constantEnvironment = methodSubject.get(ConstantEnvironment.class);
@@ -270,7 +291,7 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 					final List<String> arguments = argumentRenderer.render((IMethodArgument) methodArgument);
 					commandInvocationBuilder.arguments(arguments);
 				} else {
-					final ArgumentContext argumentContext = new ArgumentContext(commandInvocationBuilder, environmentBuilder, methodArgument);
+					final ArgumentContext argumentContext = new ArgumentContext(commandInvocationBuilder, commandMetadataBuilder, environmentBuilder, methodArgument);
 					ARGUMENT_BUILDER.accept(argumentContext, value);
 				}
 
@@ -282,7 +303,13 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 		}
 		if (!throwables.isEmpty()) throw HError.withSuppressed(new RuntimeException(String.format("Failed to convert parameters to arguments for %1$s", commandArguments.stream().collect(Collectors.joining(" ")))), throwables);
 
-		processInvocationBuilder.commandInvocation(commandInvocationBuilder.environment(environmentBuilder.build().simplify()).build());
+		{
+			final CommandInvocation<IRedirect, IRedirect> commandInvocation = commandInvocationBuilder.environment(environmentBuilder.build().simplify()).build();
+			processInvocationBuilder.commandInvocation(commandInvocation);
+			final CommandMetadata commandMetadata = commandMetadataBuilder.build();
+			processInvocationBuilder.commandMetadata(commandMetadata);
+			if (commandInvocation.getArguments().size() != commandMetadata.getArguments().size()) throw new UnreachableCodeError(String.format("The number of arguments (%1$s) does not match the number of metadata subjects (%2$d), there is an error in the implementation of %3$s", commandInvocation.getArguments().size(), commandMetadata.getArguments().size(), getClass().getSimpleName()));
+		}
 		return processInvocationBuilder.build();
 	}
 }

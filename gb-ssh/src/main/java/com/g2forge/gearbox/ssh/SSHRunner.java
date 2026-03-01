@@ -21,6 +21,7 @@ import com.g2forge.alexandria.command.invocation.format.ICommandFormat;
 import com.g2forge.alexandria.java.close.ICloseable;
 import com.g2forge.alexandria.java.core.error.NotYetImplementedError;
 import com.g2forge.alexandria.java.io.RuntimeIOException;
+import com.g2forge.gearbox.command.process.CommandMetadata;
 import com.g2forge.gearbox.command.process.IProcess;
 import com.g2forge.gearbox.command.process.IRunner;
 import com.g2forge.gearbox.command.process.redirect.IRedirect;
@@ -60,7 +61,7 @@ public class SSHRunner implements IRunner, ICloseable {
 	@Note(type = NoteType.TODO, value = "IO redirection and working directories")
 	@Note(type = NoteType.TODO, value = "Environment variables")
 	@Override
-	public IProcess apply(CommandInvocation<IRedirect, IRedirect> commandInvocation) {
+	public IProcess apply(CommandInvocation<IRedirect, IRedirect> commandInvocation, CommandMetadata commandMetadata) {
 		if ((commandInvocation.getEnvironment() != null) && !(commandInvocation.getEnvironment() instanceof SystemEnvironment)) throw new NotYetImplementedError("SSH does not yet support environment variable modifications at the process level!");
 
 		ensureOpen();
