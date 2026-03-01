@@ -7,6 +7,7 @@ import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.java.function.IFunction1;
 import com.g2forge.alexandria.test.HAssert;
 import com.g2forge.gearbox.command.converter.ICommandConverterR_;
+import com.g2forge.gearbox.command.process.CommandMetadata;
 import com.g2forge.gearbox.command.process.IProcess;
 import com.g2forge.gearbox.command.process.IRunner;
 import com.g2forge.gearbox.command.process.redirect.IRedirect;
@@ -27,7 +28,7 @@ public class CommandTester<Command> {
 
 	protected class ThrowingRunner implements IRunner {
 		@Override
-		public IProcess apply(CommandInvocation<IRedirect, IRedirect> commandInvocation) {
+		public IProcess apply(CommandInvocation<IRedirect, IRedirect> commandInvocation, CommandMetadata commandMetadata) {
 			throw new CommandException(commandInvocation);
 		}
 	}

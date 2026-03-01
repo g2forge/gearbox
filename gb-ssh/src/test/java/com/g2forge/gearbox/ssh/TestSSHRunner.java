@@ -12,7 +12,7 @@ import org.junit.Test;
 
 import com.g2forge.alexandria.command.invocation.CommandInvocation;
 import com.g2forge.alexandria.java.close.ICloseable;
-import com.g2forge.alexandria.java.function.IFunction1;
+import com.g2forge.alexandria.java.function.IFunction2;
 import com.g2forge.alexandria.test.HAssert;
 import com.g2forge.alexandria.test.HAssume;
 import com.g2forge.alexandria.wizard.PropertyStringInput;
@@ -20,6 +20,7 @@ import com.g2forge.alexandria.wizard.UserStringInput;
 import com.g2forge.gearbox.command.converter.ICommandConverterR_;
 import com.g2forge.gearbox.command.converter.dumb.Command;
 import com.g2forge.gearbox.command.converter.dumb.DumbCommandConverter;
+import com.g2forge.gearbox.command.process.CommandMetadata;
 import com.g2forge.gearbox.command.process.IProcess;
 import com.g2forge.gearbox.command.process.redirect.IRedirect;
 import com.g2forge.gearbox.command.proxy.method.ICommandInterface;
@@ -43,7 +44,7 @@ public class TestSSHRunner extends ATestCommand {
 	}
 
 	@Override
-	protected IFunction1<CommandInvocation<IRedirect, IRedirect>, IProcess> createRunner() {
+	protected IFunction2<CommandInvocation<IRedirect, IRedirect>, CommandMetadata, IProcess> createRunner() {
 		return new SSHRunner(Duration.ofSeconds(5), TestSSH.getConfig());
 	}
 

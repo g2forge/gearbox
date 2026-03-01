@@ -1,6 +1,7 @@
 package com.g2forge.gearbox.command.proxy.process;
 
 import com.g2forge.alexandria.command.invocation.CommandInvocation;
+import com.g2forge.gearbox.command.process.CommandMetadata;
 import com.g2forge.gearbox.command.process.redirect.IRedirect;
 import com.g2forge.gearbox.command.proxy.result.IResultSupplier;
 
@@ -17,6 +18,8 @@ public class ProcessInvocation<O> {
 	 * {@link #resultSupplier}.
 	 */
 	protected final CommandInvocation<IRedirect, IRedirect> commandInvocation;
+	
+	protected final CommandMetadata commandMetadata;
 
 	protected final IResultSupplier<? extends O> resultSupplier;
 

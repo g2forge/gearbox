@@ -43,7 +43,7 @@ public class ProcessBuilderRunner implements IRunner {
 	}
 
 	@Override
-	public IProcess apply(CommandInvocation<IRedirect, IRedirect> commandInvocation) {
+	public IProcess apply(CommandInvocation<IRedirect, IRedirect> commandInvocation, CommandMetadata commandMetadata) {
 		// Wrap the command
 		final CommandInvocation<IRedirect, IRedirect> wrapped = getCommandRunner().wrap(commandInvocation);
 		// Translate the redirects to process builder format
