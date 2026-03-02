@@ -128,14 +128,14 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 		});
 		builder.add(ArgumentContext.class, Path.class, (c, v) -> {
 			boolean isNormal = true;
+			final ISubject metadata = c.getArgument().getMetadata();
 
-			final Working working = c.getArgument().getMetadata().get(Working.class);
+			final Working working = metadata.get(Working.class);
 			if (working != null) {
 				if (v != null) c.getCommand().working(v);
 				isNormal = false;
 			}
 
-			final ISubject metadata = c.getArgument().getMetadata();
 			final EnvPath envPath = metadata.get(EnvPath.class);
 			if (envPath != null) {
 				c.getEnvironment().modifier(HPlatform.PATH, new MetadataEnvironmentModifier(metadata, new EnvPathModifier(envPath.usage(), v)));
@@ -143,13 +143,14 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 			}
 
 			if (isNormal) HDumbCommandConverter.set(c, c.getArgument(), v.toString());
-			else if (c.getArgument().getMetadata().isPresent(Named.class)) throw new IllegalArgumentException("Paths used as environment paths or working directories cannot also be used in normal arguments & environment variables!");
+			else if (metadata.isPresent(Named.class)) throw new IllegalArgumentException("Paths used as environment paths or working directories cannot also be used in normal arguments & environment variables!");
 		});
 
 		final IConsumer2<? super ArgumentContext, ? super Boolean> bool = (c, v) -> {
-			final Flag flag = c.getArgument().getMetadata().get(Flag.class);
+			final ISubject metadata = c.getArgument().getMetadata();
+			final Flag flag = metadata.get(Flag.class);
 			if (flag != null) {
-				if (c.getArgument().getMetadata().isPresent(Named.class)) throw new IllegalArgumentException("Flags cannot also be named!");
+				if (metadata.isPresent(Named.class)) throw new IllegalArgumentException("Flags cannot also be named!");
 				if (v) c.argument(flag.value());
 				return;
 			} else HDumbCommandConverter.set(c, c.getArgument(), Boolean.toString(v));
@@ -290,13 +291,19 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 					@SuppressWarnings({ "unchecked", "rawtypes" })
 					final List<String> arguments = argumentRenderer.render((IMethodArgument) methodArgument);
 					commandInvocationBuilder.arguments(arguments);
+					for (int j = 0; j < arguments.size(); j++) {
+						commandMetadataBuilder.argument(methodArgument.getMetadata());
+					}
 				} else {
 					final ArgumentContext argumentContext = new ArgumentContext(commandInvocationBuilder, commandMetadataBuilder, environmentBuilder, methodArgument);
 					ARGUMENT_BUILDER.accept(argumentContext, value);
 				}
 
 				final Constant constant = methodArgument.getMetadata().get(Constant.class);
-				if ((constant != null) && (constant.value() != null)) commandInvocationBuilder.arguments(HCollection.asList(constant.value()));
+				if ((constant != null) && (constant.value() != null)) {
+					commandInvocationBuilder.arguments(HCollection.asList(constant.value()));
+					commandMetadataBuilder.argument(methodArgument.getMetadata());
+				}
 			} catch (Throwable throwable) {
 				throwables.add(throwable);
 			}
@@ -308,7 +315,7 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 			processInvocationBuilder.commandInvocation(commandInvocation);
 			final CommandMetadata commandMetadata = commandMetadataBuilder.build();
 			processInvocationBuilder.commandMetadata(commandMetadata);
-			if (commandInvocation.getArguments().size() != commandMetadata.getArguments().size()) throw new UnreachableCodeError(String.format("The number of arguments (%1$s) does not match the number of metadata subjects (%2$d), there is an error in the implementation of %3$s", commandInvocation.getArguments().size(), commandMetadata.getArguments().size(), getClass().getSimpleName()));
+			if (commandInvocation.getArguments().size() != commandMetadata.getArguments().size()) throw new UnreachableCodeError(String.format("The number of arguments (%1$s) does not match the number of metadata subjects (%2$d), there is an error in the implementation of %3$s: %4$s vs %5$s", commandInvocation.getArguments().size(), commandMetadata.getArguments().size(), getClass().getSimpleName(), commandInvocation.getArguments(), commandMetadata.getArguments()));
 		}
 		return processInvocationBuilder.build();
 	}
