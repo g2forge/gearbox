@@ -12,20 +12,20 @@ import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.java.core.marker.ICommand;
 import com.g2forge.alexandria.test.HAssert;
 import com.g2forge.gearbox.command.converter.IMethodArgument;
-import com.g2forge.gearbox.command.converter.dumb.ArgumentRenderer;
+import com.g2forge.gearbox.command.converter.argumentrenderer.ASimpleArgumentRenderer;
+import com.g2forge.gearbox.command.converter.argumentrenderer.ArgumentRenderer;
 import com.g2forge.gearbox.command.converter.dumb.Constant;
 import com.g2forge.gearbox.command.converter.dumb.DumbCommandConverter;
 import com.g2forge.gearbox.command.converter.dumb.Environment;
-import com.g2forge.gearbox.command.converter.dumb.IArgumentRenderer;
 import com.g2forge.gearbox.command.converter.dumb.Named;
 import com.g2forge.gearbox.command.converter.dumb.Working;
 import com.g2forge.gearbox.command.process.IProcess;
 import com.g2forge.gearbox.command.proxy.CommandProxyFactory;
 
 public class TestLoggingRunner {
-	public static class TestArgumentRenderer implements IArgumentRenderer<List<String>> {
+	public static class TestArgumentRenderer extends ASimpleArgumentRenderer<List<String>> {
 		@Override
-		public List<String> render(IMethodArgument<List<String>> argument) {
+		protected List<String> renderSimple(IMethodArgument<List<String>> argument) {
 			return argument.get();
 		}
 	}
@@ -37,7 +37,7 @@ public class TestLoggingRunner {
 	@Test
 	public void password() {
 		final List<String> log = new ArrayList<>();
-		final CommandProxyFactory commandProxyFactory = new CommandProxyFactory(DumbCommandConverter.create(), new LoggingRunner(log::add, (i, m) -> null));
+		final CommandProxyFactory commandProxyFactory = new CommandProxyFactory(DumbCommandConverter.create(), new LoggingRunner(log::add, i -> null));
 		HAssert.assertNull(commandProxyFactory.apply(ILogTestCommand.class).test(Paths.get("foo"), "mypassword", "env_value", HCollection.asList("a", "b")));
 		Assert.assertEquals(HCollection.asList("Running: test constant --password *** a b", "\tin foo", "\tenvironment: system environment"), log);
 	}

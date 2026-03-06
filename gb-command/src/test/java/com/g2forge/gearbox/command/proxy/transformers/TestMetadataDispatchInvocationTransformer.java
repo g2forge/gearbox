@@ -5,6 +5,7 @@ import org.junit.Test;
 import com.g2forge.alexandria.command.invocation.CommandInvocation;
 import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.test.HAssert;
+import com.g2forge.gearbox.command.process.MetaCommandArgument;
 import com.g2forge.gearbox.command.process.redirect.IRedirect;
 import com.g2forge.gearbox.command.proxy.method.ITestCommandInterface;
 import com.g2forge.gearbox.command.proxy.method.MethodInvocation;
@@ -27,13 +28,13 @@ public class TestMetadataDispatchInvocationTransformer {
 	public static class MyOverrideInvocationTransformer implements IInvocationTransformer {
 		@Override
 		public ProcessInvocation<?> apply(MethodInvocation methodInvocation) {
-			return new ProcessInvocation<>(null, null, process -> 4);
+			return new ProcessInvocation<>(null, process -> 4);
 		}
 	}
 
 	@Test
 	public void delegate() {
-		final CommandInvocation<IRedirect, IRedirect> commandInvocation = CommandInvocation.<IRedirect, IRedirect>builder().build();
+		final CommandInvocation<MetaCommandArgument, IRedirect, IRedirect> commandInvocation = CommandInvocation.<MetaCommandArgument, IRedirect, IRedirect>builder().build();
 		final MethodInvocation methodInvocation = new MethodInvocation(new IDelegate() {
 			@Override
 			public int method() {
@@ -53,7 +54,7 @@ public class TestMetadataDispatchInvocationTransformer {
 				return 0;
 			}
 		}, IOverride.class.getDeclaredMethods()[0], HCollection.emptyList());
-		final ProcessInvocation<?> processInvocation = new MetadataDispatchInvocationTransformer(new CustomInvocationTransformer(CommandInvocation.<IRedirect, IRedirect>builder().build(), 2)).apply(methodInvocation);
+		final ProcessInvocation<?> processInvocation = new MetadataDispatchInvocationTransformer(new CustomInvocationTransformer(CommandInvocation.<MetaCommandArgument, IRedirect, IRedirect>builder().build(), 2)).apply(methodInvocation);
 		HAssert.assertNull(processInvocation.getCommandInvocation());
 		HAssert.assertEquals(4, processInvocation.getResultSupplier().apply(null));
 	}
