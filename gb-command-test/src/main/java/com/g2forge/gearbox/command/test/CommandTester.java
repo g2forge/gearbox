@@ -48,7 +48,7 @@ public class CommandTester<Command> {
 		try {
 			actual.apply(getCommand());
 		} catch (CommandException exception) {
-			HAssert.assertArrayEquals(expected.toArray(new String[0]), exception.getCommandInvocation().getArguments().toArray(new String[0]));
+			HAssert.assertArrayEquals(expected.toArray(new String[0]), MetaCommandArgument.toStrings(exception.getCommandInvocation().getArguments()).toArray(new String[0]));
 			return;
 		}
 		HAssert.fail(String.format("Command invocation did not throw the expected exception!"));

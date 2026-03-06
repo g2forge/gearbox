@@ -35,8 +35,10 @@ import com.g2forge.gearbox.command.converter.IMethodArgument;
 import com.g2forge.gearbox.command.converter.MetadataEnvironmentModifier;
 import com.g2forge.gearbox.command.converter.MethodArgument;
 import com.g2forge.gearbox.command.converter.argumentrenderer.ASimpleArgumentRenderer;
+import com.g2forge.gearbox.command.converter.argumentrenderer.IArgumentRenderer;
 import com.g2forge.gearbox.command.process.IProcess;
 import com.g2forge.gearbox.command.process.MetaCommandArgument;
+import com.g2forge.gearbox.command.process.MetaCommandArgumentType;
 import com.g2forge.gearbox.command.process.redirect.IRedirect;
 import com.g2forge.gearbox.command.process.redirect.InheritRedirect;
 import com.g2forge.gearbox.command.proxy.method.MethodInvocation;
@@ -219,7 +221,7 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 			commandInvocationBuilder = processInvocation.getCommandInvocation().toBuilder();
 			environmentBuilder.base(processInvocation.getCommandInvocation().getEnvironment());
 		} else {
-			commandInvocationBuilder = CommandInvocation.<MetaCommandArgument, IRedirect, IRedirect>builder().format(ICommandFormat.getDefault());
+			commandInvocationBuilder = CommandInvocation.<MetaCommandArgument, IRedirect, IRedirect>builder().format(ICommandFormat.getDefault()).type(MetaCommandArgumentType.create());
 			environmentBuilder.base(SystemEnvironment.create());
 		}
 
@@ -269,7 +271,7 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 				final Object value = methodInvocation.getArguments().get(i);
 				final IMethodArgument<Object> methodArgument = new MethodArgument(value, parameters[i]);
 
-				final ASimpleArgumentRenderer<?> argumentRenderer = methodArgument.getMetadata().get(ASimpleArgumentRenderer.class);
+				final IArgumentRenderer<?> argumentRenderer = methodArgument.getMetadata().get(IArgumentRenderer.class);
 				if (argumentRenderer != null) {
 					if (methodArgument.getMetadata().isPresent(Environment.class)) throw new NotYetImplementedError("Parameters with custom argument renderers cannot be used as environment variables (yet)!");
 					@SuppressWarnings({ "unchecked", "rawtypes" })

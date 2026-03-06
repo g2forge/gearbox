@@ -47,7 +47,7 @@ public class TestCommandProxyFactory {
 		} catch (ReturnProcessInvocationException exception) {
 			final ProcessInvocation<?> processInvocation = exception.getProcessInvocation();
 			final CommandInvocation<MetaCommandArgument, IRedirect, IRedirect> commandInvocation = processInvocation.getCommandInvocation();
-			HAssert.assertEquals(HCollection.asList("method", "0"), commandInvocation.getArguments());
+			HAssert.assertEquals(HCollection.asList("method", "0"), MetaCommandArgument.toStrings(commandInvocation.getArguments()));
 			HAssert.assertNull(commandInvocation.getWorking());
 			HAssert.assertEquals(commandInvocation.getIo(), StandardIO.of(InheritRedirect.create()));
 			HAssert.assertSame(IntegerResultSupplier.create(), processInvocation.getResultSupplier());

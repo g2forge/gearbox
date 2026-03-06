@@ -117,7 +117,7 @@ public class TestDumbCommandConverter {
 
 			final CommandInvocation<MetaCommandArgument, IRedirect, IRedirect> commandInvocation = processInvocation.getCommandInvocation();
 			HAssert.assertEquals(expectedWorking, commandInvocation.getWorking());
-			HAssert.assertEquals(HCollection.asList(expectedArguments), commandInvocation.getArguments());
+			HAssert.assertEquals(HCollection.asList(expectedArguments), MetaCommandArgument.toStrings(commandInvocation.getArguments()));
 			HAssert.assertEquals(expectedResultSupplierType, processInvocation.getResultSupplier().getClass());
 			return commandInvocation;
 		}

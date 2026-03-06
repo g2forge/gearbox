@@ -6,7 +6,7 @@ import com.g2forge.alexandria.java.core.marker.ISingleton;
 public class MetaCommandArgumentType implements ICommandArgumentType<MetaCommandArgument>, ISingleton {
 	protected static final MetaCommandArgumentType INSTANCE = new MetaCommandArgumentType();
 
-	protected static MetaCommandArgumentType create() {
+	public static MetaCommandArgumentType create() {
 		return INSTANCE;
 	}
 
