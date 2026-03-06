@@ -1,6 +1,7 @@
 package com.g2forge.gearbox.command.process;
 
 import com.g2forge.alexandria.command.invocation.CommandInvocation;
+import com.g2forge.alexandria.java.function.IFunction1;
 import com.g2forge.alexandria.java.function.IFunction2;
 import com.g2forge.gearbox.command.process.redirect.IRedirect;
 
@@ -9,4 +10,4 @@ import com.g2forge.gearbox.command.process.redirect.IRedirect;
  * {@link IFunction2} for that.
  */
 @FunctionalInterface
-public interface IRunner extends IFunction2<CommandInvocation<IRedirect, IRedirect>, CommandMetadata, IProcess> {}
+public interface IRunner extends IFunction1<CommandInvocation<MetaCommandArgument, IRedirect, IRedirect>, IProcess> {}

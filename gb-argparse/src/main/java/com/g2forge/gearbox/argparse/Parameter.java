@@ -10,6 +10,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.util.ListIterator;
 
+import com.g2forge.alexandria.command.invocation.CommandArgument;
 import com.g2forge.alexandria.java.core.error.UnreachableCodeError;
 import com.g2forge.alexandria.java.fluent.optional.IOptional;
 
@@ -24,7 +25,7 @@ public @interface Parameter {
 		}
 
 		@Override
-		public Object parse(IParameterInfo parameter, ListIterator<String> argumentIterator) {
+		public <A> Object parse(IParameterInfo parameter, ListIterator<CommandArgument<A>> argumentIterator) {
 			throw new UnreachableCodeError();
 		}
 	}

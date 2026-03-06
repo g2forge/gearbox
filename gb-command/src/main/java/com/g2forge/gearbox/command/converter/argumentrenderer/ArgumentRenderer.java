@@ -1,4 +1,4 @@
-package com.g2forge.gearbox.command.converter.dumb;
+package com.g2forge.gearbox.command.converter.argumentrenderer;
 
 import static java.lang.annotation.ElementType.PARAMETER;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;

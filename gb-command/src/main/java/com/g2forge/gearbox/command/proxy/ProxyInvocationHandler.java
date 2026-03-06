@@ -8,8 +8,7 @@ import com.g2forge.alexandria.command.invocation.CommandInvocation;
 import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.java.core.helpers.HCollector;
 import com.g2forge.alexandria.java.function.IFunction1;
-import com.g2forge.alexandria.java.function.IFunction2;
-import com.g2forge.gearbox.command.process.CommandMetadata;
+import com.g2forge.gearbox.command.process.MetaCommandArgument;
 import com.g2forge.gearbox.command.process.IProcess;
 import com.g2forge.gearbox.command.process.redirect.IRedirect;
 import com.g2forge.gearbox.command.proxy.method.MethodInvocation;
@@ -25,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 public class ProxyInvocationHandler implements InvocationHandler {
 	protected final IFunction1<? super MethodInvocation, ? extends ProcessInvocation<?>> transform;
 
-	protected final IFunction2<? super CommandInvocation<IRedirect, IRedirect>, ? super CommandMetadata, ? extends IProcess> runner;
+	protected final IFunction1<? super CommandInvocation<MetaCommandArgument, IRedirect, IRedirect>, ? extends IProcess> runner;
 
 	@Override
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -40,10 +39,10 @@ public class ProxyInvocationHandler implements InvocationHandler {
 		final MethodInvocation methodInvocation = new MethodInvocation(proxy, method, args == null ? null : HCollection.asList(args));
 		final ProcessInvocation<?> processInvocation = getTransform().apply(methodInvocation);
 
-		final IFunction2<? super CommandInvocation<IRedirect, IRedirect>, ? super CommandMetadata, ? extends IProcess> runner = getRunner();
+		final IFunction1<? super CommandInvocation<MetaCommandArgument, IRedirect, IRedirect>, ? extends IProcess> runner = getRunner();
 		if (runner != null) {
-			final CommandInvocation<IRedirect, IRedirect> commandInvocation = processInvocation.getCommandInvocation();
-			final IProcess process = (commandInvocation == null) ? null : runner.apply(commandInvocation, processInvocation.getCommandMetadata());
+			final CommandInvocation<MetaCommandArgument, IRedirect, IRedirect> commandInvocation = processInvocation.getCommandInvocation();
+			final IProcess process = (commandInvocation == null) ? null : runner.apply(commandInvocation);
 			return processInvocation.getResultSupplier().apply(process);
 		} else throw new ReturnProcessInvocationException(processInvocation);
 	}

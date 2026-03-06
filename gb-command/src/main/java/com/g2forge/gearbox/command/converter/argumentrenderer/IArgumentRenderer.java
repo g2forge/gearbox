@@ -1,10 +1,11 @@
-package com.g2forge.gearbox.command.converter.dumb;
+package com.g2forge.gearbox.command.converter.argumentrenderer;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 import com.g2forge.alexandria.java.core.error.RuntimeReflectionException;
 import com.g2forge.gearbox.command.converter.IMethodArgument;
+import com.g2forge.gearbox.command.process.MetaCommandArgument;
 import com.g2forge.habitat.metadata.access.ITypedMetadataAccessor;
 import com.g2forge.habitat.metadata.access.indirect.IndirectMetadata;
 import com.g2forge.habitat.metadata.type.predicate.IPredicateType;
@@ -27,5 +28,5 @@ public interface IArgumentRenderer<T> {
 		}
 	}
 
-	public List<String> render(IMethodArgument<T> argument);
+	public List<MetaCommandArgument> render(IMethodArgument<T> argument);
 }

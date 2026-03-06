@@ -7,6 +7,7 @@ import com.g2forge.alexandria.command.stdio.StandardIO;
 import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.test.HAssert;
 import com.g2forge.gearbox.command.converter.dumb.DumbCommandConverter;
+import com.g2forge.gearbox.command.process.MetaCommandArgument;
 import com.g2forge.gearbox.command.process.redirect.IRedirect;
 import com.g2forge.gearbox.command.process.redirect.InheritRedirect;
 import com.g2forge.gearbox.command.proxy.method.ITestCommandInterface;
@@ -45,8 +46,8 @@ public class TestCommandProxyFactory {
 			factory.apply(ICommand.class).method(0);
 		} catch (ReturnProcessInvocationException exception) {
 			final ProcessInvocation<?> processInvocation = exception.getProcessInvocation();
-			final CommandInvocation<IRedirect, IRedirect> commandInvocation = processInvocation.getCommandInvocation();
-			HAssert.assertEquals(HCollection.asList("method", "0"), commandInvocation.getArguments());
+			final CommandInvocation<MetaCommandArgument, IRedirect, IRedirect> commandInvocation = processInvocation.getCommandInvocation();
+			HAssert.assertEquals(HCollection.asList("method", "0"), MetaCommandArgument.toStrings(commandInvocation.getArguments()));
 			HAssert.assertNull(commandInvocation.getWorking());
 			HAssert.assertEquals(commandInvocation.getIo(), StandardIO.of(InheritRedirect.create()));
 			HAssert.assertSame(IntegerResultSupplier.create(), processInvocation.getResultSupplier());

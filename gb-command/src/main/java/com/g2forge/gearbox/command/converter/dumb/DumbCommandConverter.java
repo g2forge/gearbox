@@ -22,7 +22,6 @@ import com.g2forge.alexandria.command.stdio.StandardIO;
 import com.g2forge.alexandria.java.core.enums.EnumException;
 import com.g2forge.alexandria.java.core.error.HError;
 import com.g2forge.alexandria.java.core.error.NotYetImplementedError;
-import com.g2forge.alexandria.java.core.error.UnreachableCodeError;
 import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.java.core.marker.ISingleton;
 import com.g2forge.alexandria.java.function.IConsumer2;
@@ -35,8 +34,11 @@ import com.g2forge.gearbox.command.converter.ICommandConverterR_;
 import com.g2forge.gearbox.command.converter.IMethodArgument;
 import com.g2forge.gearbox.command.converter.MetadataEnvironmentModifier;
 import com.g2forge.gearbox.command.converter.MethodArgument;
-import com.g2forge.gearbox.command.process.CommandMetadata;
+import com.g2forge.gearbox.command.converter.argumentrenderer.ASimpleArgumentRenderer;
+import com.g2forge.gearbox.command.converter.argumentrenderer.IArgumentRenderer;
 import com.g2forge.gearbox.command.process.IProcess;
+import com.g2forge.gearbox.command.process.MetaCommandArgument;
+import com.g2forge.gearbox.command.process.MetaCommandArgumentType;
 import com.g2forge.gearbox.command.process.redirect.IRedirect;
 import com.g2forge.gearbox.command.process.redirect.InheritRedirect;
 import com.g2forge.gearbox.command.proxy.method.MethodInvocation;
@@ -64,23 +66,11 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 	@Builder(toBuilder = true)
 	@RequiredArgsConstructor
 	protected static class ArgumentContext {
-		protected final CommandInvocation.CommandInvocationBuilder<IRedirect, IRedirect> command;
-
-		protected final CommandMetadata.CommandMetadataBuilder metadata;
+		protected final CommandInvocation.CommandInvocationBuilder<MetaCommandArgument, IRedirect, IRedirect> command;
 
 		protected final ModifiedEnvironment.ModifiedEnvironmentBuilder environment;
 
 		protected final IMethodArgument<Object> argument;
-
-		public void argument(String argument, ISubject metadata) {
-			getCommand().argument(argument);
-			getMetadata().argument(metadata);
-		}
-
-		public void argument(String argument) {
-			getCommand().argument(argument);
-			getMetadata().argument(getArgument().getMetadata());
-		}
 	}
 
 	@Data
@@ -117,7 +107,7 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 			if (metadata.isPresent(EnvPath.class)) throw new IllegalArgumentException("We do not support setting the PATH environment variable to a string array!");
 
 			for (String value : v) {
-				c.argument(value);
+				c.getCommand().argument(new MetaCommandArgument(value, metadata));
 			}
 		});
 		builder.add(ArgumentContext.class, String.class, (c, v) -> {
@@ -151,7 +141,7 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 			final Flag flag = metadata.get(Flag.class);
 			if (flag != null) {
 				if (metadata.isPresent(Named.class)) throw new IllegalArgumentException("Flags cannot also be named!");
-				if (v) c.argument(flag.value());
+				if (v) c.getCommand().argument(new MetaCommandArgument(flag.value(), metadata));
 				return;
 			} else HDumbCommandConverter.set(c, c.getArgument(), Boolean.toString(v));
 		};
@@ -181,7 +171,7 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 				if (subject.isPresent(Environment.class)) return;
 				if (subject.isPresent(EnvPath.class)) return;
 				HDumbCommandConverter.set(c, c.getArgument(), null);
-			} else throw new IllegalArgumentException(String.format("Parameter %1$s cannot be converted to a command line argument because the type of \"%2$s\" (%3$s) is unknown.  Please consider implementing %4$s.", c.getArgument().getName(), v, v.getClass(), IArgumentRenderer.class.getSimpleName()));
+			} else throw new IllegalArgumentException(String.format("Parameter %1$s cannot be converted to a command line argument because the type of \"%2$s\" (%3$s) is unknown.  Please consider implementing %4$s.", c.getArgument().getName(), v, v.getClass(), ASimpleArgumentRenderer.class.getSimpleName()));
 		});
 	}).build();
 
@@ -225,29 +215,25 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 		final ProcessInvocationBuilder<T> processInvocationBuilder = processInvocation.toBuilder();
 		final ITypeRef<T> returnTypeRef = computeReturnTypeRef(methodInvocation.getMethod());
 
-		final CommandInvocation.CommandInvocationBuilder<IRedirect, IRedirect> commandInvocationBuilder;
-		final CommandMetadata.CommandMetadataBuilder commandMetadataBuilder = CommandMetadata.builder();
+		final CommandInvocation.CommandInvocationBuilder<MetaCommandArgument, IRedirect, IRedirect> commandInvocationBuilder;
 		final ModifiedEnvironment.ModifiedEnvironmentBuilder environmentBuilder = ModifiedEnvironment.builder();
 		if (processInvocation.getCommandInvocation() != null) {
 			commandInvocationBuilder = processInvocation.getCommandInvocation().toBuilder();
 			environmentBuilder.base(processInvocation.getCommandInvocation().getEnvironment());
 		} else {
-			commandInvocationBuilder = CommandInvocation.<IRedirect, IRedirect>builder().format(ICommandFormat.getDefault());
+			commandInvocationBuilder = CommandInvocation.<MetaCommandArgument, IRedirect, IRedirect>builder().format(ICommandFormat.getDefault()).type(MetaCommandArgumentType.create());
 			environmentBuilder.base(SystemEnvironment.create());
 		}
 
 		final ISubject methodSubject = getMetadata().of(methodInvocation.getMethod());
-		commandMetadataBuilder.command(methodSubject);
 
 		// Compute the command name & initial arguments
-		commandInvocationBuilder.clearArguments();
 		final Command command = methodSubject.get(Command.class);
 		final List<String> commandArguments;
 		if (command != null) commandArguments = HCollection.asList(command.value());
 		else commandArguments = HCollection.asList(methodInvocation.getMethod().getName());
-		commandArguments.forEach(commandInvocationBuilder::argument);
-		for (int i = 0; i < commandArguments.size(); i++)
-			commandMetadataBuilder.argument(methodSubject);
+		commandInvocationBuilder.clearArguments();
+		commandArguments.forEach(a -> commandInvocationBuilder.argument(new MetaCommandArgument(a, methodSubject)));
 
 		{
 			final ConstantEnvironment constantEnvironment = methodSubject.get(ConstantEnvironment.class);
@@ -289,34 +275,22 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 				if (argumentRenderer != null) {
 					if (methodArgument.getMetadata().isPresent(Environment.class)) throw new NotYetImplementedError("Parameters with custom argument renderers cannot be used as environment variables (yet)!");
 					@SuppressWarnings({ "unchecked", "rawtypes" })
-					final List<String> arguments = argumentRenderer.render((IMethodArgument) methodArgument);
+					final List<MetaCommandArgument> arguments = argumentRenderer.render((IMethodArgument) methodArgument);
 					commandInvocationBuilder.arguments(arguments);
-					for (int j = 0; j < arguments.size(); j++) {
-						commandMetadataBuilder.argument(methodArgument.getMetadata());
-					}
 				} else {
-					final ArgumentContext argumentContext = new ArgumentContext(commandInvocationBuilder, commandMetadataBuilder, environmentBuilder, methodArgument);
+					final ArgumentContext argumentContext = new ArgumentContext(commandInvocationBuilder, environmentBuilder, methodArgument);
 					ARGUMENT_BUILDER.accept(argumentContext, value);
 				}
 
 				final Constant constant = methodArgument.getMetadata().get(Constant.class);
-				if ((constant != null) && (constant.value() != null)) {
-					commandInvocationBuilder.arguments(HCollection.asList(constant.value()));
-					commandMetadataBuilder.argument(methodArgument.getMetadata());
-				}
+				if ((constant != null) && (constant.value() != null)) Stream.of(constant.value()).forEach(a -> commandInvocationBuilder.argument(new MetaCommandArgument(a, methodArgument.getMetadata())));
 			} catch (Throwable throwable) {
 				throwables.add(throwable);
 			}
 		}
 		if (!throwables.isEmpty()) throw HError.withSuppressed(new RuntimeException(String.format("Failed to convert parameters to arguments for %1$s", commandArguments.stream().collect(Collectors.joining(" ")))), throwables);
 
-		{
-			final CommandInvocation<IRedirect, IRedirect> commandInvocation = commandInvocationBuilder.environment(environmentBuilder.build().simplify()).build();
-			processInvocationBuilder.commandInvocation(commandInvocation);
-			final CommandMetadata commandMetadata = commandMetadataBuilder.build();
-			processInvocationBuilder.commandMetadata(commandMetadata);
-			if (commandInvocation.getArguments().size() != commandMetadata.getArguments().size()) throw new UnreachableCodeError(String.format("The number of arguments (%1$s) does not match the number of metadata subjects (%2$d), there is an error in the implementation of %3$s: %4$s vs %5$s", commandInvocation.getArguments().size(), commandMetadata.getArguments().size(), getClass().getSimpleName(), commandInvocation.getArguments(), commandMetadata.getArguments()));
-		}
+		processInvocationBuilder.commandInvocation(commandInvocationBuilder.environment(environmentBuilder.build().simplify()).build());
 		return processInvocationBuilder.build();
 	}
 }

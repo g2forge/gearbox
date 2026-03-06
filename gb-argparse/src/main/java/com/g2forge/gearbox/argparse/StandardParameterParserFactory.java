@@ -7,8 +7,9 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.stream.Stream;
 
-import com.g2forge.alexandria.java.core.helpers.HCollection;
+import com.g2forge.alexandria.command.invocation.CommandArgument;
 import com.g2forge.alexandria.java.core.marker.ISingleton;
 import com.g2forge.alexandria.java.fluent.optional.IOptional;
 import com.g2forge.alexandria.java.fluent.optional.NullableOptional;
@@ -33,11 +34,12 @@ public class StandardParameterParserFactory implements IParameterParserFactory, 
 		}
 
 		@Override
-		public Object parse(IParameterInfo parameter, ListIterator<String> argumentIterator) {
-			final List<String> arguments = HCollection.asList(argumentIterator.next().split(",+"));
+		public <A> Object parse(IParameterInfo parameter, ListIterator<CommandArgument<A>> argumentIterator) {
+			final CommandArgument<A> argument = argumentIterator.next();
+			final List<CommandArgument<A>> arguments = Stream.of(argument.getString().split(",+")).map(argument::withValue).toList();
 			final IParameterInfo componentParameter = new IParameterInfo.ParameterInfo(parameter).toBuilder().type(getComponentType()).build();
 			final List<Object> values = new ArrayList<>();
-			for (final ListIterator<String> iterator = arguments.listIterator(); iterator.hasNext();) {
+			for (final ListIterator<CommandArgument<A>> iterator = arguments.listIterator(); iterator.hasNext();) {
 				values.add(getComponentParser().parse(componentParameter, iterator));
 			}
 			return values.toArray(size -> (Object[]) Array.newInstance(componentType, size));

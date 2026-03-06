@@ -8,6 +8,7 @@ import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.gearbox.command.converter.IMethodArgument;
 import com.g2forge.gearbox.command.converter.MetadataEnvironmentModifier;
 import com.g2forge.gearbox.command.converter.dumb.DumbCommandConverter.ArgumentContext;
+import com.g2forge.gearbox.command.process.MetaCommandArgument;
 import com.g2forge.habitat.metadata.value.subject.ISubject;
 
 public class HDumbCommandConverter {
@@ -33,9 +34,9 @@ public class HDumbCommandConverter {
 				else throw new NullPointerException("Named argument values cannot be null (though they can be the string spelling \"null\"), please check the value for \"" + named.value() + "\"!");
 			}
 			if (!named.joined()) {
-				argumentContext.argument(named.value(), null);
-				argumentContext.argument(value);
-			} else argumentContext.argument(named.value() + value);
+				argumentContext.getCommand().argument(new MetaCommandArgument(named.value(), null));
+				argumentContext.getCommand().argument(new MetaCommandArgument(value, argument.getMetadata()));
+			} else argumentContext.getCommand().argument(new MetaCommandArgument(named.value() + value, argument.getMetadata()));
 
 			return;
 		}
@@ -52,6 +53,6 @@ public class HDumbCommandConverter {
 		}
 
 		if (value == null) throw new NullPointerException("Positional argument values cannot be null (though they can be the string spelling \"null\")!");
-		argumentContext.argument(value);
+		argumentContext.getCommand().argument(new MetaCommandArgument(value, argument.getMetadata()));
 	}
 }

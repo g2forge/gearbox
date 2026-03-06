@@ -1,8 +1,8 @@
 package com.g2forge.gearbox.argparse;
 
-import java.nio.file.Paths;
 import java.util.ListIterator;
 
+import com.g2forge.alexandria.command.invocation.CommandArgument;
 import com.g2forge.alexandria.java.core.enums.HEnum;
 import com.g2forge.alexandria.java.fluent.optional.IOptional;
 import com.g2forge.alexandria.java.fluent.optional.NullableOptional;
@@ -16,9 +16,9 @@ public enum BasicParameterParser implements IParameterParser {
 		}
 
 		@Override
-		public Object parse(IParameterInfo parameter, ListIterator<String> argumentIterator) {
+		public <A> Object parse(IParameterInfo parameter, ListIterator<CommandArgument<A>> argumentIterator) {
 			if (parameter.getSubject().bind(Parameter.class).isPresent()) return true;
-			else return Boolean.valueOf(argumentIterator.next());
+			else return Boolean.valueOf(argumentIterator.next().getString());
 		}
 	},
 	PATH {
@@ -29,8 +29,8 @@ public enum BasicParameterParser implements IParameterParser {
 		}
 
 		@Override
-		public Object parse(IParameterInfo parameter, ListIterator<String> argumentIterator) {
-			return Paths.get(argumentIterator.next());
+		public <A> Object parse(IParameterInfo parameter, ListIterator<CommandArgument<A>> argumentIterator) {
+			return argumentIterator.next().getPath();
 		}
 	},
 	STRING {
@@ -41,8 +41,8 @@ public enum BasicParameterParser implements IParameterParser {
 		}
 
 		@Override
-		public Object parse(IParameterInfo parameter, ListIterator<String> argumentIterator) {
-			return argumentIterator.next();
+		public <A> Object parse(IParameterInfo parameter, ListIterator<CommandArgument<A>> argumentIterator) {
+			return argumentIterator.next().getString();
 		}
 	},
 	ENUM {
@@ -54,10 +54,10 @@ public enum BasicParameterParser implements IParameterParser {
 
 		@SuppressWarnings("unchecked")
 		@Override
-		public Object parse(IParameterInfo parameter, ListIterator<String> argumentIterator) {
+		public <A> Object parse(IParameterInfo parameter, ListIterator<CommandArgument<A>> argumentIterator) {
 			@SuppressWarnings("rawtypes")
 			final Class<? extends Enum> cast = (Class<? extends Enum>) parameter.getType();
-			return HEnum.valueOfInsensitive(cast, argumentIterator.next());
+			return HEnum.valueOfInsensitive(cast, argumentIterator.next().getString());
 		}
 	};
 }

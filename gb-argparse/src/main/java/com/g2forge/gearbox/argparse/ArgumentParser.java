@@ -12,10 +12,11 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
+import com.g2forge.alexandria.command.invocation.CommandArgument;
+import com.g2forge.alexandria.command.invocation.CommandInvocation;
 import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.java.core.helpers.HStream;
 import com.g2forge.alexandria.java.fluent.optional.IOptional;
-import com.g2forge.alexandria.java.function.IFunction1;
 import com.g2forge.alexandria.java.text.HString;
 import com.g2forge.habitat.metadata.Metadata;
 import com.g2forge.habitat.metadata.value.predicate.IPredicate;
@@ -29,7 +30,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public class ArgumentParser<T> {
+public class ArgumentParser<T> implements IArgumentParser<T> {
 	protected static class ArgumentsParser implements IArgumentsParser {
 		protected final List<? extends IParameterInfo> parameters;
 
@@ -73,18 +74,19 @@ public class ArgumentParser<T> {
 			this(StandardParameterParserFactory.create(), parameters);
 		}
 
-		public Object[] apply(List<String> arguments) {
+		@Override
+		public <A> Object[] parse(CommandInvocation<A, ?, ?> invocation) {
 			final Object[] parsed = new Object[parameters.size()];
 			final boolean[] set = new boolean[parameters.size()];
 			int p = 0;
 			// Parse the arguments
-			for (final ListIterator<String> argumentIterator = arguments.listIterator(); argumentIterator.hasNext();) {
+			for (final ListIterator<CommandArgument<A>> argumentIterator = invocation.getArgumentsAsArguments().listIterator(); argumentIterator.hasNext();) {
 				final int argumentIndex = argumentIterator.nextIndex();
-				final String argument = argumentIterator.next();
+				final CommandArgument<A> argument = argumentIterator.next();
 				try {
 					boolean foundNamed = false;
 					for (Map.Entry<String, ParameterParserInfo> entry : named.entrySet()) {
-						if (argument.startsWith(entry.getKey())) {
+						if (argument.getString().startsWith(entry.getKey())) {
 							final ParameterParserInfo info = entry.getValue();
 							final int parameterIndex = info.getIndex();
 							parsed[parameterIndex] = info.getParser().parse(parameters.get(parameterIndex), argumentIterator);
@@ -171,23 +173,23 @@ public class ArgumentParser<T> {
 	public enum HelpArguments {
 		STANDARD {
 			@Override
-			public boolean isHelp(IArgumentsParser parser, List<String> arguments) {
-				if (parser.isArgumentsRequired() && arguments.isEmpty()) return true;
-				if (arguments.size() == 1) return STANDARD_HELP_ARGUMENTS.contains(arguments.get(0));
+			public boolean isHelp(IArgumentsParser parser, CommandInvocation<?, ?, ?> invocation) {
+				if (parser.isArgumentsRequired() && invocation.getArguments().isEmpty()) return true;
+				if (invocation.getArguments().size() == 1) return STANDARD_HELP_ARGUMENTS.contains(invocation.getArgumentsAsArguments().get(0).getString());
 				return false;
 			}
 		},
 		EMPTY {
 			@Override
-			public boolean isHelp(IArgumentsParser parser, List<String> arguments) {
-				return arguments.isEmpty();
+			public boolean isHelp(IArgumentsParser parser, CommandInvocation<?, ?, ?> invocation) {
+				return invocation.getArguments().isEmpty();
 			}
 		};
 
-		public abstract boolean isHelp(IArgumentsParser parser, List<String> arguments);
+		public abstract boolean isHelp(IArgumentsParser parser, CommandInvocation<?, ?, ?> invocation);
 	}
 
-	protected interface IArgumentsParser extends IFunction1<List<String>, Object[]> {
+	public interface IArgumentsParser extends IArgumentParser<Object[]> {
 		public String generateHelp();
 
 		public boolean isArgumentsRequired();
@@ -204,8 +206,16 @@ public class ArgumentParser<T> {
 
 	protected static final Set<String> STANDARD_HELP_ARGUMENTS = HCollection.asSet("/h", "/?", "-h", "-help", "--help");
 
+	public static <T> T parse(Class<T> type, String... arguments) {
+		return new ArgumentParser<>(type).parse(arguments);
+	}
+
 	public static <T> T parse(Class<T> type, List<String> arguments) {
 		return new ArgumentParser<>(type).parse(arguments);
+	}
+
+	public static <A, T> T parse(Class<T> type, CommandInvocation<A, ?, ?> invocation) {
+		return new ArgumentParser<>(type).parse(invocation);
 	}
 
 	protected final Class<T> type;
@@ -264,13 +274,13 @@ public class ArgumentParser<T> {
 		return constructor;
 	}
 
-	public T parse(List<String> arguments) {
+	public <A> T parse(CommandInvocation<A, ?, ?> invocation) {
 		final IArgumentsParser argumentsParser = getArgumentsParser();
 
-		final boolean help = getHelp().stream().filter(helpArguments -> helpArguments.isHelp(argumentsParser, arguments)).findAny().isPresent();
+		final boolean help = getHelp().stream().filter(helpArguments -> helpArguments.isHelp(argumentsParser, invocation)).findAny().isPresent();
 		if (help) throw new ArgumentHelpException("\n\n" + argumentsParser.generateHelp() + "\n");
 
-		final Object[] parsed = argumentsParser.apply(arguments);
+		final Object[] parsed = argumentsParser.parse(invocation);
 		return create(parsed);
 	}
 }

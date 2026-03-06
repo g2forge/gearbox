@@ -8,7 +8,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 
+import com.g2forge.alexandria.command.invocation.CommandArgument;
 import com.g2forge.alexandria.command.invocation.CommandInvocation;
+import com.g2forge.alexandria.command.invocation.environment.EnvironmentHandler;
 import com.g2forge.alexandria.command.invocation.environment.IEnvironment;
 import com.g2forge.alexandria.command.invocation.environment.MapEnvironment;
 import com.g2forge.alexandria.command.invocation.environment.SystemEnvironment;
@@ -19,12 +21,12 @@ import com.g2forge.alexandria.java.core.error.NotYetImplementedError;
 import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.java.core.helpers.HMap;
 import com.g2forge.alexandria.java.function.IConsumer1;
-import com.g2forge.alexandria.java.function.IFunction2;
+import com.g2forge.alexandria.java.function.IFunction1;
 import com.g2forge.alexandria.java.text.HString;
 import com.g2forge.gearbox.command.converter.MetadataEnvironmentModifier;
-import com.g2forge.gearbox.command.process.CommandMetadata;
 import com.g2forge.gearbox.command.process.IProcess;
 import com.g2forge.gearbox.command.process.IRunner;
+import com.g2forge.gearbox.command.process.MetaCommandArgument;
 import com.g2forge.gearbox.command.process.redirect.IRedirect;
 import com.g2forge.habitat.metadata.value.subject.ISubject;
 
@@ -103,6 +105,7 @@ public class LoggingRunner implements IRunner {
 		return current;
 	}
 
+	@EnvironmentHandler
 	protected static String toString(IEnvironment environment, String prefix, Map<String, Log> logMap) {
 		final StringBuilder retVal = new StringBuilder();
 		if (environment instanceof MapEnvironment) {
@@ -153,10 +156,8 @@ public class LoggingRunner implements IRunner {
 				final Entry<String, String> entry = HCollection.getOne(modifierMap.entrySet());
 				retVal.append(prefix).append("modified ").append(base.strip()).append(" with ").append(entry.getKey()).append(" <- ").append(entry.getValue());
 			}
-		} else if (environment instanceof SystemEnvironment) {
-			retVal.append(prefix).append("system environment\n");
-		} else throw new NotYetImplementedError("Environments of type " + environment.getClass() + " are not yet supported!");
-
+		} else if (environment instanceof SystemEnvironment) retVal.append(prefix).append("system environment\n");
+		else throw new NotYetImplementedError("Environments of type " + environment.getClass() + " are not yet supported!");
 		return retVal.toString().stripTrailing();
 	}
 
@@ -179,17 +180,16 @@ public class LoggingRunner implements IRunner {
 		return modifier.toString();
 	}
 
-	protected static String toString(List<String> arguments, List<ISubject> metadata) {
+	protected static String toString(List<? extends CommandArgument<? extends MetaCommandArgument>> arguments) {
 		Objects.requireNonNull(arguments);
-		if ((metadata != null) && (arguments.size() != metadata.size())) throw new IllegalArgumentException(String.format("Number of arguments (%1$d) does not match number of metadata (%2$d)", arguments.size(), metadata.size()));
 		final StringBuilder retVal = new StringBuilder();
 		for (int i = 0; i < arguments.size(); i++) {
 			if (i > 0) retVal.append(' ');
 
-			final Log log = (metadata != null) ? getLogForSubject(metadata.get(i)) : DEFAULT_LOG;
+			final Log log = getLogForSubject(arguments.get(i).getValue().getMeta());
 			switch (log.value()) {
 				case NORMAL:
-					retVal.append(arguments.get(i));
+					retVal.append(arguments.get(i).getString());
 					break;
 				case REPLACE:
 					retVal.append(log.replacement());
@@ -205,12 +205,12 @@ public class LoggingRunner implements IRunner {
 
 	protected final IConsumer1<String> log;
 
-	protected final IFunction2<CommandInvocation<IRedirect, IRedirect>, CommandMetadata, IProcess> runner;
+	protected final IFunction1<CommandInvocation<MetaCommandArgument, IRedirect, IRedirect>, IProcess> runner;
 
 	@Override
-	public IProcess apply(CommandInvocation<IRedirect, IRedirect> commandInvocation, CommandMetadata commandMetadata) {
+	public IProcess apply(CommandInvocation<MetaCommandArgument, IRedirect, IRedirect> commandInvocation) {
 		final IConsumer1<String> log = getLog();
-		log.accept("Running: " + toString(commandInvocation.getArguments(), commandMetadata.getArguments()));
+		log.accept("Running: " + toString(commandInvocation.getArgumentsAsArguments()));
 		if (commandInvocation.getWorking() != null) log.accept("\tin " + commandInvocation.getWorking());
 		final IEnvironment environment = commandInvocation.getEnvironment();
 		if ((environment != null) && !(commandInvocation.getEnvironment() instanceof SystemEnvironment)) {
@@ -222,6 +222,6 @@ public class LoggingRunner implements IRunner {
 				}
 			} else log.accept("\tenvironment: " + HString.stripPrefix(string, "\t\t"));;
 		}
-		return getRunner().apply(commandInvocation, commandMetadata);
+		return getRunner().apply(commandInvocation);
 	}
 }

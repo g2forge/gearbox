@@ -1,6 +1,7 @@
 package com.g2forge.gearbox.command.proxy.transformers;
 
 import com.g2forge.alexandria.command.invocation.CommandInvocation;
+import com.g2forge.gearbox.command.process.MetaCommandArgument;
 import com.g2forge.gearbox.command.process.redirect.IRedirect;
 import com.g2forge.gearbox.command.proxy.method.MethodInvocation;
 import com.g2forge.gearbox.command.proxy.process.ProcessInvocation;
@@ -9,12 +10,12 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class CustomInvocationTransformer implements IInvocationTransformer {
-	protected final CommandInvocation<IRedirect, IRedirect> commandInvocation;
+	protected final CommandInvocation<MetaCommandArgument, IRedirect, IRedirect> commandInvocation;
 
 	protected final Object retVal;
 
 	@Override
 	public ProcessInvocation<?> apply(MethodInvocation methodInvocation) {
-		return new ProcessInvocation<>(commandInvocation, null, process -> retVal);
+		return new ProcessInvocation<>(commandInvocation, process -> retVal);
 	}
 }

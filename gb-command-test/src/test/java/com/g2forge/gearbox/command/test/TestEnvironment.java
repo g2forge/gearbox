@@ -9,15 +9,15 @@ import org.junit.Test;
 import com.g2forge.alexandria.command.invocation.CommandInvocation;
 import com.g2forge.alexandria.command.invocation.runner.ICommandRunner;
 import com.g2forge.alexandria.java.core.enums.EnumException;
-import com.g2forge.alexandria.java.function.IFunction2;
+import com.g2forge.alexandria.java.function.IFunction1;
 import com.g2forge.alexandria.java.platform.HPlatform;
 import com.g2forge.alexandria.java.platform.PlatformCategory;
 import com.g2forge.alexandria.test.HAssert;
 import com.g2forge.gearbox.command.converter.ICommandConverterR_;
 import com.g2forge.gearbox.command.converter.dumb.DumbCommandConverter;
 import com.g2forge.gearbox.command.converter.dumb.EnvPath;
-import com.g2forge.gearbox.command.process.CommandMetadata;
 import com.g2forge.gearbox.command.process.IProcess;
+import com.g2forge.gearbox.command.process.MetaCommandArgument;
 import com.g2forge.gearbox.command.process.ProcessBuilderRunner;
 import com.g2forge.gearbox.command.process.redirect.IRedirect;
 
@@ -36,7 +36,7 @@ public class TestEnvironment extends ATestCommand {
 	}
 
 	@Override
-	protected IFunction2<CommandInvocation<IRedirect, IRedirect>, CommandMetadata, IProcess> createRunner() {
+	protected IFunction1<CommandInvocation<MetaCommandArgument, IRedirect, IRedirect>, IProcess> createRunner() {
 		return new ProcessBuilderRunner(ICommandRunner.create(null));
 	}
 
