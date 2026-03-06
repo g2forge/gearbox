@@ -43,11 +43,11 @@ public class ProcessBuilderRunner implements IRunner {
 	}
 
 	@Override
-	public IProcess apply(CommandInvocation<IRedirect, IRedirect> commandInvocation, CommandMetadata commandMetadata) {
+	public IProcess apply(CommandInvocation<MetaCommandArgument, IRedirect, IRedirect> commandInvocation) {
 		// Wrap the command
-		final CommandInvocation<IRedirect, IRedirect> wrapped = getCommandRunner().wrap(commandInvocation);
+		final CommandInvocation<MetaCommandArgument, IRedirect, IRedirect> wrapped = getCommandRunner().wrap(commandInvocation);
 		// Translate the redirects to process builder format
-		final CommandInvocation<ProcessBuilder.Redirect, ProcessBuilder.Redirect> translated = translateRedirects(wrapped);
+		final CommandInvocation<MetaCommandArgument, ProcessBuilder.Redirect, ProcessBuilder.Redirect> translated = translateRedirects(wrapped);
 		// Create the process builder
 		final ProcessBuilder builder = HProcess.createProcessBuilder(translated);
 
@@ -119,11 +119,12 @@ public class ProcessBuilderRunner implements IRunner {
 		};
 	}
 
-	protected CommandInvocation<ProcessBuilder.Redirect, ProcessBuilder.Redirect> translateRedirects(final CommandInvocation<IRedirect, IRedirect> wrapped) {
-		final CommandInvocation<ProcessBuilder.Redirect, ProcessBuilder.Redirect> translated;
+	protected CommandInvocation<MetaCommandArgument, ProcessBuilder.Redirect, ProcessBuilder.Redirect> translateRedirects(final CommandInvocation<MetaCommandArgument, IRedirect, IRedirect> wrapped) {
+		final CommandInvocation<MetaCommandArgument, ProcessBuilder.Redirect, ProcessBuilder.Redirect> translated;
 		{ // Translate the redirects
-			final CommandInvocation.CommandInvocationBuilder<ProcessBuilder.Redirect, ProcessBuilder.Redirect> invocationBuilder = CommandInvocation.builder();
+			final CommandInvocation.CommandInvocationBuilder<MetaCommandArgument, ProcessBuilder.Redirect, ProcessBuilder.Redirect> invocationBuilder = CommandInvocation.builder();
 			invocationBuilder.format(wrapped.getFormat());
+			invocationBuilder.type(wrapped.getType());
 			invocationBuilder.working(wrapped.getWorking());
 			invocationBuilder.arguments(wrapped.getArguments());
 			invocationBuilder.environment(wrapped.getEnvironment());

@@ -8,28 +8,28 @@ import java.util.stream.Stream;
 
 import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.gearbox.command.converter.IMethodArgument;
-import com.g2forge.gearbox.command.converter.dumb.ArgumentRenderer;
+import com.g2forge.gearbox.command.converter.argumentrenderer.ArgumentRenderer;
+import com.g2forge.gearbox.command.converter.argumentrenderer.ASimpleArgumentRenderer;
 import com.g2forge.gearbox.command.converter.dumb.Command;
 import com.g2forge.gearbox.command.converter.dumb.Flag;
 import com.g2forge.gearbox.command.converter.dumb.HDumbCommandConverter;
-import com.g2forge.gearbox.command.converter.dumb.IArgumentRenderer;
 import com.g2forge.gearbox.command.converter.dumb.Named;
 import com.g2forge.gearbox.command.converter.dumb.Working;
 import com.g2forge.gearbox.command.process.IProcess;
 import com.g2forge.gearbox.command.proxy.method.ICommandInterface;
 
 public interface IMaven extends ICommandInterface {
-	public static class MavenCoordinatesArgumentRenderer implements IArgumentRenderer<MavenCoordinates> {
+	public static class MavenCoordinatesArgumentRenderer extends ASimpleArgumentRenderer<MavenCoordinates> {
 		@Override
-		public List<String> render(IMethodArgument<MavenCoordinates> argument) {
+		protected List<String> renderSimple(IMethodArgument<MavenCoordinates> argument) {
 			final String coordinates = argument.get().toString();
 			return HDumbCommandConverter.computeString(argument, coordinates);
 		}
 	}
 
-	public static class MavenProfilesArgumentRenderer implements IArgumentRenderer<List<String>> {
+	public static class MavenProfilesArgumentRenderer extends ASimpleArgumentRenderer<List<String>> {
 		@Override
-		public List<String> render(IMethodArgument<List<String>> argument) {
+		protected List<String> renderSimple(IMethodArgument<List<String>> argument) {
 			final List<String> profiles = argument.get();
 			if (profiles == null || profiles.isEmpty()) return HCollection.emptyList();
 			return HCollection.asList("-P" + profiles.stream().collect(Collectors.joining(",")));

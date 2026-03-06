@@ -7,7 +7,7 @@ import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.java.function.IFunction1;
 import com.g2forge.alexandria.test.HAssert;
 import com.g2forge.gearbox.command.converter.ICommandConverterR_;
-import com.g2forge.gearbox.command.process.CommandMetadata;
+import com.g2forge.gearbox.command.process.MetaCommandArgument;
 import com.g2forge.gearbox.command.process.IProcess;
 import com.g2forge.gearbox.command.process.IRunner;
 import com.g2forge.gearbox.command.process.redirect.IRedirect;
@@ -23,12 +23,12 @@ public class CommandTester<Command> {
 	protected static class CommandException extends Error {
 		private static final long serialVersionUID = -8389195474206822767L;
 
-		protected final CommandInvocation<IRedirect, IRedirect> commandInvocation;
+		protected final CommandInvocation<MetaCommandArgument, IRedirect, IRedirect> commandInvocation;
 	}
 
 	protected class ThrowingRunner implements IRunner {
 		@Override
-		public IProcess apply(CommandInvocation<IRedirect, IRedirect> commandInvocation, CommandMetadata commandMetadata) {
+		public IProcess apply(CommandInvocation<MetaCommandArgument, IRedirect, IRedirect> commandInvocation) {
 			throw new CommandException(commandInvocation);
 		}
 	}

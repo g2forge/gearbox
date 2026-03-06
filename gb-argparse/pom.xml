@@ -15,6 +15,11 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>com.g2forge.alexandria</groupId>
+			<artifactId>ax-command</artifactId>
+			<version>${alexandria.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>com.g2forge.habitat</groupId>
 			<artifactId>ha-metadata</artifactId>
 			<version>${habitat.version}</version>

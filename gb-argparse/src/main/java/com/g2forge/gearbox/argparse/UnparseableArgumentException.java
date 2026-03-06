@@ -1,15 +1,20 @@
 package com.g2forge.gearbox.argparse;
 
-public class UnparseableArgumentException extends IllegalArgumentException {
-	public UnparseableArgumentException(int index, String argument, Throwable cause) {
-		super(String.format("Failed to parse argument #%1$d (\"%2$s\")!", index, argument), cause);
-		this.index = index;
-		this.argument = argument;
-	}
+import com.g2forge.alexandria.command.invocation.CommandArgument;
 
+import lombok.Getter;
+
+@Getter
+public class UnparseableArgumentException extends IllegalArgumentException {
 	private static final long serialVersionUID = 4965745309281531552L;
 
 	protected final int index;
 
-	protected final String argument;
+	protected final CommandArgument<?> argument;
+
+	public UnparseableArgumentException(int index, CommandArgument<?> argument, Throwable cause) {
+		super(String.format("Failed to parse argument #%1$d (\"%2$s\")!", index, argument.getString()), cause);
+		this.index = index;
+		this.argument = argument;
+	}
 }

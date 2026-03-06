@@ -2,6 +2,7 @@ package com.g2forge.gearbox.argparse;
 
 import java.util.ListIterator;
 
+import com.g2forge.alexandria.command.invocation.CommandArgument;
 import com.g2forge.alexandria.java.fluent.optional.IOptional;
 
 public interface IParameterParser {
@@ -20,5 +21,5 @@ public interface IParameterParser {
 	 * @param argumentIterator The command line argument iterator.
 	 * @return The parsed parameter value
 	 */
-	public Object parse(IParameterInfo parameter, ListIterator<String> argumentIterator);
+	public <A> Object parse(IParameterInfo parameter, ListIterator<CommandArgument<A>> argumentIterator);
 }
