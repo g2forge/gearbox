@@ -54,10 +54,19 @@ public abstract class AEnvironmentArgumentRenderer implements IArgumentRenderer<
 			for (Map.Entry<String, IEnvironmentModifier> entry : modifiedEnvironment.getModifiers().entrySet()) {
 				final String variable = entry.getKey();
 
-				final MetaCommandArgument base = retVal.get(variable);
-				final String modified = entry.getValue().modify(base.getValue());
-				if (modified == null) retVal.remove(variable);
-				else if (!Objects.equals(base.getValue(), modified)) retVal.put(variable, base.toBuilder().value(modified).build());
+				final MetaCommandArgument baseMCA = retVal.get(variable);
+				final String baseValue = baseMCA == null ? null : baseMCA.getValue();
+
+				final String modifiedValue = entry.getValue().modify(baseValue);
+				if (modifiedValue == null) retVal.remove(variable);
+				else {
+					final ISubject modifiedSubject;
+					if (baseMCA != null) modifiedSubject = baseMCA.getMeta();
+					else modifiedSubject = null;
+
+					final MetaCommandArgument modifiedMCA = new MetaCommandArgument(modifiedValue, modifiedSubject);
+					if (!Objects.equals(baseMCA, modifiedMCA)) retVal.put(variable, modifiedMCA);
+				}
 			}
 			return HMap.unmodifiableMap(retVal);
 		}
@@ -81,7 +90,11 @@ public abstract class AEnvironmentArgumentRenderer implements IArgumentRenderer<
 
 	@Override
 	public List<MetaCommandArgument> render(IMethodArgument<Map<? extends String, ? extends String>> argument) {
-		return toArguments(argument.get().entrySet().stream().map(e -> new Tuple2G_O<>(e.getKey(), new MetaCommandArgument(e.getValue(), argument.getMetadata()))).collect(HCollector.toMapTuples()));
+		final Map<? extends String, ? extends String> stringMap = argument.get();
+		final Map<? extends String, MetaCommandArgument> mcaMap;
+		if (stringMap == null) mcaMap = null;
+		else mcaMap = stringMap.entrySet().stream().map(e -> new Tuple2G_O<>(e.getKey(), new MetaCommandArgument(e.getValue(), argument.getMetadata()))).collect(HCollector.toMapTuples());
+		return toArguments(mcaMap);
 	}
 
 	public List<MetaCommandArgument> toArguments(final Map<? extends String, ? extends MetaCommandArgument> environment) {
