@@ -6,11 +6,13 @@ import java.lang.reflect.Type;
 import com.g2forge.habitat.metadata.Metadata;
 import com.g2forge.habitat.metadata.value.subject.ISubject;
 
-import lombok.AllArgsConstructor;
-import lombok.ToString;
+import lombok.Builder;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
-@AllArgsConstructor
-@ToString
+@Data
+@Builder(toBuilder = true)
+@RequiredArgsConstructor
 public class MethodArgument implements IMethodArgument<Object> {
 	protected final Object value;
 
@@ -18,27 +20,27 @@ public class MethodArgument implements IMethodArgument<Object> {
 
 	@Override
 	public Object get() {
-		return value;
+		return getValue();
 	}
 
 	@Override
 	public Type getGenericType() {
-		return parameter.getParameterizedType();
+		return getParameter().getParameterizedType();
 	}
 
 	@Override
 	public ISubject getMetadata() {
-		return Metadata.getStandard().of(parameter, value);
+		return Metadata.getStandard().of(getParameter(), getValue());
 	}
 
 	@Override
 	public String getName() {
-		return parameter.getName();
+		return getParameter().getName();
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
 	public Class<Object> getType() {
-		return (Class<Object>) parameter.getType();
+		return (Class<Object>) getParameter().getType();
 	}
 }
