@@ -20,6 +20,7 @@ import com.g2forge.alexandria.java.core.helpers.HCollector;
 import com.g2forge.alexandria.java.core.helpers.HMap;
 import com.g2forge.alexandria.java.function.IFunction3;
 import com.g2forge.gearbox.command.converter.IMethodArgument;
+import com.g2forge.gearbox.command.converter.MetadataEnvironmentModifier;
 import com.g2forge.gearbox.command.converter.argumentrenderer.IArgumentRenderer;
 import com.g2forge.gearbox.command.process.MetaCommandArgument;
 import com.g2forge.habitat.metadata.value.subject.ISubject;
@@ -61,7 +62,8 @@ public abstract class AEnvironmentArgumentRenderer implements IArgumentRenderer<
 				if (modifiedValue == null) retVal.remove(variable);
 				else {
 					final ISubject modifiedSubject;
-					if (baseMCA != null) modifiedSubject = baseMCA.getMeta();
+					if (entry.getValue() instanceof MetadataEnvironmentModifier) modifiedSubject = ((MetadataEnvironmentModifier) entry.getValue()).getSubject();
+					else if (baseMCA != null) modifiedSubject = baseMCA.getMeta();
 					else modifiedSubject = null;
 
 					final MetaCommandArgument modifiedMCA = new MetaCommandArgument(modifiedValue, modifiedSubject);
