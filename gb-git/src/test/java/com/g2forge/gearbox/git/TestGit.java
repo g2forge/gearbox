@@ -21,10 +21,12 @@ import org.junit.Test;
 
 import com.g2forge.alexandria.java.fluent.optional.NonNullOptional;
 import com.g2forge.alexandria.java.io.file.TempDirectory;
+import com.g2forge.alexandria.test.HAssume;
 import com.g2forge.alexandria.wizard.InputUnspecifiedException;
 import com.g2forge.alexandria.wizard.PropertyStringInput;
 import com.g2forge.alexandria.wizard.UserPasswordInput;
 import com.g2forge.alexandria.wizard.UserStringInput;
+import com.g2forge.gearbox.ssh.TestSSH;
 
 import lombok.Builder;
 import lombok.Data;
@@ -71,6 +73,7 @@ public class TestGit {
 	@Test
 	public void gitClone() throws InvalidRemoteException, TransportException, GitAPIException, IOException {
 		final TestConfiguration testConfiguration = TestConfiguration.createConfig();
+		HAssume.assumeNotNull(testConfiguration);
 		try (final TempDirectory temp = new TempDirectory()) {
 			final Path home = temp.get().resolve("Home"), ssh = temp.get().resolve(HSSH.SSHDIR), repo = temp.get().resolve("repo");
 			Files.createDirectories(home);
