@@ -26,7 +26,6 @@ import com.g2forge.alexandria.wizard.InputUnspecifiedException;
 import com.g2forge.alexandria.wizard.PropertyStringInput;
 import com.g2forge.alexandria.wizard.UserPasswordInput;
 import com.g2forge.alexandria.wizard.UserStringInput;
-import com.g2forge.gearbox.ssh.TestSSH;
 
 import lombok.Builder;
 import lombok.Data;
