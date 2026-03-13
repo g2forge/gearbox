@@ -12,7 +12,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public class ContextualizingSink<InputType extends IIssueType<?>, OutputType extends IIssueType<?>> implements IIssueSink<InputType> {
+public class ContextualizingIssueSink<InputType extends IIssueType<?>, OutputType extends IIssueType<?>> extends AWrappingIssueSink<InputType, OutputType> {
 	protected final IIssueSink<OutputType> sink;
 
 	protected final Map<InputType, IFunction1<IIssue<? extends InputType, ?>, IIssue<? extends OutputType, ?>>> functions;
