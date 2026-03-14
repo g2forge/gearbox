@@ -8,7 +8,7 @@ import com.g2forge.gearbox.issue.Level;
 import lombok.Getter;
 
 @Getter
-public class LevelFilterSink<Type extends IIssueType<?>> extends AFilterSink<Type> {
+public class LevelFilterSink<Type extends IIssueType<?>> extends AFilterIssueSink<Type> {
 	protected final Level minimum;
 
 	public LevelFilterSink(IIssueSink<Type> sink, Level minimum) {

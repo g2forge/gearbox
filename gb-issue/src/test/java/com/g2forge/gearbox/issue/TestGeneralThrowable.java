@@ -8,7 +8,7 @@ import com.g2forge.alexandria.java.core.error.HError;
 import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.java.core.marker.ISingleton;
 import com.g2forge.alexandria.test.HAssert;
-import com.g2forge.gearbox.issue.sink.CollectingSink;
+import com.g2forge.gearbox.issue.sink.CollectingIssueSink;
 
 public class TestGeneralThrowable {
 	public static class ThrowableIssue implements IIssueType<Throwable>, ISingleton {
@@ -38,7 +38,7 @@ public class TestGeneralThrowable {
 
 	@Test
 	public void test() {
-		final CollectingSink<IIssueType<Throwable>> sink = new CollectingSink<>();
+		final CollectingIssueSink<IIssueType<Throwable>> sink = new CollectingIssueSink<>();
 		final Throwable expected = new Throwable();
 		for (Throwable throwable : new Throwable[] { null, expected }) {
 			try {

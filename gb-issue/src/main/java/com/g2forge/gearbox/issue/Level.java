@@ -11,5 +11,9 @@ public enum Level {
 	WARN(org.slf4j.event.Level.WARN),
 	ERROR(org.slf4j.event.Level.ERROR);
 
+	public static final Level MINIMUM = Level.values()[0];
+
+	public static final Level MAXIMUM = Level.values()[Level.values().length - 1];
+
 	protected final org.slf4j.event.Level slf4j;
 }

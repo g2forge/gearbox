@@ -19,8 +19,18 @@ import lombok.extern.slf4j.Slf4j;
 public class Slf4JIssueSink<Type extends IIssueType<?>> implements IIssueSink<Type> {
 	protected final Logger logger;
 
+	@Getter(lazy = true)
+	private final com.g2forge.gearbox.issue.Level minimum = computeMinimum();
+
 	public Slf4JIssueSink() {
 		this(Slf4JIssueSink.log);
+	}
+
+	protected com.g2forge.gearbox.issue.Level computeMinimum() {
+		for (com.g2forge.gearbox.issue.Level level : com.g2forge.gearbox.issue.Level.values()) {
+			if (getLogger().isEnabledForLevel(level.getSlf4j())) return level;
+		}
+		return com.g2forge.gearbox.issue.Level.MAXIMUM;
 	}
 
 	@Override
