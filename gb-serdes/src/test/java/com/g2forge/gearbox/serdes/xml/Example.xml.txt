@@ -1,0 +1,4 @@
+<List>
+	<String>A</String>
+	<String>B</String>
+</List>
