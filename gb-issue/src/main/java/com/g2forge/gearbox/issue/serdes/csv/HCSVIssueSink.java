@@ -1,4 +1,4 @@
-package com.g2forge.gearbox.issue.csv;
+package com.g2forge.gearbox.issue.serdes.csv;
 
 import com.g2forge.alexandria.java.core.marker.Helpers;
 

@@ -1,4 +1,4 @@
-package com.g2forge.gearbox.issue.csv;
+package com.g2forge.gearbox.issue.serdes.csv;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -14,10 +14,15 @@ import com.g2forge.gearbox.issue.Level;
 import com.g2forge.gearbox.issue.sink.ICloseableIssueSink;
 import com.g2forge.gearbox.serdes.csv.CSVMapper;
 
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
+@Getter(AccessLevel.PROTECTED)
 public class TypedCSVIssueSink<Type extends IIssueType<Payload>, Payload> implements ICloseableIssueSink<Type> {
 	@Data
 	@Builder(toBuilder = true)
@@ -50,16 +55,16 @@ public class TypedCSVIssueSink<Type extends IIssueType<Payload>, Payload> implem
 
 	@Override
 	public void close() {
-		writer.close();
+		getWriter().close();
 	}
 
 	@Override
 	public void report(IIssue<? extends Type, ?> issue) {
-		if (payloadType.isInstance(issue.getPayload())) {
+		if (getPayloadType().isInstance(issue.getPayload())) {
 			@SuppressWarnings("unchecked")
 			final IIssue<Type, Payload> cast = (IIssue<Type, Payload>) issue;
 			final LoggedIssue<Payload> computeLoggedIssue = computeLoggedIssue(cast);
-			writer.accept(computeLoggedIssue);
-		}
+			getWriter().accept(computeLoggedIssue);
+		} else log.warn("Issue with payload type {} cannot be written to {} with payload type {}", issue.getPayload().getClass().getSimpleName(), getClass().getSimpleName(), getPayloadType().getSimpleName());
 	}
 }

@@ -6,6 +6,7 @@ import org.junit.Test;
 
 import com.g2forge.alexandria.java.core.error.DependencyNotLoadedError;
 import com.g2forge.alexandria.java.type.ref.ITypeRef;
+import com.g2forge.gearbox.issue.serdes.csv.TypedCSVIssueSink;
 
 public class TestTypedCSVIssueSink {
 	@Test(expected = DependencyNotLoadedError.class)
