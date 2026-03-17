@@ -25,7 +25,7 @@
 			<version>${alexandria.version}</version>
 		</dependency>
 		
-		<!-- CSV issue sink -->
+		<!-- Serdes issue sinks -->
 		<dependency>
 			<groupId>com.g2forge.gearbox</groupId>
 			<artifactId>gb-serdes</artifactId>
@@ -35,6 +35,18 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
 			<artifactId>jackson-dataformat-csv</artifactId>
+			<version>${jackson.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-yaml</artifactId>
+			<version>${jackson.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-xml</artifactId>
 			<version>${jackson.version}</version>
 			<scope>test</scope>
 		</dependency>

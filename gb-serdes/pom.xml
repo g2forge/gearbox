@@ -1,4 +1,6 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>gb-serdes</artifactId>
@@ -16,6 +18,11 @@
 		Jackon's various formats.</description>
 
 	<dependencies>
+		<dependency>
+			<groupId>com.g2forge.alexandria</groupId>
+			<artifactId>ax-media</artifactId>
+			<version>${alexandria.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>com.g2forge.habitat</groupId>
 			<artifactId>ha-inject</artifactId>
@@ -36,6 +43,12 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
 			<artifactId>jackson-dataformat-yaml</artifactId>
+			<version>${jackson.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-xml</artifactId>
 			<version>${jackson.version}</version>
 			<scope>provided</scope>
 		</dependency>

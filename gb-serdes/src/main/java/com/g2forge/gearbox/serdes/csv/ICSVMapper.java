@@ -1,25 +1,21 @@
 package com.g2forge.gearbox.serdes.csv;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 
+import com.g2forge.alexandria.java.close.ICloseableSupplier;
 import com.g2forge.alexandria.java.function.ICloseableConsumer1;
+import com.g2forge.alexandria.java.io.dataaccess.IDataSink;
+import com.g2forge.alexandria.java.io.dataaccess.IDataSource;
 
 public interface ICSVMapper<T> {
-	public List<T> read(InputStream stream);
+	public List<T> readAll(IDataSource source);
 
-	public List<T> read(Path path);
-
-	public List<T> read(String string);
+	public ICloseableSupplier<T> read(IDataSource source);
 
 	public String write(Collection<T> values);
 
-	public void write(Collection<T> values, OutputStream stream);
+	public void write(Collection<T> values, IDataSink sink);
 
-	public void write(Collection<T> values, Path path);
-	
-	public ICloseableConsumer1<? super T> write(Path path);
+	public ICloseableConsumer1<? super T> write(IDataSink sink);
 }

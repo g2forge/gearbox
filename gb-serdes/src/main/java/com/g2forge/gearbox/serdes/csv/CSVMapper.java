@@ -12,7 +12,9 @@ import com.fasterxml.jackson.databind.SequenceWriter;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.g2forge.alexandria.java.close.ICloseableSupplier;
 import com.g2forge.alexandria.java.core.helpers.HCollection;
+import com.g2forge.alexandria.java.io.RuntimeIOException;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -21,14 +23,14 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public class CSVMapper<T> extends ACSVMapper<T, T> {
-	protected final Class<T> type;
+	protected final Class<? super T> type;
 
 	protected final List<String> columns;
 
 	@Getter(lazy = true, value = AccessLevel.PROTECTED)
 	private final CsvSchema schema = createSchema();
 
-	public CSVMapper(Class<T> type, String... columns) {
+	public CSVMapper(Class<? super T> type, String... columns) {
 		this(type, HCollection.asList(columns));
 	}
 
@@ -59,6 +61,30 @@ public class CSVMapper<T> extends ACSVMapper<T, T> {
 			builder.addColumn(column);
 		}
 		return builder.build();
+	}
+
+	@Override
+	protected ICloseableSupplier<T> read(MappingIterator<T> iterator) throws IOException {
+		return new ICloseableSupplier<T>() {
+
+			@Override
+			public void close() {
+				try {
+					iterator.close();
+				} catch (IOException e) {
+					throw new RuntimeIOException(e);
+				}
+			}
+
+			@Override
+			public T get() {
+				try {
+					return iterator.nextValue();
+				} catch (IOException e) {
+					throw new RuntimeIOException(e);
+				}
+			}
+		};
 	}
 
 	@Override

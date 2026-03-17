@@ -2,8 +2,6 @@ package com.g2forge.gearbox.serdes.csv;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 
@@ -13,9 +11,14 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SequenceWriter;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
+import com.g2forge.alexandria.java.close.ICloseableSupplier;
 import com.g2forge.alexandria.java.function.ICloseableConsumer1;
 import com.g2forge.alexandria.java.function.IThrowFunction1;
 import com.g2forge.alexandria.java.io.RuntimeIOException;
+import com.g2forge.alexandria.java.io.dataaccess.IDataSink;
+import com.g2forge.alexandria.java.io.dataaccess.IDataSource;
+import com.g2forge.alexandria.java.type.ref.ITypeRef;
+import com.g2forge.gearbox.serdes.AJacksonStreamingSerdesFactory;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -35,13 +38,31 @@ public abstract class ACSVMapper<T, Internal> implements ICSVMapper<T> {
 
 	protected abstract ObjectWriter createObjectWriter();
 
-	@Override
 	@SuppressWarnings("resource")
-	public List<T> read(InputStream stream) {
-		return read(reader -> reader.readValues(stream));
+	@Override
+	public ICloseableSupplier<T> read(IDataSource source) {
+		return read(reader -> reader.readValues(source.getStream(ITypeRef.of(InputStream.class))));
 	}
 
-	protected List<T> read(IThrowFunction1<ObjectReader, MappingIterator<Internal>, IOException> read) {
+	protected ICloseableSupplier<T> read(IThrowFunction1<ObjectReader, MappingIterator<Internal>, IOException> read) {
+		final ObjectReader reader = createObjectReader();
+
+		try {
+			final MappingIterator<Internal> iterator = read.apply(reader);
+			return read(iterator);
+		} catch (IOException e) {
+			throw new RuntimeIOException(e);
+		}
+	}
+
+	protected abstract ICloseableSupplier<T> read(final MappingIterator<Internal> iterator) throws IOException;
+
+	@Override
+	public List<T> readAll(IDataSource source) {
+		return readAll(reader -> AJacksonStreamingSerdesFactory.create(reader, source));
+	}
+
+	protected List<T> readAll(IThrowFunction1<ObjectReader, MappingIterator<Internal>, IOException> read) {
 		final ObjectReader reader = createObjectReader();
 
 		try (final MappingIterator<Internal> iterator = read.apply(reader)) {
@@ -49,16 +70,6 @@ public abstract class ACSVMapper<T, Internal> implements ICSVMapper<T> {
 		} catch (IOException e) {
 			throw new RuntimeIOException(e);
 		}
-	}
-
-	@Override
-	public List<T> read(Path path) {
-		return read(reader -> reader.readValues(path.toFile()));
-	}
-
-	@Override
-	public List<T> read(String string) {
-		return read(reader -> reader.readValues(string));
 	}
 
 	protected abstract List<T> readAll(final MappingIterator<Internal> iterator) throws IOException;
@@ -72,6 +83,11 @@ public abstract class ACSVMapper<T, Internal> implements ICSVMapper<T> {
 		}
 	}
 
+	@Override
+	public void write(Collection<T> values, IDataSink sink) {
+		write(values, writer -> AJacksonStreamingSerdesFactory.create(writer, sink));
+	}
+
 	protected void write(Collection<T> values, IThrowFunction1<ObjectWriter, SequenceWriter, IOException> write) {
 		final ObjectWriter objectWriter = createObjectWriter();
 		try (final SequenceWriter sequenceWriter = write.apply(objectWriter)) {
@@ -82,25 +98,9 @@ public abstract class ACSVMapper<T, Internal> implements ICSVMapper<T> {
 	}
 
 	@Override
-	@SuppressWarnings("resource")
-	public void write(Collection<T> values, OutputStream stream) {
-		write(values, writer -> writer.writeValues(stream));
-	}
-
-	@Override
-	public void write(Collection<T> values, Path path) {
-		write(values, writer -> writer.writeValues(path.toFile()));
-	}
-
-	@Override
-	public ICloseableConsumer1<? super T> write(Path path) {
+	public ICloseableConsumer1<? super T> write(IDataSink sink) {
 		final ObjectWriter objectWriter = createObjectWriter();
-		final SequenceWriter sequenceWriter;
-		try {
-			sequenceWriter = objectWriter.writeValues(path.toFile());
-		} catch (IOException e) {
-			throw new RuntimeIOException(e);
-		}
+		final SequenceWriter sequenceWriter = AJacksonStreamingSerdesFactory.create(objectWriter, sink);
 		return new ICloseableConsumer1<T>() {
 			@Override
 			public void accept(T t) {
