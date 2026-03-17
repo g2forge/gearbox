@@ -131,7 +131,7 @@ public class ArgumentParser<T> implements IArgumentParser<T> {
 				argumentLine.append('<').append(parameter.getName()).append('>');
 
 				final IPredicate<ArgumentHelp> predicate = parameter.getSubject().bind(ArgumentHelp.class);
-				if (predicate.isPresent()) positionalHelp.put(parameter.getName(), predicate.get0().value());
+				if (predicate.isPresent()) positionalHelp.put(parameter.getName(), predicate.get().value());
 			}
 
 			final boolean hasNamed = !named.isEmpty();

@@ -7,10 +7,11 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-/**
- * A shorthand annotation for {@link Log.Mode#REPLACE}. If both this and {@link Log} are present on a parameter {@link Log} takes precedence.
- */
 @Documented
 @Retention(RUNTIME)
 @Target(ElementType.PARAMETER)
-public @interface Password {}
+public @interface PasswordLog {
+	public static final String DEFAULT_REPLACEMENT = "***";
+
+	public String value() default DEFAULT_REPLACEMENT;
+}
