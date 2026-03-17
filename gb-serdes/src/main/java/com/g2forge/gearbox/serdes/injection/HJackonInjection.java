@@ -12,9 +12,9 @@ public class HJackonInjection {
 		final ContextAttributes attributes = initialSerializationConfig.getAttributes();
 		final ContextAttributes attributesWithInjectedValue = attributes.withSharedAttributes(injectables);
 		final SerializationConfig serializationConfigWithInjectedValue = initialSerializationConfig.with(attributesWithInjectedValue);
-		
+
 		mapper.setInjectableValues(null);
-		
+
 		return mapper.setConfig(serializationConfigWithInjectedValue);
 	}
 }

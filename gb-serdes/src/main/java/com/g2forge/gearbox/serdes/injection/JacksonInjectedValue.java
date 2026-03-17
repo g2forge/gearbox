@@ -5,7 +5,8 @@ import com.fasterxml.jackson.databind.InjectableValues;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.MissingInjectableValueExcepion;
-import com.g2forge.alexandria.java.type.ref.ITypeRef;
+import com.g2forge.habitat.inject.IInjectedValue;
+import com.g2forge.habitat.inject.InjectedValueDescriptor;
 
 import lombok.Builder;
 import lombok.Data;
@@ -14,48 +15,36 @@ import lombok.RequiredArgsConstructor;
 @Data
 @Builder(toBuilder = true)
 @RequiredArgsConstructor
-public class JacksonInjectedValue<T> {
-	protected final String id;
-
-	protected final ITypeRef<T> type;
-
-	protected final T fallback;
-
-	public JacksonInjectedValue(Class<?> owner, String name, ITypeRef<T> type, T fallback) {
-		this(owner.getName() + "." + name, type, fallback);
-	}
-
-	public JacksonInjectedValue(Class<T> type, T fallback) {
-		this(type.getName(), ITypeRef.of(type), fallback);
-	}
+public class JacksonInjectedValue<T> implements IInjectedValue<T> {
+	protected final InjectedValueDescriptor<T> descriptor;
 
 	public T get(DatabindContext context) {
-		final Object value = context.getAttribute(getId());
-		if (value == null) return getFallback();
-		return getType().cast(value);
+		final Object value = context.getAttribute(getDescriptor().getId());
+		if (value == null) return getDescriptor().getFallback();
+		return getDescriptor().getType().cast(value);
 	}
 
 	public T get(ObjectMapper mapper) {
 		final Object value;
 		try {
-			value = mapper.getInjectableValues().findInjectableValue(mapper.getDeserializationContext(), getId(), null, null, null, null);
+			value = mapper.getInjectableValues().findInjectableValue(mapper.getDeserializationContext(), getDescriptor().getId(), null, null, null, null);
 		} catch (MissingInjectableValueExcepion e) {
-			return getFallback();
+			return getDescriptor().getFallback();
 		} catch (JsonMappingException e) {
 			throw new IllegalStateException(e);
 		}
-		if (value == null) return getFallback();
-		return getType().cast(value);
+		if (value == null) return getDescriptor().getFallback();
+		return getDescriptor().getType().cast(value);
 	}
 
 	public ObjectMapper inject(ObjectMapper mapper, T value) {
-		mapper.setConfig(mapper.getSerializationConfig().withAttribute(getId(), value));
-		mapper.setConfig(mapper.getDeserializationConfig().withAttribute(getId(), value));
+		mapper.setConfig(mapper.getSerializationConfig().withAttribute(getDescriptor().getId(), value));
+		mapper.setConfig(mapper.getDeserializationConfig().withAttribute(getDescriptor().getId(), value));
 
 		final InjectableValues existingInjectableValues = mapper.getInjectableValues();
-		if (existingInjectableValues == null) mapper.setInjectableValues(new InjectableValues.Std().addValue(getId(), value));
+		if (existingInjectableValues == null) mapper.setInjectableValues(new InjectableValues.Std().addValue(getDescriptor().getId(), value));
 		else if (!(existingInjectableValues instanceof InjectableValues.Std)) throw new IllegalArgumentException();
-		else((InjectableValues.Std) existingInjectableValues).addValue(getId(), value);
+		else((InjectableValues.Std) existingInjectableValues).addValue(getDescriptor().getId(), value);
 
 		return mapper;
 	}
