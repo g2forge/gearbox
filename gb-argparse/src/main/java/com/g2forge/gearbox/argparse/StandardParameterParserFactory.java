@@ -59,7 +59,7 @@ public class StandardParameterParserFactory implements IParameterParserFactory, 
 		final Class<?> type = parameter.getType();
 		final IPredicate<Parameter> annotation = parameter.getSubject().bind(Parameter.class);
 		if (annotation.isPresent()) {
-			final Class<? extends IParameterParser> parserType = annotation.get0().parser();
+			final Class<? extends IParameterParser> parserType = annotation.get().parser();
 			if (parserType != Parameter.DefaultParser.class) {
 				try {
 					final Constructor<? extends IParameterParser> constructor = parserType.getConstructor();

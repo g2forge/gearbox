@@ -19,6 +19,11 @@
 			<artifactId>gb-command</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>com.g2forge.habitat</groupId>
+			<artifactId>ha-inject</artifactId>
+			<version>${habitat.version}</version>
+		</dependency>
 		
 		<dependency>
 			<groupId>com.g2forge.alexandria</groupId>

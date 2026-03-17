@@ -33,5 +33,6 @@
 		<module>gb-serdes</module>
 		<module>gb-issue</module>
 		<module>gb-issue-test</module>
+		<module>gb-config</module>
 	</modules>
 </project>

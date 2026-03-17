@@ -17,6 +17,12 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>com.g2forge.habitat</groupId>
+			<artifactId>ha-inject</artifactId>
+			<version>${habitat.version}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
 			<version>${jackson.version}</version>

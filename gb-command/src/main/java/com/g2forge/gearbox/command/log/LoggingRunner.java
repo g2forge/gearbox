@@ -1,6 +1,5 @@
 package com.g2forge.gearbox.command.log;
 
-import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -16,7 +15,6 @@ import com.g2forge.alexandria.command.invocation.environment.MapEnvironment;
 import com.g2forge.alexandria.command.invocation.environment.SystemEnvironment;
 import com.g2forge.alexandria.command.invocation.environment.modified.IEnvironmentModifier;
 import com.g2forge.alexandria.command.invocation.environment.modified.ModifiedEnvironment;
-import com.g2forge.alexandria.java.core.enums.EnumException;
 import com.g2forge.alexandria.java.core.error.NotYetImplementedError;
 import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.java.core.helpers.HMap;
@@ -37,110 +35,51 @@ import lombok.RequiredArgsConstructor;
 @Getter(AccessLevel.PROTECTED)
 @RequiredArgsConstructor
 public class LoggingRunner implements IRunner {
-	protected static final Log DEFAULT_LOG = new Log() {
-		@Override
-		public Class<? extends Annotation> annotationType() {
-			return getClass();
-		}
+	protected static ILogArgumentRewriter computeLogArgumentRewriter(final ISubject subject) {
+		if (subject == null) return NopLogArgumentRewriter.create();
+		return subject.bind(ILogArgumentRewriter.class).or(NopLogArgumentRewriter.create());
+	}
 
-		@Override
-		public String replacement() {
-			return Log.DEFAULT_REPLACEMENT;
-		}
-
-		@Override
-		public Mode value() {
-			return Mode.NORMAL;
-		}
-	};
-
-	protected static final Log PASSWORD_LOG = new Log() {
-		@Override
-		public Class<? extends Annotation> annotationType() {
-			return getClass();
-		}
-
-		@Override
-		public String replacement() {
-			return Log.DEFAULT_REPLACEMENT;
-		}
-
-		@Override
-		public Mode value() {
-			return Mode.REPLACE;
-		}
-	};
-
-	protected static Log computeLog(final MetadataEnvironmentModifier mem) {
+	protected static ILogArgumentRewriter computeLogArgumentRewriter(final MetadataEnvironmentModifier mem) {
 		MetadataEnvironmentModifier current = mem;
-		final List<Log> logs = new ArrayList<>();
+		final List<ILogArgumentRewriter> logArgumentRewriters = new ArrayList<>();
 		while (true) {
-			final Log log = getLogForSubject(current.getSubject());
-			if (log != null) logs.add(log);
+			final ILogArgumentRewriter logArgumentRewriter = computeLogArgumentRewriter(current.getSubject());
+			if (logArgumentRewriter != null) logArgumentRewriters.add(logArgumentRewriter);
 
 			if (current.getModifier() instanceof MetadataEnvironmentModifier) current = (MetadataEnvironmentModifier) current.getModifier();
 			else break;
 		}
 
-		return merge(logs);
-	}
-
-	protected static Log getLogForSubject(final ISubject subject) {
-		if (subject != null) {
-			final Log log = subject.get(Log.class);
-			if (log != null) return log;
-			else return subject.isPresent(Password.class) ? LoggingRunner.PASSWORD_LOG : LoggingRunner.DEFAULT_LOG;
-		} else return LoggingRunner.DEFAULT_LOG;
-	}
-
-	protected static Log merge(Iterable<? extends Log> logs) {
-		Log current = null;
-		for (Log log : logs) {
-			if (log == null) continue;
-			else if (current == null) current = log;
-			else {
-				if (log.value().compareTo(current.value()) > 0) current = log;
-			}
-		}
-		return current;
+		return new ChainedLogArgumentRewriter(logArgumentRewriters);
 	}
 
 	@EnvironmentHandler
-	protected static String toString(IEnvironment environment, String prefix, Map<String, Log> logMap) {
+	protected static String toString(IEnvironment environment, String prefix, Map<String, ILogArgumentRewriter> logArgumentRewriterMap, Map<String, Object> context) {
 		final StringBuilder retVal = new StringBuilder();
 		if (environment instanceof MapEnvironment) {
 			for (Map.Entry<String, String> entry : ((MapEnvironment) environment).getVariables().entrySet()) {
-				final Log log = logMap.getOrDefault(entry.getKey(), DEFAULT_LOG);
-				switch (log.value()) {
-					case NORMAL:
-						retVal.append(prefix).append(entry.getKey()).append('=').append(entry.getValue()).append("\n");
-						break;
-					case REPLACE:
-						retVal.append(prefix).append(entry.getKey()).append('=').append(log.replacement()).append("\n");
-						break;
-					case NOTHING:
-						break;
-					default:
-						throw new EnumException(Log.Mode.class, log.value());
-				}
+				final ILogArgumentRewriter log = logArgumentRewriterMap.getOrDefault(entry.getKey(), NopLogArgumentRewriter.create());
+				final String rewritten = log.rewrite(entry.getValue(), context);
+				if (rewritten != null) retVal.append(prefix).append(entry.getKey()).append('=').append(rewritten).append("\n");
 			}
 		} else if (environment instanceof ModifiedEnvironment) {
 			final ModifiedEnvironment modified = ((ModifiedEnvironment) environment);
 
-			final Map<String, Log> childLogMap = new LinkedHashMap<>(logMap);
+			final Map<String, ILogArgumentRewriter> childLogArgumentRewriterMap = new LinkedHashMap<>(logArgumentRewriterMap);
 			for (Map.Entry<String, IEnvironmentModifier> entry : modified.getModifiers().entrySet()) {
 				if (entry.getValue() instanceof MetadataEnvironmentModifier) {
-					final Log log = computeLog((MetadataEnvironmentModifier) entry.getValue());
-					if (log != null) childLogMap.put(entry.getKey(), log);
+					final ILogArgumentRewriter logArgumentRewriter = computeLogArgumentRewriter((MetadataEnvironmentModifier) entry.getValue());
+					if (logArgumentRewriter != null) childLogArgumentRewriterMap.put(entry.getKey(), logArgumentRewriter);
 				}
 			}
 
-			final String base = toString(modified.getBase(), prefix + "\t", childLogMap);
+			final String base = toString(modified.getBase(), prefix + "\t", childLogArgumentRewriterMap, context);
 			final boolean multiLineBase = base.contains("\n");
 
 			final Map<String, String> modifierMap = new LinkedHashMap<>();
 			for (Map.Entry<String, IEnvironmentModifier> entry : modified.getModifiers().entrySet()) {
-				final String string = toString(entry.getValue(), childLogMap.get(entry.getKey()));
+				final String string = toString(entry.getValue(), childLogArgumentRewriterMap.get(entry.getKey()), context);
 				if (string != null) modifierMap.put(entry.getKey(), string);
 			}
 			final int modifierCount = modifierMap.size();
@@ -161,44 +100,25 @@ public class LoggingRunner implements IRunner {
 		return retVal.toString().stripTrailing();
 	}
 
-	protected static String toString(IEnvironmentModifier modifier, Log log) {
+	protected static String toString(IEnvironmentModifier modifier, ILogArgumentRewriter logArgumentRewriter, Map<String, Object> context) {
 		if (modifier == null) return "null";
 		if (modifier instanceof MetadataEnvironmentModifier) {
 			final MetadataEnvironmentModifier cast = (MetadataEnvironmentModifier) modifier;
-			if (log == null) return toString(cast.getModifier(), log);
-			switch (log.value()) {
-				case NORMAL:
-					return toString(cast.getModifier(), log);
-				case REPLACE:
-					return log.replacement();
-				case NOTHING:
-					return null;
-				default:
-					throw new EnumException(Log.Mode.class, log.value());
-			}
+			final ILogArgumentRewriter actual = logArgumentRewriter == null ? NopLogArgumentRewriter.create() : logArgumentRewriter;
+			return actual.rewrite(toString(cast.getModifier(), logArgumentRewriter, context), context);
 		}
 		return modifier.toString();
 	}
 
-	protected static String toString(List<? extends CommandArgument<? extends MetaCommandArgument>> arguments) {
+	protected static String toString(List<? extends CommandArgument<? extends MetaCommandArgument>> arguments, Map<String, Object> context) {
 		Objects.requireNonNull(arguments);
 		final StringBuilder retVal = new StringBuilder();
 		for (int i = 0; i < arguments.size(); i++) {
 			if (i > 0) retVal.append(' ');
 
-			final Log log = getLogForSubject(arguments.get(i).getValue().getMeta());
-			switch (log.value()) {
-				case NORMAL:
-					retVal.append(arguments.get(i).getString());
-					break;
-				case REPLACE:
-					retVal.append(log.replacement());
-					break;
-				case NOTHING:
-					break;
-				default:
-					throw new EnumException(Log.Mode.class, log.value());
-			}
+			final ILogArgumentRewriter logArgumentRewriter = computeLogArgumentRewriter(arguments.get(i).getValue().getMeta());
+			final String rewritten = logArgumentRewriter.rewrite(arguments.get(i).getString(), context);
+			if (rewritten != null) retVal.append(rewritten);
 		}
 		return retVal.toString();
 	}
@@ -207,14 +127,20 @@ public class LoggingRunner implements IRunner {
 
 	protected final IFunction1<CommandInvocation<MetaCommandArgument, IRedirect, IRedirect>, IProcess> runner;
 
+	protected final Map<String, Object> context;
+
+	public LoggingRunner(IConsumer1<String> log, IFunction1<CommandInvocation<MetaCommandArgument, IRedirect, IRedirect>, IProcess> runner) {
+		this(log, runner, null);
+	}
+
 	@Override
 	public IProcess apply(CommandInvocation<MetaCommandArgument, IRedirect, IRedirect> commandInvocation) {
 		final IConsumer1<String> log = getLog();
-		log.accept("Running: " + toString(commandInvocation.getArgumentsAsArguments()));
+		log.accept("Running: " + toString(commandInvocation.getArgumentsAsArguments(), getContext()));
 		if (commandInvocation.getWorking() != null) log.accept("\tin " + commandInvocation.getWorking());
 		final IEnvironment environment = commandInvocation.getEnvironment();
 		if ((environment != null) && !(commandInvocation.getEnvironment() instanceof SystemEnvironment)) {
-			final String string = toString(environment, "\t\t", HMap.empty());
+			final String string = toString(environment, "\t\t", HMap.empty(), getContext());
 			if (string.contains("\n")) {
 				log.accept("\tenvironment:");
 				for (String line : string.split("\n")) {
