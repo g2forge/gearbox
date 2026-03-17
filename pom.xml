@@ -31,7 +31,7 @@
 		<module>gb-maven</module>
 		<module>gb-image</module>
 		<module>gb-serdes</module>
+		<module>gb-serdes-test</module>
 		<module>gb-issue</module>
-		<module>gb-issue-test</module>
 	</modules>
 </project>

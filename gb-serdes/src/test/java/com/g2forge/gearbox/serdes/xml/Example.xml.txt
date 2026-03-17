@@ -1,4 +1,1 @@
-<List>
-	<String>A</String>
-	<String>B</String>
-</List>
+<List><item>A</item><item>B</item></List>
