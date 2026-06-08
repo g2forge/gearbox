@@ -1,5 +1,6 @@
 package com.g2forge.gearbox.command.converter.dumb;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
@@ -22,6 +23,7 @@ import com.g2forge.alexandria.command.stdio.StandardIO;
 import com.g2forge.alexandria.java.core.enums.EnumException;
 import com.g2forge.alexandria.java.core.error.HError;
 import com.g2forge.alexandria.java.core.error.NotYetImplementedError;
+import com.g2forge.alexandria.java.core.error.RuntimeReflectionException;
 import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.java.core.marker.ISingleton;
 import com.g2forge.alexandria.java.function.IConsumer2;
@@ -250,7 +252,17 @@ public class DumbCommandConverter implements ICommandConverterR_, ISingleton {
 
 		// Compute the result supplier
 		final IResultSupplier<? extends T> resultSupplier;
-		if (processInvocation.getResultSupplier() == null) {
+		final ResultSupplier resultSupplierAnnotation = methodSubject.get(ResultSupplier.class);
+		if (resultSupplierAnnotation != null) {
+			try {
+				@SuppressWarnings("unchecked")
+				final IResultSupplier<? extends T> temp = (IResultSupplier<? extends T>) resultSupplierAnnotation.value().getDeclaredConstructor().newInstance();
+				resultSupplier = temp;
+			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+				throw new RuntimeReflectionException(e);
+			}
+			processInvocationBuilder.resultSupplier(resultSupplier);
+		} else if (processInvocation.getResultSupplier() == null) {
 			resultSupplier = getStandard(returnTypeRef);
 			processInvocationBuilder.resultSupplier(resultSupplier);
 		} else resultSupplier = processInvocation.getResultSupplier();

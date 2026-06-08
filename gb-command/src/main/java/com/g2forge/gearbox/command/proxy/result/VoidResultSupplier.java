@@ -4,6 +4,7 @@ import com.g2forge.alexandria.command.stdio.StandardIO;
 import com.g2forge.alexandria.java.core.marker.ISingleton;
 import com.g2forge.gearbox.command.process.IProcess;
 import com.g2forge.gearbox.command.process.redirect.IRedirect;
+import com.g2forge.habitat.metadata.value.subject.ISubject;
 
 public class VoidResultSupplier implements IResultSupplier<Void>, ISingleton {
 	protected static final VoidResultSupplier INSTANCE = new VoidResultSupplier();
@@ -13,7 +14,7 @@ public class VoidResultSupplier implements IResultSupplier<Void>, ISingleton {
 	}
 
 	@Override
-	public Void apply(IProcess process) {
+	public Void apply(ISubject subject, IProcess process) {
 		try {
 			process.assertSuccess();
 			return null;

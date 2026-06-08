@@ -11,6 +11,7 @@ import com.g2forge.gearbox.command.proxy.method.MethodInvocation;
 import com.g2forge.gearbox.command.proxy.process.ProcessInvocation;
 import com.g2forge.gearbox.command.proxy.process.ProcessInvocation.ProcessInvocationBuilder;
 import com.g2forge.gearbox.command.proxy.result.IResultSupplier;
+import com.g2forge.habitat.metadata.value.subject.ISubject;
 
 import lombok.Data;
 
@@ -38,7 +39,7 @@ public class TestMethodToCommandInvocationTransformer {
 		protected final String retVal;
 
 		@Override
-		public String apply(IProcess process) {
+		public String apply(ISubject subject, IProcess process) {
 			return retVal;
 		}
 	}
@@ -58,7 +59,7 @@ public class TestMethodToCommandInvocationTransformer {
 		}, Argument.class.getDeclaredMethods()[0], HCollection.asList("A"));
 		final ProcessInvocation<?> processInvocation = new MethodToCommandInvocationTransformer().apply(methodInvocation);
 		HAssert.assertNull(processInvocation.getCommandInvocation());
-		HAssert.assertEquals("A", processInvocation.getResultSupplier().apply(null));
+		HAssert.assertEquals("A", processInvocation.getResultSupplier().apply(null, null));
 	}
 
 	@Test
@@ -71,6 +72,6 @@ public class TestMethodToCommandInvocationTransformer {
 		}, Method.class.getDeclaredMethods()[0], HCollection.emptyList());
 		final ProcessInvocation<?> processInvocation = new MethodToCommandInvocationTransformer().apply(methodInvocation);
 		HAssert.assertNull(processInvocation.getCommandInvocation());
-		HAssert.assertEquals("B", processInvocation.getResultSupplier().apply(null));
+		HAssert.assertEquals("B", processInvocation.getResultSupplier().apply(null, null));
 	}
 }

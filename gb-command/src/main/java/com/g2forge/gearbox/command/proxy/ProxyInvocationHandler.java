@@ -8,12 +8,14 @@ import com.g2forge.alexandria.command.invocation.CommandInvocation;
 import com.g2forge.alexandria.java.core.helpers.HCollection;
 import com.g2forge.alexandria.java.core.helpers.HCollector;
 import com.g2forge.alexandria.java.function.IFunction1;
-import com.g2forge.gearbox.command.process.MetaCommandArgument;
 import com.g2forge.gearbox.command.process.IProcess;
+import com.g2forge.gearbox.command.process.MetaCommandArgument;
 import com.g2forge.gearbox.command.process.redirect.IRedirect;
 import com.g2forge.gearbox.command.proxy.method.MethodInvocation;
 import com.g2forge.gearbox.command.proxy.process.ProcessInvocation;
 import com.g2forge.gearbox.command.proxy.process.ReturnProcessInvocationException;
+import com.g2forge.habitat.metadata.Metadata;
+import com.g2forge.habitat.metadata.value.subject.ISubject;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -42,8 +44,9 @@ public class ProxyInvocationHandler implements InvocationHandler {
 		final IFunction1<? super CommandInvocation<MetaCommandArgument, IRedirect, IRedirect>, ? extends IProcess> runner = getRunner();
 		if (runner != null) {
 			final CommandInvocation<MetaCommandArgument, IRedirect, IRedirect> commandInvocation = processInvocation.getCommandInvocation();
+			final ISubject subject = Metadata.getStandard().of(methodInvocation.getMethod());
 			final IProcess process = (commandInvocation == null) ? null : runner.apply(commandInvocation);
-			return processInvocation.getResultSupplier().apply(process);
+			return processInvocation.getResultSupplier().apply(subject, process);
 		} else throw new ReturnProcessInvocationException(processInvocation);
 	}
 }
