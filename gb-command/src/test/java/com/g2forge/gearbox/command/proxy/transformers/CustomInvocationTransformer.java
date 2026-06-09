@@ -16,6 +16,6 @@ public class CustomInvocationTransformer implements IInvocationTransformer {
 
 	@Override
 	public ProcessInvocation<?> apply(MethodInvocation methodInvocation) {
-		return new ProcessInvocation<>(commandInvocation, process -> retVal);
+		return new ProcessInvocation<>(commandInvocation, (subject, process) -> retVal);
 	}
 }

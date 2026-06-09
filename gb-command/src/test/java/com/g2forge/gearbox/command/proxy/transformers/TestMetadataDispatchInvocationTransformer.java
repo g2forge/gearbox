@@ -28,7 +28,7 @@ public class TestMetadataDispatchInvocationTransformer {
 	public static class MyOverrideInvocationTransformer implements IInvocationTransformer {
 		@Override
 		public ProcessInvocation<?> apply(MethodInvocation methodInvocation) {
-			return new ProcessInvocation<>(null, process -> 4);
+			return new ProcessInvocation<>(null, (subject, process) -> 4);
 		}
 	}
 
@@ -43,7 +43,7 @@ public class TestMetadataDispatchInvocationTransformer {
 		}, IDelegate.class.getDeclaredMethods()[0], HCollection.emptyList());
 		final ProcessInvocation<?> processInvocation = new MetadataDispatchInvocationTransformer(new CustomInvocationTransformer(commandInvocation, 2)).apply(methodInvocation);
 		HAssert.assertSame(commandInvocation, processInvocation.getCommandInvocation());
-		HAssert.assertEquals(2, processInvocation.getResultSupplier().apply(null));
+		HAssert.assertEquals(2, processInvocation.getResultSupplier().apply(null, null));
 	}
 
 	@Test
@@ -56,6 +56,6 @@ public class TestMetadataDispatchInvocationTransformer {
 		}, IOverride.class.getDeclaredMethods()[0], HCollection.emptyList());
 		final ProcessInvocation<?> processInvocation = new MetadataDispatchInvocationTransformer(new CustomInvocationTransformer(CommandInvocation.<MetaCommandArgument, IRedirect, IRedirect>builder().build(), 2)).apply(methodInvocation);
 		HAssert.assertNull(processInvocation.getCommandInvocation());
-		HAssert.assertEquals(4, processInvocation.getResultSupplier().apply(null));
+		HAssert.assertEquals(4, processInvocation.getResultSupplier().apply(null, null));
 	}
 }

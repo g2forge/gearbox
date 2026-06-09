@@ -20,7 +20,7 @@ import com.g2forge.gearbox.command.proxy.process.ProcessInvocation;
 public class TestDefaultMethodInvocationTransformer {
 	public interface IDefaultModify extends ITestCommandInterface {
 		public default int method() {
-			throw new ModifyProcessInvocationException(processInvocation -> new ProcessInvocation<>(processInvocation.getCommandInvocation(), process -> 3));
+			throw new ModifyProcessInvocationException(processInvocation -> new ProcessInvocation<>(processInvocation.getCommandInvocation(), (subject, process) -> 3));
 		}
 	}
 
@@ -44,14 +44,14 @@ public class TestDefaultMethodInvocationTransformer {
 
 		final ProcessInvocation<?> processInvocation = new DefaultMethodInvocationTransformer(new CustomInvocationTransformer(commandInvocation, 2)).apply(methodInvocation);
 		HAssert.assertSame(commandInvocation, processInvocation.getCommandInvocation());
-		HAssert.assertEquals(3, processInvocation.getResultSupplier().apply(null));
+		HAssert.assertEquals(3, processInvocation.getResultSupplier().apply(null, null));
 	}
 
 	@Test
 	public void defaultReturn() {
 		final MethodInvocation methodInvocation = new MethodInvocation(new IDefaultReturn() {}, IDefaultReturn.class.getDeclaredMethods()[0], HCollection.emptyList());
 		final ProcessInvocation<?> processInvocation = new DefaultMethodInvocationTransformer(null).apply(methodInvocation);
-		HAssert.assertEquals(1, processInvocation.getResultSupplier().apply(null));
+		HAssert.assertEquals(1, processInvocation.getResultSupplier().apply(null, null));
 	}
 
 	@Test
@@ -65,6 +65,6 @@ public class TestDefaultMethodInvocationTransformer {
 		}, INoDefault.class.getDeclaredMethods()[0], HCollection.emptyList());
 		final ProcessInvocation<?> processInvocation = new DefaultMethodInvocationTransformer(new CustomInvocationTransformer(commandInvocation, 2)).apply(methodInvocation);
 		HAssert.assertSame(commandInvocation, processInvocation.getCommandInvocation());
-		HAssert.assertEquals(2, processInvocation.getResultSupplier().apply(null));
+		HAssert.assertEquals(2, processInvocation.getResultSupplier().apply(null, null));
 	}
 }

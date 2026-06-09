@@ -31,6 +31,7 @@ import com.g2forge.alexandria.java.function.ISupplier;
 import com.g2forge.alexandria.java.io.HIO;
 import com.g2forge.alexandria.java.io.HTextIO;
 import com.g2forge.gearbox.command.process.IProcess;
+import com.g2forge.habitat.metadata.value.subject.ISubject;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -219,7 +220,7 @@ public class StreamResultSupplier implements IResultSupplier<Stream<String>>, IS
 	protected final IStandardIO<Void, Boolean> include;
 
 	@Override
-	public Stream<String> apply(IProcess process) {
+	public Stream<String> apply(ISubject subject, IProcess process) {
 		process.assertLaunch();
 		final List<Stream2Queue> threads = new ArrayList<>(2);
 		try {

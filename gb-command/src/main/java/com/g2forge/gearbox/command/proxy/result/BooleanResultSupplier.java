@@ -4,6 +4,7 @@ import com.g2forge.alexandria.command.stdio.StandardIO;
 import com.g2forge.alexandria.java.core.marker.ISingleton;
 import com.g2forge.gearbox.command.process.IProcess;
 import com.g2forge.gearbox.command.process.redirect.IRedirect;
+import com.g2forge.habitat.metadata.value.subject.ISubject;
 
 public class BooleanResultSupplier implements IResultSupplier<Boolean>, ISingleton {
 	protected static final BooleanResultSupplier INSTANCE = new BooleanResultSupplier();
@@ -13,7 +14,7 @@ public class BooleanResultSupplier implements IResultSupplier<Boolean>, ISinglet
 	}
 
 	@Override
-	public Boolean apply(IProcess process) {
+	public Boolean apply(ISubject subject, IProcess process) {
 		try {
 			if (!process.isLaunched()) return false;
 			return process.getExitCode() == 0;
